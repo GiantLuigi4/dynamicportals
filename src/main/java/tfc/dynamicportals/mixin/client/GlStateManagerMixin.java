@@ -45,6 +45,10 @@ public class GlStateManagerMixin {
 		boolean hitOuts = false;
 		boolean hitInputs = false;
 		StringBuilder output = new StringBuilder();
+		
+		boolean hasTexCoordInput = false;
+		String samplerName = null;
+		
 		for (String s1 : list) {
 			String srcStr = s1;
 			int len = s1.length();
@@ -57,6 +61,13 @@ public class GlStateManagerMixin {
 				s1 = s1.replace(") ", " ");
 				s1 = s1.replace("\t", "");
 				len = s1.length();
+			}
+			// TODO: make this stuff more reliable
+			if (s1.startsWith("out vec4 fragColor")) hasTexCoordInput = true;
+			if (s1.startsWith("uniform sampler2D")) {
+				String str1 = s1.replace("uniform sampler2D ", "").trim();
+				if (str1.startsWith("Sampler0") || str1.startsWith("DiffuseSampler"))
+					samplerName = str1.substring(0, str1.length() - 1);
 			}
 			if (!hitUniforms && s1.trim().startsWith("uniform")) {
 				srcStr = injectUniforms(type, srcStr);
@@ -72,12 +83,12 @@ public class GlStateManagerMixin {
 			}
 			if (hitUniforms && hitOuts && hitInputs) {
 				if (inMain) {
-					srcStr = checkLineAndInject(type, srcStr, lCC);
+					srcStr = checkLineAndInject(type, srcStr, lCC, hasTexCoordInput && samplerName != null, samplerName);
 					if (lCC.get() == 0) inMain = false;
 				}
 				if (s1.contains("void main()")) {
 					inMain = true;
-					srcStr = checkLineAndInject(type, srcStr, lCC);
+					srcStr = checkLineAndInject(type, srcStr, lCC, hasTexCoordInput && samplerName != null, samplerName);
 				}
 			}
 			output.append(srcStr).append("\n");
@@ -111,7 +122,7 @@ public class GlStateManagerMixin {
 		return srcStr;
 	}
 	
-	private static String checkLineAndInject(int type, String line, AtomicInteger lCC) {
+	private static String checkLineAndInject(int type, String line, AtomicInteger lCC, boolean hasTexCoordInput, String samplerName) {
 		String[] split = split(line, "{}");
 		StringBuilder builder = new StringBuilder();
 		for (String str : split) {
@@ -119,7 +130,7 @@ public class GlStateManagerMixin {
 				builder.append(str);
 				if (lCC.get() == 0) {
 					if (type == GL42.GL_FRAGMENT_SHADER) {
-						String injection = ShaderInjections.headInjection();
+						String injection = ShaderInjections.headInjection(hasTexCoordInput, samplerName);
 						builder.append(injection);
 					}
 				}

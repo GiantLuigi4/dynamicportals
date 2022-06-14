@@ -3,9 +3,7 @@ package tfc.dynamicportals.mixin.client;
 import com.mojang.blaze3d.shaders.AbstractUniform;
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.ShaderInstance;
-import org.lwjgl.opengl.GL42;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -87,6 +85,7 @@ public abstract class ShaderMixin {
 	public void preApply(CallbackInfo ci) {
 		if (vertexProgram != null) {
 			STENCIL_PRESENT.set(Renderer.isStencilPresent() ? 1 : 0);
+			if (Renderer.useScreenspaceTex()) STENCIL_PRESENT.set(2);
 			if (STENCIL_PRESENT instanceof Uniform) ((Uniform) STENCIL_PRESENT).upload();
 			if (Renderer.isStencilPresent()) {
 				ShaderInjections.setupTextures(STENCIL_TEXTURE, STENCIL_DEPTH);

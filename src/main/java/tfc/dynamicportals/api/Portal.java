@@ -121,7 +121,7 @@ public class Portal {
 			r = g = 0;
 			b = 1;
 		}
-		LevelRenderer.renderLineBox(stack, consumer, -size.x / 2, 0, 0, size.x / 2, size.y, 0, r, g, b, 1);
+//		LevelRenderer.renderLineBox(stack, consumer, -size.x / 2, 0, 0, size.x / 2, size.y, 0, r, g, b, 1);
 		stack.popPose();
 	}
 }

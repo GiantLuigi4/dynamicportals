@@ -7,10 +7,20 @@ import org.lwjgl.opengl.GL13;
 import tfc.dynamicportals.api.Renderer;
 
 public class ShaderInjections {
-	public static String headInjection() {
+	public static String headInjection(boolean hasTexCoord, String samplerName) {
+		// TODO: checking of stuff
+		// TODO: this should only really be done for the POSITION_TEX shader
+		String yes =
+				"\t\tvec2 dynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
+						"\t\tvec4 dynamicPortalsColor = texture(" + samplerName + ", dynamicPortalsPos);\n" +
+						"\t\tfragColor = dynamicPortalsColor;\n" +
+						"\t\treturn;\n";
+		if (!hasTexCoord) yes = "";
 		return
 				"\n\t/* Dynamic Portals injection */\n" +
-						"\tif (float(dynamicPortalsHasStencilTextureSet) > 0.5f) { // gotta love glsl, yk?\n" +
+						"\tif (float(dynamicPortalsHasStencilTextureSet) > 1.5f) { // gotta love glsl, yk?\n" +
+						yes +
+						"\t} else if (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {\n" +
 						"\t\tvec2 dynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
 						"\t\tvec4 dynamicPortalsColor = texture2D(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
 						"\t\tif (dynamicPortalsColor.r <= 0.00390625) {\n" +

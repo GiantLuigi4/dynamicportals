@@ -6,19 +6,15 @@ import com.jozufozu.flywheel.repack.joml.Vector2d;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderBuffers;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.*;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
-import org.lwjgl.opengl.GL11;
+
+import java.util.ArrayList;
 
 public class Renderer {
 	private static final RenderTarget stencilTarget = new TextureTarget(
@@ -31,9 +27,14 @@ public class Renderer {
 	);
 	
 	private static boolean isStencilPresent = false;
+	private static boolean screenspaceTex = false;
 	
 	public static boolean isStencilPresent() {
 		return isStencilPresent;
+	}
+	
+	public static boolean useScreenspaceTex() {
+		return screenspaceTex;
 	}
 	
 	private static final RenderType DEPTH_CLEAR = RenderType.create(
@@ -52,90 +53,135 @@ public class Renderer {
 	
 	// TODO: this should be cleaned up at some point
 	public static void renderPortal(PoseStack a, RenderType type, RenderBuffers buffers, Portal portal, GlStateTracker.State state) {
+		if (recursion == 2) {
+			// TODO: do stuff with this
+			return;
+		}
+		
 		PoseStack stack = new PoseStack();
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
 		MultiBufferSource.BufferSource source = buffers.bufferSource();
-		double rotationX = portal.rotation.x;
-		
-		Matrix4f srcMat = stack.last().pose();
-		Matrix3f norMat = stack.last().normal();
-		
 		Runnable finishFunc = () -> forceDraw(source);
 		
-		VertexConsumer consumer;
 		stack.translate(portal.position.x, portal.position.y, portal.position.z);
-		portal.drawFrame(source, stack);
-		finishFunc.run();
 		
-		rotationX = portal.target.rotation.x;
+		stack.pushPose();
+		double rotationX = portal.rotation.x;
 		stack.mulPose(new Quaternion(0, (float) rotationX, 0, false));
-//		if (!portal.isPair) stack.mulPose(new Quaternion(0, 180, 0, true));
 		
-		Matrix4f portalPose = stack.last().pose().copy();
-		
-		consumer = source.getBuffer(RenderType.leash());
+		/* setup stencil */
+		Minecraft.getInstance().getMainRenderTarget().unbindWrite();
 		stencilTarget.setClearColor(0, 0, 0, 0);
 		stencilTarget.clear(Minecraft.ON_OSX);
 		stencilTarget.bindWrite(true);
-		portal.drawStencil(consumer, portalPose);
-		// force draw
-		consumer = source.getBuffer(RenderType.lines());
+		portal.drawStencil(source.getBuffer(RenderType.leash()), stack.last().pose());
+		finishFunc.run();
 		stencilTarget.unbindWrite();
 		
 		portalTarget.clear(Minecraft.ON_OSX);
 		portalTarget.bindWrite(true);
-		consumer = source.getBuffer(RenderType.leash());
-		portal.setupStencil(consumer, portalPose, finishFunc);
-		
-		consumer = source.getBuffer(type);
-		
-		rotationX = portal.rotation.x;
-		stack.mulPose(new Quaternion(0, (float) rotationX, 0, false));
-		isStencilPresent = true;
-		RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
-		ModelBlockRenderer renderer = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
-//		stack.translate(0, -1, 0);
-		PoseStack temp = new PoseStack();
-		temp.last().pose().load(srcMat);
-		temp.last().normal().load(norMat);
-		temp.mulPose(new Quaternion(0, (float) portal.rotation.x, 0, false));
-		temp.mulPose(new Quaternion(0, (float) rotationX, 0, false));
-		temp.translate(-portal.target.position.x, -portal.target.position.y, -portal.target.position.z);
-		
-		PoseStack stk = new PoseStack();
-		// copy the matrix
-		stk.last().pose().load(temp.last().pose());
-		stk.last().normal().load(temp.last().normal());
-		Minecraft.getInstance().levelRenderer.renderLevel(
-				stk,
-				0,
-				0,
-				false,
-				new Camera(),
-				Minecraft.getInstance().gameRenderer,
-				Minecraft.getInstance().gameRenderer.lightTexture(),
-				RenderSystem.getProjectionMatrix()
+		/* Camera manipulation */
+		Camera camera = new Camera();
+		Entity entity = Minecraft.getInstance().cameraEntity;
+		double xo = entity.xo;
+		double yo = entity.yo;
+		double zo = entity.zo;
+		entity.xo -= Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().x;
+		entity.xo += portal.target.position.x;
+		entity.zo -= Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().z;
+		entity.zo += portal.target.position.z;
+		// TODO: fix this mess
+		double oldY = -yo;
+		oldY += Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().y;
+		oldY += portal.target.position.y;
+		entity.yo = oldY;
+		double x = entity.position().x;
+		double y = entity.position().y;
+		double z = entity.position().z;
+		entity.setPosRaw(
+				portal.target.position.x,
+//				portal.target.position.y,
+				oldY,
+				portal.target.position.z
 		);
-		// force render
-		consumer = source.getBuffer(RenderType.LINES);
-		consumer = source.getBuffer(RenderType.leash());
-		portal.clearStencil(consumer, portalPose, finishFunc);
+		camera.setup(
+				Minecraft.getInstance().level,
+				entity,
+				false, false,
+				Minecraft.getInstance().getFrameTime()
+		);
+		entity.setPosRaw(x, y, z);
+		entity.xo = xo;
+		entity.yo = yo;
+		entity.zo = zo;
+		double cx = camX;
+		double cy = camY;
+		double cz = camZ;
+		PoseStack stk = new PoseStack();
+		/* Matrix Manipulation */
+		stk.last().pose().load(stack.last().pose());
+		stk.last().normal().load(stack.last().normal());
+		stk.mulPose(new Quaternion(0, (float) portal.target.rotation.x, 0, false));
+		stk.mulPose(new Quaternion(0, 90, 0, true));
+		stk.translate(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
+		stk.translate(-portal.target.position.x, -portal.target.position.y, -portal.target.position.z);
+		isStencilPresent = true;
+		/* Draw */
+		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
+		/* Reset */
 		isStencilPresent = false;
-		
+		camX = cx;
+		camY = cy;
+		camZ = cz;
+		portalTarget.unbindWrite();
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
-		consumer = source.getBuffer(RenderType.leash());
-		portal.setupStencil(consumer, portalPose, finishFunc);
-		consumer = source.getBuffer(RenderType.leash());
-		RenderSystem.depthMask(false);
-		portalTarget.blitToScreen(portalTarget.width, portalTarget.height, false);
-		RenderSystem.depthMask(true);
-		portal.clearStencil(consumer, portalPose, finishFunc);
 		
+		Matrix4f proj = RenderSystem.getProjectionMatrix();
+		
+		RenderSystem.setShaderTexture(1, portalTarget.getColorTextureId());
+		ShaderInstance shaderInstance = GameRenderer.getPositionTexShader();
+		screenspaceTex = true;
+		shaderInstance.setSampler("Sampler0", portalTarget.getColorTextureId());
+		shaderInstance.apply();
+		
+		/* Display portal */
+		Tesselator tesselator = RenderSystem.renderThreadTesselator();
+		BufferBuilder builder = tesselator.getBuilder();
+		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+		Matrix4f mat = stack.last().pose().copy();
+		Vector4f vec;
+		// draw quad
+		vec = new Vector4f(-((float) portal.size.x / 2), 0, 0, 1);
+		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
+		vec = new Vector4f(((float) portal.size.x / 2), 0, 0, 1);
+		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
+		vec = new Vector4f(((float) portal.size.x / 2), (float) portal.size.y, 0, 1);
+		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
+		vec = new Vector4f(-((float) portal.size.x / 2), (float) portal.size.y, 0, 1);
+		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
+		// enable depth test
+		RenderSystem.enableDepthTest();
+		// upload
+		builder.end();
+		BufferUploader._endInternal(builder);
+		shaderInstance.clear();
+		
+		RenderSystem.setProjectionMatrix(proj);
+		screenspaceTex = false;
+		
+		stack.popPose();
+//		stack.mulPose(new Quaternion(0, (float) -portal.rotation.x, 0, false));
+		// draw frame
+		portal.drawFrame(source, stack);
+		finishFunc.run();
+		
+		// restore gl state
 		state.restore();
 	}
 	
 	private static void forceDraw(MultiBufferSource source) {
+		source.getBuffer(RenderType.leash());
 		source.getBuffer(RenderType.LINES);
 	}
 	
@@ -151,7 +197,7 @@ public class Renderer {
 	}
 	
 	public static void onRenderEvent(RenderLevelLastEvent event) {
-		if (recursion != 0) return;
+		if (recursion > 1) return;
 		
 		/* enable stencils */
 		if (!Minecraft.getInstance().getMainRenderTarget().isStencilEnabled())
@@ -169,13 +215,25 @@ public class Renderer {
 		RenderType type = RenderType.solid();
 		
 		double width = Math.sqrt(2 * 4);
-		Portal portal = new Portal(new Vector3d(5, 5, 5), new Vector2d(width, 2), null, null, null, null, null, false);
-		Portal other = new Portal(new Vector3d(-5, 5, -5), new Vector2d(width, 2), null, null, portal, null, null, true);
-		portal.rotation = new Vector2d(Math.toRadians(45 + 180), 0);
-		other.rotation = new Vector2d(Math.toRadians(45), 0);
-		portal.target = other;
-		
-		Portal[] portals = new Portal[]{portal, other};
+		ArrayList<Portal> portals = new ArrayList<>();
+		{
+			Portal portal = new Portal(new Vector3d(5, 5, 5), new Vector2d(width, 2), null, null, null, null, null, false);
+			Portal other = new Portal(new Vector3d(-5, 5, -5), new Vector2d(width, 2), null, null, portal, null, null, true);
+			portal.rotation = new Vector2d(Math.toRadians(45 + 180), 0);
+			other.rotation = new Vector2d(Math.toRadians(45), 0);
+			portal.target = other;
+			portals.add(portal);
+			portals.add(other);
+		}
+		{
+			Portal portal = new Portal(new Vector3d(0, 5, 5), new Vector2d(2, 2), null, null, null, null, null, false);
+			Portal other = new Portal(new Vector3d(0, 5, -5), new Vector2d(2, 2), null, null, portal, null, null, true);
+			other.rotation = new Vector2d(Math.toRadians(0), 0);
+			portal.rotation = new Vector2d(Math.toRadians(180), 0);
+			portal.target = other;
+			portals.add(portal);
+			portals.add(other);
+		}
 		
 		for (Portal portal1 : portals) {
 			// TODO: frustum check
