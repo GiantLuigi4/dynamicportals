@@ -58,6 +58,8 @@ public class Renderer {
 			return;
 		}
 		
+		ShaderInstance shaderInstance;
+
 		PoseStack stack = new PoseStack();
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
@@ -76,12 +78,15 @@ public class Renderer {
 		stencilTarget.clear(Minecraft.ON_OSX);
 		stencilTarget.bindWrite(true);
 		
-		ShaderInstance shaderInstance = GameRenderer.getPositionColorShader();
-		BufferBuilder buffer = setupTesselator(shaderInstance, DefaultVertexFormat.POSITION_COLOR);
-		shaderInstance.apply();
+//		shaderInstance = GameRenderer.getPositionColorShader();
+//		shaderInstance.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
+//		shaderInstance.apply();
+//		BufferBuilder buffer = setupTesselator(shaderInstance, DefaultVertexFormat.POSITION_COLOR);
 		// TODO: get this to work with tesselator
 		portal.drawStencil(source.getBuffer(RenderType.leash()), stack.last().pose());
-		finishTesselator(buffer, shaderInstance);
+//		portal.drawStencil(buffer, stack.last().pose());
+//		RenderSystem.disableCull();
+//		finishTesselator(buffer, shaderInstance);
 		finishFunc.run();
 		
 		stencilTarget.unbindWrite();

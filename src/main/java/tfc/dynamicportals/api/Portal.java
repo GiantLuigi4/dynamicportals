@@ -74,11 +74,12 @@ public class Portal {
 		float r = 1;
 		float g = r;
 		float b = g;
-		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) this.size.x / 2, (float) this.size.y, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) this.size.x / 2, 0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) -this.size.x / 2, 0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		
+		consumer.vertex(portalPose, (float) -this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
 	}
 	
 	public Portal(Vector3d position, Vector2d size, Level sourceLevel, Level dstLevel, Portal target, UUID uuid, ResourceLocation name, boolean isPair) {
