@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -27,59 +26,27 @@ public class Portal {
 	public final UUID uuid;
 	public final ResourceLocation name;
 	public final boolean isPair;
-	
-	// https://gitlab.com/Spectre0987/TardisMod-1-14/-/blob/1.16/src/main/java/net/tardis/mod/client/renderers/boti/BOTIRenderer.java
-	public void clearStencil(VertexConsumer consumer, Matrix4f matrix, Runnable finish) {
-		GL11.glDisable(GL11.GL_STENCIL_TEST);
-		GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
-		
-		GL11.glColorMask(false, false, false, false);
-		GL11.glDepthMask(false);
-		drawStencil(consumer, matrix);
-		finish.run();
-
-		//Set things back
-		GL11.glColorMask(true, true, true, true);
-	}
-	
-	// https://gitlab.com/Spectre0987/TardisMod-1-14/-/blob/1.16/src/main/java/net/tardis/mod/client/renderers/boti/BOTIRenderer.java
-	public void setupStencil(VertexConsumer consumer, Matrix4f matrix, Runnable finish) {
-		GL11.glEnable(GL11.GL_STENCIL_TEST);
-		
-		// Always write to stencil buffer
-		GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
-		GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_REPLACE);
-		GL11.glStencilMask(0xFF);
-		GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
-		
-		RenderSystem.enableDepthTest();
-		RenderSystem.disableTexture();
-		RenderSystem.depthFunc(GL11.GL_LEQUAL);
-		// TODO: color this as the fog color of the portal's pair
-		GL11.glColorMask(false, false, false, false);
-		drawStencil(consumer, matrix);
-		finish.run();
-		RenderSystem.enableTexture();
-		GL11.glColorMask(true, true, true, true);
-		
-		// Only pass stencil test if equal to 1(So only if rendered before)
-		GL11.glStencilMask(0x00);
-		GL11.glStencilFunc(GL11.GL_EQUAL, 1, 0xFF);
-	}
+	public float r = 1, g = r, b = g, a = b;
 	
 	public void drawStencil(VertexConsumer consumer, Matrix4f portalPose) {
-//		float r = 0.975f * 0.90f;
-//		float g = 0.99f * 0.90f;
-//		float b = 0.98f * 0.90f;
-		float r = 1;
-		float g = r;
-		float b = g;
-		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		// these seem to be good colors for a mirror
+		// not sure, but * 0.90f might be better
+//		float r = 0.975f * 0.85f;
+//		float g = 0.99f * 0.85f;
+//		float b = 0.98f * 0.85f;
+//		float a = 1;
+		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
 		
-		consumer.vertex(portalPose, (float) -this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, 1).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) -this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
+	}
+	
+	// whether or not the stencil is just a flat quad which is the width and height of the portal
+	// if this is false, it will call drawStencil while drawing the portal to the screen
+	public boolean usesBasicStencil() {
+		return false;
 	}
 	
 	public Portal(Vector3d position, Vector2d size, Level sourceLevel, Level dstLevel, Portal target, UUID uuid, ResourceLocation name, boolean isPair) {
@@ -91,7 +58,8 @@ public class Portal {
 		this.uuid = uuid;
 		this.name = name;
 		rotation = new Vector2d();
-		this.isPair = isPair;;
+		this.isPair = isPair;
+		;
 	}
 	
 	public CompoundTag toNbt() {
@@ -112,6 +80,11 @@ public class Portal {
 		// write target and target uuid
 		tag.putString("target", target.name.toString());
 		tag.putUUID("targetUUID", target.uuid);
+		// write color
+		tag.putFloat("r", r);
+		tag.putFloat("g", g);
+		tag.putFloat("b", b);
+		tag.putFloat("a", a);
 		return tag;
 	}
 	
