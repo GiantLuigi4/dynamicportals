@@ -75,8 +75,15 @@ public class Renderer {
 		stencilTarget.setClearColor(0, 0, 0, 0);
 		stencilTarget.clear(Minecraft.ON_OSX);
 		stencilTarget.bindWrite(true);
+		
+		ShaderInstance shaderInstance = GameRenderer.getPositionColorShader();
+		BufferBuilder buffer = setupTesselator(shaderInstance, DefaultVertexFormat.POSITION_COLOR);
+		shaderInstance.apply();
+		// TODO: get this to work with tesselator
 		portal.drawStencil(source.getBuffer(RenderType.leash()), stack.last().pose());
+		finishTesselator(buffer, shaderInstance);
 		finishFunc.run();
+		
 		stencilTarget.unbindWrite();
 		
 		portalTarget.clear(Minecraft.ON_OSX);
@@ -122,8 +129,9 @@ public class Renderer {
 		/* Matrix Manipulation */
 		stk.last().pose().load(stack.last().pose());
 		stk.last().normal().load(stack.last().normal());
+		stk.mulPose(new Quaternion(0, (float) -rotationX * 2, 0, false));
 		stk.mulPose(new Quaternion(0, (float) portal.target.rotation.x, 0, false));
-		stk.mulPose(new Quaternion(0, 90, 0, true));
+		stk.mulPose(new Quaternion(0, 180, 0, true));
 		stk.translate(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
 		stk.translate(-portal.target.position.x, -portal.target.position.y, -portal.target.position.z);
 		isStencilPresent = true;
@@ -137,18 +145,15 @@ public class Renderer {
 		portalTarget.unbindWrite();
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
 		
-		Matrix4f proj = RenderSystem.getProjectionMatrix();
-		
+		/* Display portal */
+		// setup shader
+		shaderInstance = GameRenderer.getPositionTexShader();
 		RenderSystem.setShaderTexture(1, portalTarget.getColorTextureId());
-		ShaderInstance shaderInstance = GameRenderer.getPositionTexShader();
 		screenspaceTex = true;
 		shaderInstance.setSampler("Sampler0", portalTarget.getColorTextureId());
 		shaderInstance.apply();
-		
-		/* Display portal */
-		Tesselator tesselator = RenderSystem.renderThreadTesselator();
-		BufferBuilder builder = tesselator.getBuilder();
-		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+		// more setup
+		BufferBuilder builder = setupTesselator(shaderInstance, DefaultVertexFormat.POSITION_TEX);
 		Matrix4f mat = stack.last().pose().copy();
 		Vector4f vec;
 		// draw quad
@@ -160,14 +165,9 @@ public class Renderer {
 		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
 		vec = new Vector4f(-((float) portal.size.x / 2), (float) portal.size.y, 0, 1);
 		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
-		// enable depth test
-		RenderSystem.enableDepthTest();
-		// upload
-		builder.end();
-		BufferUploader._endInternal(builder);
-		shaderInstance.clear();
+		// finish draw
+		finishTesselator(builder, shaderInstance);
 		
-		RenderSystem.setProjectionMatrix(proj);
 		screenspaceTex = false;
 		
 		stack.popPose();
@@ -178,6 +178,22 @@ public class Renderer {
 		
 		// restore gl state
 		state.restore();
+	}
+	
+	private static BufferBuilder setupTesselator(ShaderInstance shaderInstance, VertexFormat format) {
+		Tesselator tesselator = RenderSystem.renderThreadTesselator();
+		BufferBuilder builder = tesselator.getBuilder();
+		builder.begin(VertexFormat.Mode.QUADS, format);
+		return builder;
+	}
+	
+	private static void finishTesselator(BufferBuilder builder, ShaderInstance shaderInstance) {
+		// enable depth test
+		RenderSystem.enableDepthTest();
+		// upload
+		builder.end();
+		BufferUploader._endInternal(builder);
+		shaderInstance.clear();
 	}
 	
 	private static void forceDraw(MultiBufferSource source) {
@@ -226,13 +242,13 @@ public class Renderer {
 			portals.add(other);
 		}
 		{
-			Portal portal = new Portal(new Vector3d(0, 5, 5), new Vector2d(2, 2), null, null, null, null, null, false);
-			Portal other = new Portal(new Vector3d(0, 5, -5), new Vector2d(2, 2), null, null, portal, null, null, true);
-			other.rotation = new Vector2d(Math.toRadians(0), 0);
+			Portal portal = new Portal(new Vector3d(0, 5, 5.001), new Vector2d(2, 2), null, null, null, null, null, false);
+//			Portal other = new Portal(new Vector3d(0, 5, -5), new Vector2d(2, 2), null, null, portal, null, null, true);
+//			other.rotation = new Vector2d(Math.toRadians(0), 0);
 			portal.rotation = new Vector2d(Math.toRadians(180), 0);
-			portal.target = other;
+			portal.target = portal;
 			portals.add(portal);
-			portals.add(other);
+//			portals.add(other);
 		}
 		
 		for (Portal portal1 : portals) {

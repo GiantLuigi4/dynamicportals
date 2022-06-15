@@ -23,7 +23,7 @@ public class ShaderInjections {
 						"\t} else if (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {\n" +
 						"\t\tvec2 dynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
 						"\t\tvec4 dynamicPortalsColor = texture2D(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
-						"\t\tif (dynamicPortalsColor.r <= 0.00390625) {\n" +
+						"\t\tif (dynamicPortalsColor.a <= 0.00390625) {\n" +
 						"\t\t\tdiscard;\n" +
 						"\t\t\treturn;\n" +
 						"\t\t}\n" +
@@ -37,6 +37,18 @@ public class ShaderInjections {
 						"\t\t}\n" +
 						"\t}\n" +
 						"\t/* end Dynamic Portals injection */";
+	}
+	
+	public static String tailInjection() {
+		String str =
+				"\n\t/* Dynamic Portals injection */\n" +
+				"\tif (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {\n" +
+				"\t\tvec2 dynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
+				"\t\tvec4 dynamicPortalsColor = texture2D(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
+				"\t\tfragColor = fragColor * dynamicPortalsColor;\n" +
+				"\t}\n" +
+				"\t/* end Dynamic Portals injection */\n";
+		return str;
 	}
 	
 	public static void setupTextures(AbstractUniform STENCIL_TEXTURE, AbstractUniform STENCIL_DEPTH) {

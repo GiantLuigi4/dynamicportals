@@ -137,6 +137,12 @@ public class GlStateManagerMixin {
 				lCC.incrementAndGet();
 			} else if (str.contains("}")) {
 				lCC.decrementAndGet();
+				if (lCC.get() == 0) {
+					if (type == GL42.GL_FRAGMENT_SHADER) {
+						String injection = ShaderInjections.tailInjection();
+						builder.append(injection);
+					}
+				}
 				builder.append(str);
 			} else {
 				builder.append(str);
