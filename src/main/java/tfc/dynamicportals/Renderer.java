@@ -12,6 +12,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Pose;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
@@ -84,15 +85,16 @@ public class Renderer {
 		stencilTarget.clear(Minecraft.ON_OSX);
 		stencilTarget.bindWrite(true);
 
-//		shaderInstance = GameRenderer.getPositionColorShader();
+		shaderInstance = GameRenderer.getPositionColorShader();
 //		shaderInstance.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
-//		shaderInstance.apply();
-//		BufferBuilder buffer = setupTesselator(shaderInstance, DefaultVertexFormat.POSITION_COLOR);
+		shaderInstance.apply();
+		BufferBuilder buffer = setupTesselator(shaderInstance, DefaultVertexFormat.POSITION_COLOR);
 		// TODO: get this to work with tesselator
-		portal.drawStencil(source.getBuffer(RenderType.leash()), stack.last().pose());
-//		portal.drawStencil(buffer, stack.last().pose());
-//		RenderSystem.disableCull();
-//		finishTesselator(buffer, shaderInstance);
+		Matrix4f portalMatrix = stack.last().pose();
+//		portal.drawStencil(source.getBuffer(RenderType.leash()), stack.last().pose());
+		portal.drawStencil(buffer, stack.last().pose());
+		RenderSystem.disableCull();
+		finishTesselator(buffer, shaderInstance);
 		finishFunc.run();
 		
 		stencilTarget.unbindWrite();
@@ -168,14 +170,15 @@ public class Renderer {
 		Matrix4f mat = stack.last().pose().copy();
 		Vector4f vec;
 		// draw quad
-		vec = new Vector4f(-((float) portal.size.x / 2), 0, 0, 1);
-		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
-		vec = new Vector4f(((float) portal.size.x / 2), 0, 0, 1);
-		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
-		vec = new Vector4f(((float) portal.size.x / 2), (float) portal.size.y, 0, 1);
-		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
-		vec = new Vector4f(-((float) portal.size.x / 2), (float) portal.size.y, 0, 1);
-		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
+		portal.drawStencil(builder, mat);
+//		vec = new Vector4f(-((float) portal.size.x / 2), 0, 0, 1);
+//		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
+//		vec = new Vector4f(((float) portal.size.x / 2), 0, 0, 1);
+//		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
+//		vec = new Vector4f(((float) portal.size.x / 2), (float) portal.size.y, 0, 1);
+//		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
+//		vec = new Vector4f(-((float) portal.size.x / 2), (float) portal.size.y, 0, 1);
+//		builder.vertex(mat, vec.x(), vec.y(), vec.z()).uv(0, 0).endVertex();
 		// finish draw
 		finishTesselator(builder, shaderInstance);
 		

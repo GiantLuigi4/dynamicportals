@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
+import com.mojang.math.Vector4f;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -50,19 +51,17 @@ public class BasicPortal extends AbstractPortal {
 		return true;
 	}
 	
-	public void drawStencil(VertexConsumer consumer, Matrix4f portalPose) {
+	public void drawStencil(VertexConsumer builder, Matrix4f portalPose) {
 		// these seem to be good colors for a mirror
 		// not sure, but * 0.90f might be better
 //		float r = 0.975f * 0.85f;
 //		float g = 0.99f * 0.85f;
 //		float b = 0.98f * 0.85f;
 //		float a = 1;
-		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		
-		consumer.vertex(portalPose, (float) -this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
-		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		builder.vertex(portalPose, -((float) size.x / 2), 0, 0).color(r, g, b, a).endVertex();
+		builder.vertex(portalPose, ((float) size.x / 2), 0, 0).color(r, g, b, a).endVertex();
+		builder.vertex(portalPose, ((float) size.x / 2), (float) size.y, 0).color(r, g, b, a).endVertex();
+		builder.vertex(portalPose, -((float) size.x / 2), (float) size.y, 0).color(r, g, b, a).endVertex();
 	}
 	
 	public boolean usesBasicStencil() {

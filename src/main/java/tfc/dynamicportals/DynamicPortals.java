@@ -17,6 +17,8 @@ public class DynamicPortals {
 	// Directly reference a log4j logger.
 	private static final Logger LOGGER = LogManager.getLogger();
 	
+	public static final Object lock = new Object();
+	
 	public DynamicPortals() {
 //		FMLJavaModLoadingContext.get().getModEventBus().addListener();
 //		MinecraftForge.EVENT_BUS.addListener();
