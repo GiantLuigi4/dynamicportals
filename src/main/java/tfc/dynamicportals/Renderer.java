@@ -1,4 +1,4 @@
-package tfc.dynamicportals.api;
+package tfc.dynamicportals;
 
 import com.jozufozu.flywheel.backend.gl.GlStateTracker;
 import com.jozufozu.flywheel.event.BeginFrameEvent;
@@ -13,8 +13,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
+import tfc.dynamicportals.api.AbstractPortal;
+import tfc.dynamicportals.api.BasicPortal;
 
 import java.util.ArrayList;
+import java.util.Random;
+import java.util.UUID;
 
 public class Renderer {
 	private static final RenderTarget stencilTarget = new TextureTarget(
@@ -52,14 +56,16 @@ public class Renderer {
 	);
 	
 	// TODO: this should be cleaned up at some point
-	public static void renderPortal(PoseStack a, RenderType type, RenderBuffers buffers, Portal portal, GlStateTracker.State state) {
+	public static void renderPortal(PoseStack a, RenderType type, RenderBuffers buffers, AbstractPortal portal, GlStateTracker.State state) {
 		if (recursion == 2) {
 			// TODO: do stuff with this
 			return;
 		}
 		
+		AbstractPortal targetPortal = PortalList.getPortal(portal.target);
+		
 		ShaderInstance shaderInstance;
-
+		
 		PoseStack stack = new PoseStack();
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
@@ -77,7 +83,7 @@ public class Renderer {
 		stencilTarget.setClearColor(0, 0, 0, 0);
 		stencilTarget.clear(Minecraft.ON_OSX);
 		stencilTarget.bindWrite(true);
-		
+
 //		shaderInstance = GameRenderer.getPositionColorShader();
 //		shaderInstance.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
 //		shaderInstance.apply();
@@ -100,22 +106,22 @@ public class Renderer {
 		double yo = entity.yo;
 		double zo = entity.zo;
 		entity.xo -= Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().x;
-		entity.xo += portal.target.position.x;
+		entity.xo += targetPortal.position.x;
 		entity.zo -= Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().z;
-		entity.zo += portal.target.position.z;
+		entity.zo += targetPortal.position.z;
 		// TODO: fix this mess
 		double oldY = -yo;
 		oldY += Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().y;
-		oldY += portal.target.position.y;
+		oldY += targetPortal.position.y;
 		entity.yo = oldY;
 		double x = entity.position().x;
 		double y = entity.position().y;
 		double z = entity.position().z;
 		entity.setPosRaw(
-				portal.target.position.x,
-//				portal.target.position.y,
+				targetPortal.position.x,
+//				targetPortal.position.y,
 				oldY,
-				portal.target.position.z
+				targetPortal.position.z
 		);
 		camera.setup(
 				Minecraft.getInstance().level,
@@ -135,10 +141,10 @@ public class Renderer {
 		stk.last().pose().load(stack.last().pose());
 		stk.last().normal().load(stack.last().normal());
 		stk.mulPose(new Quaternion(0, (float) -rotationX * 2, 0, false));
-		stk.mulPose(new Quaternion(0, (float) portal.target.rotation.x, 0, false));
+		stk.mulPose(new Quaternion(0, (float) targetPortal.rotation.x, 0, false));
 		stk.mulPose(new Quaternion(0, 180, 0, true));
 		stk.translate(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
-		stk.translate(-portal.target.position.x, -portal.target.position.y, -portal.target.position.z);
+		stk.translate(-targetPortal.position.x, -targetPortal.position.y, -targetPortal.position.z);
 		isStencilPresent = true;
 		/* Draw */
 		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
@@ -235,28 +241,9 @@ public class Renderer {
 		RenderBuffers buffers = Minecraft.getInstance().renderBuffers();
 		RenderType type = RenderType.solid();
 		
-		double width = Math.sqrt(2 * 4);
-		ArrayList<Portal> portals = new ArrayList<>();
-		{
-			Portal portal = new Portal(new Vector3d(5, 5, 5), new Vector2d(width, 2), null, null, null, null, null, false);
-			Portal other = new Portal(new Vector3d(-5, 5, -5), new Vector2d(width, 2), null, null, portal, null, null, true);
-			portal.rotation = new Vector2d(Math.toRadians(45 + 180), 0);
-			other.rotation = new Vector2d(Math.toRadians(45), 0);
-			portal.target = other;
-			portals.add(portal);
-			portals.add(other);
-		}
-		{
-			Portal portal = new Portal(new Vector3d(0, 5, 5.001), new Vector2d(2, 2), null, null, null, null, null, false);
-//			Portal other = new Portal(new Vector3d(0, 5, -5), new Vector2d(2, 2), null, null, portal, null, null, true);
-//			other.rotation = new Vector2d(Math.toRadians(0), 0);
-			portal.rotation = new Vector2d(Math.toRadians(180), 0);
-			portal.target = portal;
-			portals.add(portal);
-//			portals.add(other);
-		}
+		ArrayList<BasicPortal> portals = new ArrayList<>();
 		
-		for (Portal portal1 : portals) {
+		for (BasicPortal portal1 : portals) {
 			// TODO: frustum check
 			Vector3f normal = computeNormal(portal1);
 			if (normal.dot(new Vector3f((float) (camX - portal1.position.x), (float) (camY - portal1.position.y), (float) (camZ - portal1.position.z))) > 0) {
@@ -270,7 +257,7 @@ public class Renderer {
 		recursion = recursion - 1;
 	}
 	
-	public static Vector3f computeNormal(Portal portal) {
+	public static Vector3f computeNormal(BasicPortal portal) {
 		Vector3f portalPos = new Vector3f((float) portal.position.x, (float) portal.position.y, (float) portal.position.z);
 //		Vector3f a = portalPos.copy();
 //		a.add((float) -portal.size.x / 2, (float) portal.size.y, 0);

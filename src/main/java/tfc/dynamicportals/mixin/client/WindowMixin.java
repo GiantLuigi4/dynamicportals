@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tfc.dynamicportals.api.Renderer;
+import tfc.dynamicportals.Renderer;
 
 @Mixin(Window.class)
 public class WindowMixin {
