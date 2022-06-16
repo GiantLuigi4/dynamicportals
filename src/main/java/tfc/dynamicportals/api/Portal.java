@@ -1,83 +1,67 @@
 package tfc.dynamicportals.api;
 
 import com.jozufozu.flywheel.repack.joml.Vector2d;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
-import com.mojang.math.Vector4f;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import tfc.dynamicportals.DynamicPortals;
+import net.minecraft.world.level.Level;
+import org.lwjgl.opengl.GL11;
 
 import java.util.UUID;
 
-public class BasicPortal extends AbstractPortal {
+public class Portal extends AbstractPortal {
+	public Vector3d position;
 	public Vector2d size;
+	public Vector2d rotation;
+	public final Level sourceLevel, dstLevel;
+	public Portal target;
+	public final UUID uuid;
+	public final ResourceLocation name;
 	public final boolean isPair;
 	public float r = 1, g = r, b = g, a = b;
 	
-	public static AbstractPortal load(CompoundTag tag) {
-		// write position
-		Vector3d vec = new Vector3d(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z"));
-		// write size
-		Vector2d size = new Vector2d(tag.getDouble("width"), tag.getDouble("height"));
-		// write rotation
-		Vector2d rotation = new Vector2d(tag.getDouble("yaw"), tag.getDouble("pitch"));
-		// write name and uuid
-		String name = tag.getString("name");
-		UUID uuid = tag.getUUID("uuid");
-		// write target and target uuid
-		String tname = tag.getString("target");
-		UUID tuuid = tag.getUUID("targetUUID");
-		// write color
-		float r = tag.getFloat("r");
-		float g = tag.getFloat("g");
-		float b = tag.getFloat("b");
-		float a = tag.getFloat("a");
-		BasicPortal portal = new BasicPortal(
-				uuid, vec, size,
-				tuuid, tag.getBoolean("isPair")
-		);
-		return null;
-	}
-	
-	@Override
-	public boolean shouldBeSaved() {
-		return true;
-	}
-	
-	public void drawStencil(VertexConsumer builder, Matrix4f portalPose) {
+	public void drawStencil(VertexConsumer consumer, Matrix4f portalPose) {
 		// these seem to be good colors for a mirror
 		// not sure, but * 0.90f might be better
 //		float r = 0.975f * 0.85f;
 //		float g = 0.99f * 0.85f;
 //		float b = 0.98f * 0.85f;
 //		float a = 1;
-		builder.vertex(portalPose, -((float) size.x / 2), 0, 0).color(r, g, b, a).endVertex();
-		builder.vertex(portalPose, ((float) size.x / 2), 0, 0).color(r, g, b, a).endVertex();
-		builder.vertex(portalPose, ((float) size.x / 2), (float) size.y, 0).color(r, g, b, a).endVertex();
-		builder.vertex(portalPose, -((float) size.x / 2), (float) size.y, 0).color(r, g, b, a).endVertex();
+		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		
+		consumer.vertex(portalPose, (float) -this.size.x / 2, 0, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
+		consumer.vertex(portalPose, (float) -this.size.x / 2, (float) this.size.y, 0).uv(0, 0).color(r, g, b, a).uv2(LightTexture.FULL_BRIGHT).endVertex();
 	}
 	
 	public boolean usesBasicStencil() {
 		return true;
 	}
 	
-	public BasicPortal(UUID uuid, Vector3d position, Vector2d size, UUID target, boolean isPair) {
-		super(DynamicPortals.BASIC_PORTAL, uuid, target);
+	public Portal(Vector3d position, Vector2d size, Level sourceLevel, Level dstLevel, Portal target, UUID uuid, ResourceLocation name, boolean isPair) {
 		this.position = position;
 		this.size = size;
+		this.sourceLevel = sourceLevel;
+		this.dstLevel = dstLevel;
+		this.target = target;
+		this.uuid = uuid;
+		this.name = name;
 		rotation = new Vector2d();
 		this.isPair = isPair;
+		;
 	}
 	
 	public CompoundTag toNbt() {
-		CompoundTag tag = super.toNbt();
+		CompoundTag tag = new CompoundTag();
 		// write position
 		tag.putDouble("x", position.x);
 		tag.putDouble("y", position.y);
@@ -86,19 +70,19 @@ public class BasicPortal extends AbstractPortal {
 		tag.putDouble("width", size.x);
 		tag.putDouble("height", size.y);
 		// write rotation
-		tag.putDouble("yaw", rotation.x);
+		tag.putDouble("rotation", rotation.x);
 		tag.putDouble("pitch", rotation.y);
 		// write name and uuid
+		tag.putString("name", name.toString());
 		tag.putUUID("uuid", uuid);
 		// write target and target uuid
-		tag.putUUID("targetUUID", target);
+		tag.putString("target", target.name.toString());
+		tag.putUUID("targetUUID", target.uuid);
 		// write color
 		tag.putFloat("r", r);
 		tag.putFloat("g", g);
 		tag.putFloat("b", b);
 		tag.putFloat("a", a);
-		// write if it's a pair
-		tag.putBoolean("isPair", isPair);
 		return tag;
 	}
 	

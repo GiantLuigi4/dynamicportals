@@ -6,8 +6,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tfc.dynamicportals.DynamicPortals;
-import tfc.dynamicportals.Renderer;
+import tfc.dynamicportals.api.Renderer;
 
 @Mixin(Window.class)
 public class WindowMixin {
@@ -17,8 +16,6 @@ public class WindowMixin {
 	
 	@Inject(at = @At("TAIL"), method = "onFramebufferResize")
 	public void refreshFramebufferSize(CallbackInfo ci) {
-		synchronized (DynamicPortals.lock) {
-			Renderer.refreshStencilBuffer(framebufferWidth, framebufferHeight);
-		}
+		Renderer.refreshStencilBuffer(framebufferWidth, framebufferHeight);
 	}
 }

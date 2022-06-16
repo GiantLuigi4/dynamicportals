@@ -4,6 +4,7 @@ import com.mojang.blaze3d.shaders.AbstractUniform;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.opengl.GL13;
+import tfc.dynamicportals.api.Renderer;
 
 public class ShaderInjections {
 	public static String headInjection(boolean hasTexCoord, String samplerName) {
