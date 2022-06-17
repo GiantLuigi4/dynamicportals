@@ -1,5 +1,6 @@
 package tfc.dynamicportals;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -107,5 +108,20 @@ public class GLUtils {
 		if ((pMask & GL11.GL_DEPTH_BUFFER_BIT) == GL11.GL_DEPTH_BUFFER_BIT) clearDepth();
 		if ((pMask & GL11.GL_COLOR_BUFFER_BIT) == GL11.GL_COLOR_BUFFER_BIT) clearColor();
 		if ((pMask & GL11.GL_STENCIL_BUFFER_BIT) == GL11.GL_STENCIL_BUFFER_BIT) GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
+	}
+	
+	static RenderTarget bound;
+	
+	public static void setBound(RenderTarget bound) {
+		GLUtils.bound = bound;
+	}
+	
+	public static RenderTarget boundTarget() {
+		return bound;
+	}
+	
+	public static void switchFBO(RenderTarget target) {
+		bound.unbindWrite();
+		target.bindWrite(false);
 	}
 }
