@@ -1,6 +1,8 @@
 package tfc.dynamicportals.mixin.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.renderer.RenderType;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL42;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -8,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.ShaderInjections;
 
 import java.util.ArrayList;
@@ -168,5 +171,11 @@ public class GlStateManagerMixin {
 		if (!builder.toString().isEmpty())
 			strings.add(builder.toString());
 		return strings.toArray(new String[0]);
+	}
+	
+	@Inject(at = @At("HEAD"), method = "_enableCull")
+	private static void preEnableCull(CallbackInfo ci) {
+		if (GLUtils.shouldSwapBackface())
+			GL11.glCullFace(GL11.GL_BACK);
 	}
 }

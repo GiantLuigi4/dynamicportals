@@ -130,4 +130,14 @@ public class GLUtils {
 		bound.unbindWrite();
 		target.bindWrite(false);
 	}
+	
+	private static boolean swapBackface = false;
+	
+	public static boolean shouldSwapBackface() {
+		return swapBackface;
+	}
+	
+	public static void swapBackface(boolean b) {
+		swapBackface = b;
+	}
 }

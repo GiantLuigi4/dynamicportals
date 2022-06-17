@@ -2,10 +2,14 @@ package tfc.dynamicportals.api;
 
 import com.jozufozu.flywheel.backend.gl.GlStateTracker;
 import com.jozufozu.flywheel.event.BeginFrameEvent;
+import com.jozufozu.flywheel.repack.joml.Vector2d;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3d;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
@@ -35,18 +39,18 @@ public class Renderer {
 		return screenspaceTex;
 	}
 	
-	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorLightmapShader);
+	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
 	
 	private static final RenderType STENCIL_DRAW = RenderType.create(
 			"dynamic_portals_stencil",
-			DefaultVertexFormat.POSITION_COLOR_LIGHTMAP,
+			DefaultVertexFormat.POSITION_COLOR,
 			VertexFormat.Mode.QUADS,
 			256,
 			RenderType.CompositeState.builder()
 					.setShaderState(RENDERTYPE_LEASH_SHADER)
 					.setTextureState(RenderType.NO_TEXTURE)
 					.setCullState(RenderType.NO_CULL)
-					.setLightmapState(RenderType.LIGHTMAP)
+					.setLightmapState(RenderType.NO_LIGHTMAP)
 					.createCompositeState(false)
 	);
 	
@@ -65,6 +69,8 @@ public class Renderer {
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
 		
+		portal.setupMatrix(stack);
+		
 		RenderTarget target = GLUtils.boundTarget();
 		stencilTarget.setClearColor(0, 0, 0, 0);
 		stencilTarget.clear(Minecraft.ON_OSX);
@@ -72,21 +78,25 @@ public class Renderer {
 		portal.drawStencil(source.getBuffer(STENCIL_DRAW), stack);
 		forceDraw(source);
 		GLUtils.boundTarget().unbindWrite();
-
+		
 		portalTarget.setClearColor(0, 0, 0, 0);
 		portalTarget.clear(Minecraft.ON_OSX);
 		portalTarget.bindWrite(false);
 		GLUtils.switchFBO(portalTarget);
 		isStencilPresent = true;
-		Minecraft.getInstance().levelRenderer.renderLevel(new PoseStack(), Minecraft.getInstance().getFrameTime(), 0, true, Minecraft.getInstance().gameRenderer.getMainCamera(), Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
-////		RenderSystem.clearColor(1f, 1, 1, 1);
-////		RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, false);
-//		portal.drawStencil(source.getBuffer(STENCIL_DRAW), stack);
-//		forceDraw(source);
+		PoseStack stk = new PoseStack();
+		stk.last().pose().load(a.last().pose());
+		stk.last().normal().load(a.last().normal());
+		// setup transform
+		portal.negateTransform(stk);
+		portal.setupAsTarget(stk);
+		portal.setupRenderState();
+		RenderSystem.enableCull();
+		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, false, new Camera(), Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
+		portal.teardownRenderState();
 		GLUtils.switchFBO(target);
 		isStencilPresent = false;
 		
-		// TODO: WHY ARE THESE FRAME BUFFERS BEING STUPID
 		// setup shader
 		screenspaceTex = true;
 		shaderInstance = GameRenderer.getPositionTexShader();
@@ -103,17 +113,16 @@ public class Renderer {
 		finishTesselator(builder, shaderInstance);
 		screenspaceTex = false;
 		
-		portalTarget.blitToScreen(
-				Minecraft.getInstance().getMainRenderTarget().width / 5,
-				Minecraft.getInstance().getMainRenderTarget().height / 5
-		);
-		GLUtils.switchFBO(target);
+		portal.drawFrame(source, stack);
 		
-//		stencilTarget.blitToScreen(
+//		portalTarget.blitToScreen(
 //				Minecraft.getInstance().getMainRenderTarget().width / 5,
-//				Minecraft.getInstance().getMainRenderTarget().height / 5,
-//				false
+//				Minecraft.getInstance().getMainRenderTarget().height / 5
 //		);
+//		GLUtils.switchFBO(target);
+		
+		RenderSystem.enableCull();
+		// TODO: fix the lighting
 		
 		// restore gl state
 		state.restore();
@@ -173,7 +182,11 @@ public class Renderer {
 		double width = Math.sqrt(2 * 4);
 		ArrayList<Portal> portals = new ArrayList<>();
 		
-		portals.add(new Portal());
+		Portal portal = new Portal();
+		portal.size = new Vector2d(1000, 1000);
+		portal.position = new Vector3d(camX, 10, camZ - portal.size.y / 2);
+		portal.rotation = new Vector2d(Math.toRadians(0), Math.toRadians(90));
+		portals.add(portal);
 		
 		for (Portal portal1 : portals) {
 			// TODO: frustum check
