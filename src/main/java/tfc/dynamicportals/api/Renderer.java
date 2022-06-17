@@ -65,25 +65,26 @@ public class Renderer {
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
 		
-//		RenderTarget target = GLUtils.boundTarget();
-//		stencilTarget.setClearColor(0, 0, 0, 0);
-//		stencilTarget.clear(Minecraft.ON_OSX);
-//		GLUtils.switchFBO(stencilTarget);
-//		portal.drawStencil(source.getBuffer(STENCIL_DRAW), stack);
-//		forceDraw(source);
-//		GLUtils.boundTarget().unbindWrite();
-//
-//		portalTarget.setClearColor(0, 0, 0, 0);
-//		portalTarget.clear(Minecraft.ON_OSX);
-//		portalTarget.bindWrite(false);
-////		GLUtils.switchFBO(portalTarget);
-//		isStencilPresent = true;
+		RenderTarget target = GLUtils.boundTarget();
+		stencilTarget.setClearColor(0, 0, 0, 0);
+		stencilTarget.clear(Minecraft.ON_OSX);
+		GLUtils.switchFBO(stencilTarget);
+		portal.drawStencil(source.getBuffer(STENCIL_DRAW), stack);
+		forceDraw(source);
+		GLUtils.boundTarget().unbindWrite();
+
+		portalTarget.setClearColor(0, 0, 0, 0);
+		portalTarget.clear(Minecraft.ON_OSX);
+		portalTarget.bindWrite(false);
+		GLUtils.switchFBO(portalTarget);
+		isStencilPresent = true;
+		Minecraft.getInstance().levelRenderer.renderLevel(new PoseStack(), Minecraft.getInstance().getFrameTime(), 0, true, Minecraft.getInstance().gameRenderer.getMainCamera(), Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 ////		RenderSystem.clearColor(1f, 1, 1, 1);
 ////		RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, false);
 //		portal.drawStencil(source.getBuffer(STENCIL_DRAW), stack);
 //		forceDraw(source);
-//		GLUtils.switchFBO(target);
-//		isStencilPresent = false;
+		GLUtils.switchFBO(target);
+		isStencilPresent = false;
 		
 		// TODO: WHY ARE THESE FRAME BUFFERS BEING STUPID
 		// setup shader
@@ -102,11 +103,11 @@ public class Renderer {
 		finishTesselator(builder, shaderInstance);
 		screenspaceTex = false;
 		
-//		portalTarget.blitToScreen(
-//				Minecraft.getInstance().getMainRenderTarget().width / 5,
-//				Minecraft.getInstance().getMainRenderTarget().height / 5
-//		);
-//		GLUtils.switchFBO(target);
+		portalTarget.blitToScreen(
+				Minecraft.getInstance().getMainRenderTarget().width / 5,
+				Minecraft.getInstance().getMainRenderTarget().height / 5
+		);
+		GLUtils.switchFBO(target);
 		
 //		stencilTarget.blitToScreen(
 //				Minecraft.getInstance().getMainRenderTarget().width / 5,

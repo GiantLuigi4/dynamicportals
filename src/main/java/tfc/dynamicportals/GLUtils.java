@@ -104,10 +104,16 @@ public class GLUtils {
 //		RenderSystem.setProjectionMatrix(project);
 	}
 	
-	public static void clear(int pMask) {
-		if ((pMask & GL11.GL_DEPTH_BUFFER_BIT) == GL11.GL_DEPTH_BUFFER_BIT) clearDepth();
-		if ((pMask & GL11.GL_COLOR_BUFFER_BIT) == GL11.GL_COLOR_BUFFER_BIT) clearColor();
-		if ((pMask & GL11.GL_STENCIL_BUFFER_BIT) == GL11.GL_STENCIL_BUFFER_BIT) GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
+	public static boolean clear(int pMask) {
+		GlStateManager._clear(pMask, Minecraft.ON_OSX);
+//		boolean didSpecial = false;
+//		if ((pMask & GL11.GL_DEPTH_BUFFER_BIT) == GL11.GL_DEPTH_BUFFER_BIT) clearDepth();
+		if ((pMask & GL11.GL_COLOR_BUFFER_BIT) == GL11.GL_COLOR_BUFFER_BIT) {
+			clearColor();
+//			didSpecial = true;
+		}
+//		if ((pMask & GL11.GL_STENCIL_BUFFER_BIT) == GL11.GL_STENCIL_BUFFER_BIT) GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
+		return true;
 	}
 	
 	static RenderTarget bound;

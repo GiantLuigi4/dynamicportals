@@ -11,13 +11,14 @@ import tfc.dynamicportals.api.Renderer;
 
 @Mixin(RenderSystem.class)
 public class RenderSystemMixin {
-//	@Inject(at = @At("HEAD"), method = "clear", cancellable = true)
-//	private static void onClear(int pMask, boolean pCheckError, CallbackInfo ci) {
-//		if (Renderer.isStencilPresent()) {
-//			GLUtils.clear(pMask);
-//			ci.cancel(); // TODO: do this properly, or smth
-//		}
-//	}
+	@Inject(at = @At("HEAD"), method = "clear", cancellable = true)
+	private static void onClear(int pMask, boolean pCheckError, CallbackInfo ci) {
+		if (Renderer.isStencilPresent()) {
+			if (GLUtils.clear(pMask)) {
+				ci.cancel(); // TODO: do this properly, or smth
+			}
+		}
+	}
 	
 	@Inject(at = @At("HEAD"), method = "clearColor")
 	private static void setClearColor(float pRed, float pGreen, float pBlue, float pAlpha, CallbackInfo ci) {
