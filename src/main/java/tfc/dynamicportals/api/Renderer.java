@@ -12,6 +12,7 @@ import com.mojang.math.Vector3d;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import org.lwjgl.opengl.GL11;
 import tfc.dynamicportals.GLUtils;
@@ -94,8 +95,8 @@ public class Renderer {
 		RenderSystem.enableCull();
 		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, false, new Camera(), Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 		portal.teardownRenderState();
-		GLUtils.switchFBO(target);
 		isStencilPresent = false;
+		GLUtils.switchFBO(target);
 		
 		// setup shader
 		screenspaceTex = true;
@@ -183,19 +184,18 @@ public class Renderer {
 		ArrayList<Portal> portals = new ArrayList<>();
 		
 		Portal portal = new Portal();
-		portal.size = new Vector2d(1000, 1000);
-		portal.position = new Vector3d(camX, 10, camZ - portal.size.y / 2);
-		portal.rotation = new Vector2d(Math.toRadians(0), Math.toRadians(90));
+		portal.size = new Vector2d(1000, 10);
+//		portal.position = new Vector3d(camX, 10, camZ - portal.size.y / 2);
+		portal.position = new Vector3d(0, 10, 0);
+		portal.rotation = new Vector2d(Math.toRadians(22.5), Math.toRadians(12));
+//		portal.computeNormal();
 		portals.add(portal);
 		
+		Frustum frustum = new Frustum(event.getProjectionMatrix(), stack.last().pose());
 		for (Portal portal1 : portals) {
-			// TODO: frustum check
-//			Vector3f normal = computeNormal(portal1);
-//			if (normal.dot(new Vector3f((float) (camX - portal1.position.x), (float) (camY - portal1.position.y), (float) (camZ - portal1.position.z))) > 0) {
-			stack.pushPose();
-			renderPortal(stack, type, buffers, portal1, state);
-			stack.popPose();
-//			}
+			if (portal.shouldRender(frustum, camX, camY, camZ)) {
+				renderPortal(stack, type, buffers, portal1, state);
+			}
 		}
 		
 		stack.popPose();
@@ -249,5 +249,14 @@ public class Renderer {
 	
 	public static float fboHeight() {
 		return stencilTarget.height;
+	}
+	
+	// TODO: this is a bodge
+	public static boolean bindPortalFBO(boolean pSetViewport) {
+		if (isStencilPresent) {
+			portalTarget.bindWrite(pSetViewport);
+			return true;
+		}
+		return false;
 	}
 }
