@@ -1,4 +1,4 @@
-package tfc.dynamicportals.mixin.client;
+package tfc.dynamicportals.mixin.client.core;
 
 import com.mojang.blaze3d.platform.Window;
 import org.spongepowered.asm.mixin.Mixin;

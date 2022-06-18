@@ -1,4 +1,4 @@
-package tfc.dynamicportals.mixin.client;
+package tfc.dynamicportals.mixin.client.hackery;
 
 import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.RenderTarget;

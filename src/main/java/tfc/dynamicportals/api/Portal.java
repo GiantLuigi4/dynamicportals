@@ -84,6 +84,25 @@ public class Portal extends AbstractPortal {
 	@Override
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+		
+		/* debug frustum culling box */
+//		stack.pushPose();
+//		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+//		stack.translate(-position.x, -position.y, -position.z);
+//
+//		double c = Math.cos(rotation.x);
+//		double s = Math.sin(rotation.x);
+//		double halfX = size.x / 2;
+//		double x = c * halfX;
+//		double z = s * halfX;
+//		AABB box = new AABB(
+//				position.x - x, position.y, position.z - z,
+//				position.x + x, position.y + size.y, position.z + z
+//		);
+//		LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
+//
+//		stack.popPose();
+		
 		LevelRenderer.renderLineBox(
 				stack, consumer,
 				-size.x / 2, 0, 0,
@@ -117,42 +136,54 @@ public class Portal extends AbstractPortal {
 		stack.translate(position.x, position.y, position.z);
 		// rotate
 		// TODO: figure out vertical rotation
-		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 //		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 	}
 	
 	@Override
+	public void negateTrace(PoseStack stack) {
+		// TODO: figure out vertical rotation
+		stack.translate(-position.x, -position.y, -position.z);
+	}
+	
+	@Override
+	public void setupTrace(PoseStack stack) {
+		stack.translate(position.x, position.y, position.z);
+	}
+	
+	@Override
 	public void setupAsTarget(PoseStack stack) {
-		// translate
 		boolean isMirror = target == this;
 		Vector3d position = this.position;
-//		if (isMirror) position = this.position;
-//		else position = target.position;
 		Vector2d rotation = this.rotation;
-//		if (isMirror) rotation = this.rotation;
-//		else rotation = target.rotation;
-		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
-		if (!isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
-		stack.translate(-position.x, -position.y, isMirror ? position.z : -position.z);
-		// rotate
 		// TODO: figure out vertical rotation
+		// rotate
 //		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+		if (isMirror) stack.mulPose(new Quaternion(0, -90, 0, true));
+		stack.mulPose(new Quaternion(0, 180, 0, true));
+		// translate
+		stack.translate(-position.x, -position.y, isMirror ? position.z : -position.z);
 		// mirror
-//		stack.mulPose(new Quaternion(0, 0, 0, true));
-//		stack.mulPose(new Quaternion(180, 0, 0, true));
 		if (isMirror) stack.scale(1, 1, -1);
 	}
 	
 	@Override
 	public boolean shouldRender(Frustum frustum, double camX, double camY, double camZ) {
 		if (normal == null || normal.dot(new Vector3f((float) (camX - position.x), (float) (camY - position.y), (float) (camZ - position.z))) > 0) {
-			// TODO: deal with rotation
-//			AABB box = new AABB(
-//					position.x - size.x / 2, position.y, position.z - size.x / 2,
-//					position.x + size.x / 2, position.y + size.y, position.z + size.x / 2
-//			);
-//			return frustum.isVisible(box);
-			return true;
+			// TODO: figure out why frustum culling is finding if the camera is in the box
+//			return true;
+			// TODO: deal with vertical rotation
+			double c = Math.cos(rotation.x);
+			double s = Math.sin(rotation.x);
+			double halfX = size.x / 2;
+			double x = c * halfX;
+			double z = s * halfX;
+			AABB box = new AABB(
+					position.x - x, position.y, position.z - z,
+					position.x + x, position.y + size.y, position.z + z
+			);
+			return frustum.isVisible(box);
 		}
 		return false;
 	}
@@ -172,24 +203,26 @@ public class Portal extends AbstractPortal {
 	
 	@Override
 	public double trace(Vec3 start, Vec3 end) {
+		// setup a matrix stack
 		PoseStack stack = new PoseStack();
-		setupMatrix(stack);
+		stack.mulPose(new Quaternion((float) -rotation.y, (float) -rotation.x, 0, false));
+		stack.translate(-position.x, -position.y, -position.z);
+		// copy to vec4
 		Vector4f startVec = new Vector4f((float) start.x, (float) start.y, (float) start.z, 1);
 		Vector4f endVec = new Vector4f((float) end.x, (float) end.y, (float) end.z, 1);
+		// transform
 		startVec.transform(stack.last().pose());
 		endVec.transform(stack.last().pose());
 		
-		AABB box = new AABB(-size.x / 2, 0, 0, size.x / 2, size.y, 0);
-		start = new Vec3(startVec.x(), startVec.y(), startVec.z());
-		end = new Vec3(endVec.x(), endVec.y(), endVec.z());
-//		AABB.getDirection(box, start, end, new BlockPos(0, 0, 0));
-		double dx = end.x - start.x;
-		double dy = end.y - start.y;
-		double dz = end.z - start.z;
+		// trace
+		double dx = endVec.x() - startVec.x();
+		double dy = endVec.y() - startVec.y();
+		double dz = endVec.z() - startVec.z();
 		double[] dist = new double[1];
 		dist[0] = 1;
+		AABB box = new AABB(-size.x / 2, 0, 0, size.x / 2, size.y, 0);
 		AABB.getDirection(
-				box, start, dist,
+				box, new Vec3(startVec.x(), startVec.y(), startVec.z()), dist,
 				null, dx, dy, dz
 		);
 		return dist[0];

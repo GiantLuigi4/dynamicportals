@@ -1,7 +1,6 @@
-package tfc.dynamicportals.mixin.client;
+package tfc.dynamicportals.mixin.client.core;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.renderer.RenderType;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL42;
 import org.spongepowered.asm.mixin.Mixin;

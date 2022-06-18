@@ -1,4 +1,4 @@
-package tfc.dynamicportals.mixin.client;
+package tfc.dynamicportals.mixin.client.hackery;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.spongepowered.asm.mixin.Mixin;

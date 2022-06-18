@@ -17,6 +17,8 @@ public abstract class AbstractPortal {
 	public abstract void setupMatrix(PoseStack stack);
 	public abstract void setupAsTarget(PoseStack stack);
 	public abstract void negateTransform(PoseStack stack);
+	public abstract void negateTrace(PoseStack stack);
+	public abstract void setupTrace(PoseStack stack);
 	public abstract boolean shouldRender(Frustum frustum, double camX, double camY, double camZ);
 	
 	public abstract double trace(Vec3 start, Vec3 end);
@@ -29,4 +31,5 @@ public abstract class AbstractPortal {
 	
 	public void teardownRenderState() {
 	}
+	
 }

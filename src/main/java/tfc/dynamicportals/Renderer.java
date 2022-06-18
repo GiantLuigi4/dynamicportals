@@ -10,6 +10,8 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.Portal;
@@ -59,10 +61,32 @@ public class Renderer {
 			return;
 		}
 		
+		Vec3 start = Minecraft.getInstance().cameraEntity.getEyePosition(Minecraft.getInstance().getFrameTime());
+		Vec3 end = Minecraft.getInstance().cameraEntity.getLookAngle();
+		end = end.scale(8);
+		end = start.add(end);
+		double dist = portal.trace(start, end);
+		
 		// declare variables
 		ShaderInstance shaderInstance;
 		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
+		
+		Vec3 interp = new Vec3(
+				Mth.lerp(dist, start.x, end.x),
+				Mth.lerp(dist, start.y, end.y),
+				Mth.lerp(dist, start.z, end.z)
+		);
+		if (dist != 1){
+			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+			LevelRenderer.renderLineBox(
+					a, consumer,
+					interp.x - 0.1, interp.y - 0.1, interp.z - 0.1,
+					interp.x + 0.1, interp.y + 0.1, interp.z + 0.1,
+					1, 1, 1, 1
+			);
+			forceDraw(source);
+		}
 		
 		// copy stack (easier to work with, as I don't need to reset the stack's state)
 		PoseStack stack = new PoseStack();
@@ -97,8 +121,14 @@ public class Renderer {
 		portal.setupRenderState();
 		// setup state
 		RenderSystem.enableCull();
+		double camX = Renderer.camX, camY = Renderer.camY, camZ = Renderer.camZ;
 		// draw
 		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, false, new Camera(), Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
+		// restore camera pos
+		Renderer.camX = camX;
+		Renderer.camY = camY;
+		Renderer.camZ = camZ;
+		
 		portal.teardownRenderState();
 		isStencilPresent = false;
 		GLUtils.switchFBO(target);
@@ -181,42 +211,15 @@ public class Renderer {
 		
 		GlStateTracker.State state = GlStateTracker.getRestoreState();
 		PoseStack stack = event.getPoseStack();
+		Frustum frustum = new Frustum(stack.last().pose(), event.getProjectionMatrix());
 		stack.pushPose();
 		stack.translate(-camX, -camY, -camZ);
 		RenderBuffers buffers = Minecraft.getInstance().renderBuffers();
 		RenderType type = RenderType.solid();
 		
-		double width = Math.sqrt(2 * 4);
-		ArrayList<Portal> portals = new ArrayList<>();
-
-//		{
-//			Portal portal = new Portal();
-//			portal.size = new Vector2d(500, 5000);
-////			portal.position = new Vector3d(camX, 10, camZ - portal.size.y / 2);
-//			portal.position = new Vector3d(0, 0, 0);
-//			portal.rotation = new Vector2d(Math.toRadians(22.5), Math.toRadians(0));
-////			portal.computeNormal();
-//			portals.add(portal);
-//		}
+		Portal[] portals = Temp.getPortals(Minecraft.getInstance().level);
 		
-		Portal other = new Portal()
-				.setSize(width, 2)
-				.setPosition(-5, 5, -5)
-				.setRotation(Math.toRadians(45), 0);
-		other.computeNormal();
-		portals.add(other);
-		{
-			Portal portal = new Portal()
-					.setSize(width, 2)
-					.setPosition(5, 5, 5)
-					.setRotation(Math.toRadians(45 + 180), 0);
-			portal.computeNormal();
-			portals.add(portal);
-			other.target = portal;
-			portal.target = other;
-		}
-		
-		Frustum frustum = new Frustum(event.getProjectionMatrix(), stack.last().pose());
+		frustum.prepare(camX, camY, camZ);
 		for (Portal portal1 : portals) {
 			if (portal1.shouldRender(frustum, camX, camY, camZ)) {
 				renderPortal(stack, type, buffers, portal1, state);
