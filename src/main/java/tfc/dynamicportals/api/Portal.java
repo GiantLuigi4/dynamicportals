@@ -4,7 +4,12 @@ import com.jozufozu.flywheel.repack.joml.Vector2d;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.*;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
 
 public class Portal extends AbstractPortal {
@@ -13,7 +18,40 @@ public class Portal extends AbstractPortal {
 	Vector2d rotation;
 	Vector3f normal;
 	
-	Portal target = this;
+	public Portal setPosition(double x, double y, double z) {
+		this.position = new Vector3d(x, y, z);
+		return this;
+	}
+	
+	public Portal setPosition(Vector3d position) {
+		this.position = position;
+		return this;
+	}
+	
+	public Portal setSize(double x, double y) {
+		this.size = new Vector2d(x, y);
+		return this;
+	}
+	
+	public Portal setSize(Vector2d size) {
+		this.size = size;
+		return this;
+	}
+	
+	public Portal setRotation(double x, double y) {
+		this.rotation = new Vector2d(x, y);
+		return this;
+	}
+	
+	public Portal setRotation(Vector2d rotation) {
+		this.rotation = rotation;
+		return this;
+	}
+	
+	public Portal setNormal(Vector3f normal) {
+		this.normal = normal;
+		return this;
+	}
 	
 	public void computeNormal() {
 		Vector3f portalPos = new Vector3f((float) position.x, (float) position.y, (float) position.z);
@@ -41,6 +79,17 @@ public class Portal extends AbstractPortal {
 		
 		first.cross(second);
 		this.normal = first;
+	}
+	
+	@Override
+	public void drawFrame(MultiBufferSource source, PoseStack stack) {
+		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+		LevelRenderer.renderLineBox(
+				stack, consumer,
+				-size.x / 2, 0, 0,
+				size.x / 2, size.y, 0,
+				1, 1, 1, 1
+		);
 	}
 	
 	@Override
@@ -76,12 +125,12 @@ public class Portal extends AbstractPortal {
 	public void setupAsTarget(PoseStack stack) {
 		// translate
 		boolean isMirror = target == this;
-		Vector3d position;
-		if (isMirror) position = this.position;
-		else position = target.position;
-		Vector2d rotation;
-		if (isMirror) rotation = this.rotation;
-		else rotation = target.rotation;
+		Vector3d position = this.position;
+//		if (isMirror) position = this.position;
+//		else position = target.position;
+		Vector2d rotation = this.rotation;
+//		if (isMirror) rotation = this.rotation;
+//		else rotation = target.rotation;
 		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 		if (!isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
 		stack.translate(-position.x, -position.y, isMirror ? position.z : -position.z);
@@ -118,6 +167,31 @@ public class Portal extends AbstractPortal {
 	@Override
 	public void teardownRenderState() {
 		if (target == this)
-		GL11.glCullFace(GL11.GL_BACK);
+			GL11.glCullFace(GL11.GL_BACK);
+	}
+	
+	@Override
+	public double trace(Vec3 start, Vec3 end) {
+		PoseStack stack = new PoseStack();
+		setupMatrix(stack);
+		Vector4f startVec = new Vector4f((float) start.x, (float) start.y, (float) start.z, 1);
+		Vector4f endVec = new Vector4f((float) end.x, (float) end.y, (float) end.z, 1);
+		startVec.transform(stack.last().pose());
+		endVec.transform(stack.last().pose());
+		
+		AABB box = new AABB(-size.x / 2, 0, 0, size.x / 2, size.y, 0);
+		start = new Vec3(startVec.x(), startVec.y(), startVec.z());
+		end = new Vec3(endVec.x(), endVec.y(), endVec.z());
+//		AABB.getDirection(box, start, end, new BlockPos(0, 0, 0));
+		double dx = end.x - start.x;
+		double dy = end.y - start.y;
+		double dz = end.z - start.z;
+		double[] dist = new double[1];
+		dist[0] = 1;
+		AABB.getDirection(
+				box, start, dist,
+				null, dx, dy, dz
+		);
+		return dist[0];
 	}
 }

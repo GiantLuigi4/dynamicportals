@@ -1,21 +1,18 @@
-package tfc.dynamicportals.api;
+package tfc.dynamicportals;
 
 import com.jozufozu.flywheel.backend.gl.GlStateTracker;
 import com.jozufozu.flywheel.event.BeginFrameEvent;
-import com.jozufozu.flywheel.repack.joml.Vector2d;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3d;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
-import org.lwjgl.opengl.GL11;
-import tfc.dynamicportals.GLUtils;
+import tfc.dynamicportals.api.AbstractPortal;
+import tfc.dynamicportals.api.Portal;
 
 import java.util.ArrayList;
 
@@ -62,16 +59,20 @@ public class Renderer {
 			return;
 		}
 		
+		// declare variables
 		ShaderInstance shaderInstance;
 		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
 		
+		// copy stack (easier to work with, as I don't need to reset the stack's state)
 		PoseStack stack = new PoseStack();
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
 		
+		// setup matrix
 		portal.setupMatrix(stack);
 		
+		// setup stencil
 		RenderTarget target = GLUtils.boundTarget();
 		stencilTarget.setClearColor(0, 0, 0, 0);
 		stencilTarget.clear(Minecraft.ON_OSX);
@@ -80,19 +81,23 @@ public class Renderer {
 		forceDraw(source);
 		GLUtils.boundTarget().unbindWrite();
 		
+		// setup to draw to the portal FBO
 		portalTarget.setClearColor(0, 0, 0, 0);
 		portalTarget.clear(Minecraft.ON_OSX);
 		portalTarget.bindWrite(false);
 		GLUtils.switchFBO(portalTarget);
 		isStencilPresent = true;
+		// copy matrix so vanilla's renderer doesn't yell at me
 		PoseStack stk = new PoseStack();
 		stk.last().pose().load(a.last().pose());
 		stk.last().normal().load(a.last().normal());
 		// setup transform
 		portal.negateTransform(stk);
-		portal.setupAsTarget(stk);
+		portal.target.setupAsTarget(stk);
 		portal.setupRenderState();
+		// setup state
 		RenderSystem.enableCull();
+		// draw
 		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, false, new Camera(), Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 		portal.teardownRenderState();
 		isStencilPresent = false;
@@ -114,19 +119,20 @@ public class Renderer {
 		finishTesselator(builder, shaderInstance);
 		screenspaceTex = false;
 		
+		// draw portal frame (if there is one)
 		portal.drawFrame(source, stack);
-		
+		forceDraw(source);
+
 //		portalTarget.blitToScreen(
 //				Minecraft.getInstance().getMainRenderTarget().width / 5,
 //				Minecraft.getInstance().getMainRenderTarget().height / 5
 //		);
 //		GLUtils.switchFBO(target);
 		
+		// attempt to reset gl state
 		RenderSystem.enableCull();
-		// TODO: fix the lighting
-		
-		// restore gl state
 		state.restore();
+		// TODO: fix the lighting
 	}
 	
 	private static BufferBuilder setupTesselator(ShaderInstance shaderInstance, VertexFormat format) {
@@ -147,8 +153,8 @@ public class Renderer {
 	
 	private static void forceDraw(MultiBufferSource.BufferSource source) {
 //		source.getBuffer(RenderType.leash());
-		source.getBuffer(RenderType.LINES);
-//		source.endLastBatch();
+//		source.getBuffer(RenderType.LINES);
+		source.endLastBatch();
 	}
 	
 	private static int recursion = 0;
@@ -182,7 +188,7 @@ public class Renderer {
 		
 		double width = Math.sqrt(2 * 4);
 		ArrayList<Portal> portals = new ArrayList<>();
-		
+
 //		{
 //			Portal portal = new Portal();
 //			portal.size = new Vector2d(500, 5000);
@@ -193,19 +199,17 @@ public class Renderer {
 //			portals.add(portal);
 //		}
 		
-		Portal other = new Portal();
+		Portal other = new Portal()
+				.setSize(width, 2)
+				.setPosition(-5, 5, -5)
+				.setRotation(Math.toRadians(45), 0);
+		other.computeNormal();
+		portals.add(other);
 		{
-			other.size = new Vector2d(width, 2);
-			other.position = new Vector3d(-5, 5, -5);
-			other.rotation = new Vector2d(Math.toRadians(45), 0);
-			other.computeNormal();
-			portals.add(other);
-		}
-		{
-			Portal portal = new Portal();
-			portal.size = new Vector2d(width, 2);
-			portal.position = new Vector3d(5, 5, 5);
-			portal.rotation = new Vector2d(Math.toRadians(45 + 180), 0);
+			Portal portal = new Portal()
+					.setSize(width, 2)
+					.setPosition(5, 5, 5)
+					.setRotation(Math.toRadians(45 + 180), 0);
 			portal.computeNormal();
 			portals.add(portal);
 			other.target = portal;

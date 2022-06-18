@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tfc.dynamicportals.GLUtils;
-import tfc.dynamicportals.api.Renderer;
+import tfc.dynamicportals.Renderer;
 
 @Mixin(RenderTarget.class)
 public class RenderTargetMixin {
