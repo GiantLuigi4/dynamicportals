@@ -183,17 +183,39 @@ public class Renderer {
 		double width = Math.sqrt(2 * 4);
 		ArrayList<Portal> portals = new ArrayList<>();
 		
-		Portal portal = new Portal();
-		portal.size = new Vector2d(1000, 10);
-//		portal.position = new Vector3d(camX, 10, camZ - portal.size.y / 2);
-		portal.position = new Vector3d(0, 10, 0);
-		portal.rotation = new Vector2d(Math.toRadians(22.5), Math.toRadians(12));
-//		portal.computeNormal();
-		portals.add(portal);
+//		{
+//			Portal portal = new Portal();
+//			portal.size = new Vector2d(500, 5000);
+////			portal.position = new Vector3d(camX, 10, camZ - portal.size.y / 2);
+//			portal.position = new Vector3d(0, 0, 0);
+//			portal.rotation = new Vector2d(Math.toRadians(22.5), Math.toRadians(0));
+////			portal.computeNormal();
+//			portals.add(portal);
+//		}
+		
+		Portal other = new Portal();
+		{
+			other.size = new Vector2d(width, 2);
+			other.position = new Vector3d(-5, 5, -5);
+			other.rotation = new Vector2d(Math.toRadians(45), 0);
+			other.computeNormal();
+			portals.add(other);
+		}
+		{
+			Portal portal = new Portal();
+			portal.size = new Vector2d(width, 2);
+			portal.position = new Vector3d(5, 5, 5);
+			portal.rotation = new Vector2d(Math.toRadians(45 + 180), 0);
+			portal.computeNormal();
+			portals.add(portal);
+			
+			other.target = portal;
+			portal.target = other;
+		}
 		
 		Frustum frustum = new Frustum(event.getProjectionMatrix(), stack.last().pose());
 		for (Portal portal1 : portals) {
-			if (portal.shouldRender(frustum, camX, camY, camZ)) {
+			if (portal1.shouldRender(frustum, camX, camY, camZ)) {
 				renderPortal(stack, type, buffers, portal1, state);
 			}
 		}

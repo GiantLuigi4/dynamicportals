@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.*;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.world.phys.AABB;
 import org.lwjgl.opengl.GL11;
 
 public class Portal extends AbstractPortal {
@@ -13,6 +12,8 @@ public class Portal extends AbstractPortal {
 	Vector2d size;
 	Vector2d rotation;
 	Vector3f normal;
+	
+	Portal target = this;
 	
 	public void computeNormal() {
 		Vector3f portalPos = new Vector3f((float) position.x, (float) position.y, (float) position.z);
@@ -24,7 +25,7 @@ public class Portal extends AbstractPortal {
 		c.add((float) -size.x / 2, 0, 0);
 		Vector3f d = portalPos.copy();
 		d.add((float) size.x / 2, 0, 0);
-
+		
 		Matrix3f matrix3f = new Matrix3f();
 		matrix3f.setIdentity();
 		matrix3f.mul(new Quaternion((float) rotation.y, (float) rotation.x, 0, false));
@@ -32,13 +33,14 @@ public class Portal extends AbstractPortal {
 		b.transform(matrix3f);
 		c.transform(matrix3f);
 		d.transform(matrix3f);
-
+		
 		Vector3f first = b.copy();
 		first.sub(d);
 		Vector3f second = c.copy();
 		second.sub(d);
-
+		
 		first.cross(second);
+		this.normal = first;
 	}
 	
 	@Override
@@ -73,15 +75,23 @@ public class Portal extends AbstractPortal {
 	@Override
 	public void setupAsTarget(PoseStack stack) {
 		// translate
-		stack.translate(-position.x, -position.y, -position.z);
+		boolean isMirror = target == this;
+		Vector3d position;
+		if (isMirror) position = this.position;
+		else position = target.position;
+		Vector2d rotation;
+		if (isMirror) rotation = this.rotation;
+		else rotation = target.rotation;
+		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+		if (!isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
+		stack.translate(-position.x, -position.y, isMirror ? position.z : -position.z);
 		// rotate
 		// TODO: figure out vertical rotation
-		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 //		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 		// mirror
-		stack.mulPose(new Quaternion(0, 0, 0, true));
+//		stack.mulPose(new Quaternion(0, 0, 0, true));
 //		stack.mulPose(new Quaternion(180, 0, 0, true));
-		stack.scale(1, 1, -1);
+		if (isMirror) stack.scale(1, 1, -1);
 	}
 	
 	@Override
@@ -101,11 +111,13 @@ public class Portal extends AbstractPortal {
 	@Override
 	public void setupRenderState() {
 		// TODO: check if this works well enough
-		GL11.glCullFace(GL11.GL_FRONT);
+		if (target == this)
+			GL11.glCullFace(GL11.GL_FRONT);
 	}
 	
 	@Override
 	public void teardownRenderState() {
+		if (target == this)
 		GL11.glCullFace(GL11.GL_BACK);
 	}
 }
