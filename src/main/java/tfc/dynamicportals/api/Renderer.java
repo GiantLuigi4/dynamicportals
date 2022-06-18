@@ -208,7 +208,6 @@ public class Renderer {
 			portal.rotation = new Vector2d(Math.toRadians(45 + 180), 0);
 			portal.computeNormal();
 			portals.add(portal);
-			
 			other.target = portal;
 			portal.target = other;
 		}
