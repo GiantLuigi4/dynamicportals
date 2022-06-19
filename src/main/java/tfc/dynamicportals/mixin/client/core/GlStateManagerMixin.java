@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// I'm not even gonna attempt to explain what's happening here
 @Mixin(GlStateManager.class)
 public class GlStateManagerMixin {
 	@Unique

@@ -10,8 +10,8 @@ public class ShaderInjections {
 		// TODO: checking of stuff
 		// TODO: this should only really be done for the POSITION_TEX shader
 		String yes =
-				"\t\tvec2 dynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
-						"\t\tvec4 dynamicPortalsColor = texture(" + samplerName + ", dynamicPortalsPos);\n" +
+				"\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
+						"\t\tdynamicPortalsColor = texture(" + samplerName + ", dynamicPortalsPos);\n" +
 //						"\t\tfragColor = vec4(dynamicPortalsPos, 0, 1);\n" +
 						"\t\tfragColor = dynamicPortalsColor;\n" +
 						"\t\treturn;\n";
@@ -19,16 +19,19 @@ public class ShaderInjections {
 		return
 //				yes;
 				"\n\t/* Dynamic Portals injection */\n" +
+						"\tvec2 dynamicPortalsPos;\n" +
+						"\tvec4 dynamicPortalsColor;\n" +
+						"\tvec4 dynamicPortalsDepth;\n" +
 						"\tif (float(dynamicPortalsHasStencilTextureSet) > 1.5f) { // gotta love glsl, yk?\n" +
 						yes +
 						"\t} else if (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {\n" +
-						"\t\tvec2 dynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
-						"\t\tvec4 dynamicPortalsColor = texture2D(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
+						"\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
+						"\t\tdynamicPortalsColor = texture2D(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
 						"\t\tif (dynamicPortalsColor.a <= 0.00390625) {\n" +
 						"\t\t\tdiscard;\n" +
 						"\t\t\treturn;\n" +
 						"\t\t}\n" +
-						"\t\tvec4 dynamicPortalsDepth = texture2D(dynamicPortalsStencilDepth, dynamicPortalsPos);\n" +
+						"\t\tdynamicPortalsDepth = texture2D(dynamicPortalsStencilDepth, dynamicPortalsPos);\n" +
 //						"\t\tfragColor = vec4(dynamicPortalsDepth.rrr, 1);\n" +
 //						"\t\tfragColor = vec4(gl_FragDepth, gl_FragDepth, gl_FragDepth, 1);\n" +
 //						"\t\tfragColor = vec4(gl_FragCoord.zzz, 1);\n" +
@@ -44,8 +47,8 @@ public class ShaderInjections {
 		String str =
 				"\n\t/* Dynamic Portals injection */\n" +
 						"\tif (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {\n" +
-						"\t\tvec2 dynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
-						"\t\tvec4 dynamicPortalsColor = texture2D(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
+						"\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
+						"\t\tdynamicPortalsColor = texture2D(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
 						"\t\tfragColor = fragColor * dynamicPortalsColor;\n" +
 						"\t}\n" +
 						"\t/* end Dynamic Portals injection */\n";

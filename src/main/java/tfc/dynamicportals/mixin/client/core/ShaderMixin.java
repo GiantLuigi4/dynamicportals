@@ -52,6 +52,7 @@ public abstract class ShaderMixin {
 	@Unique
 	private AbstractUniform FBO_SIZE;
 	
+	// make sure all dyn portals uniforms are found
 	@Inject(at = @At("HEAD"), method = "markDirty")
 	public void preMarkDirty(CallbackInfo ci) {
 		if (vertexProgram != null) {
@@ -69,6 +70,7 @@ public abstract class ShaderMixin {
 		}
 	}
 	
+	// finds the uniforms
 	@Unique
 	private void getUniform(String name, String typeStr, int count) {
 		int type = Uniform.getTypeFromString(typeStr);
@@ -81,6 +83,7 @@ public abstract class ShaderMixin {
 		}
 	}
 	
+	// sets up dyn portals uniforms
 	@Inject(at = @At(value = "TAIL"), method = "apply")
 	public void preApply(CallbackInfo ci) {
 		if (vertexProgram != null) {

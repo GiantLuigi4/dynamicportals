@@ -61,7 +61,7 @@ public class Portal extends AbstractPortal {
 	
 	@Override
 	public Quaternion raytraceRotation() {
-		return new Quaternion((float) this.rotation.y, (float) this.rotation.x, 0, false);
+		return new Quaternion((float) this.rotation.y, (float) -this.rotation.x, 0, false);
 	}
 	
 	public void computeNormal() {

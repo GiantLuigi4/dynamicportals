@@ -10,6 +10,7 @@ import tfc.dynamicportals.Renderer;
 
 @Mixin(RenderSystem.class)
 public class RenderSystemMixin {
+	// hack for sake of making sure that all pixels are tinted according to the portal's stencil
 	@Inject(at = @At("HEAD"), method = "clear", cancellable = true)
 	private static void onClear(int pMask, boolean pCheckError, CallbackInfo ci) {
 		if (Renderer.isStencilPresent()) {

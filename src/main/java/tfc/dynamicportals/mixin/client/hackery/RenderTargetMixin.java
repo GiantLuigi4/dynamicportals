@@ -13,8 +13,10 @@ import tfc.dynamicportals.Renderer;
 public class RenderTargetMixin {
 	@Inject(at = @At("HEAD"), method = "bindWrite", cancellable = true)
 	public void preBindWrite(boolean pSetViewport, CallbackInfo ci) {
+		// track the active fbo
 		GLUtils.setBound((RenderTarget) (Object) this);
 		
+		// if the main frame buffer gets bound, bind the dynportals fbo instead
 		if (((Object) this) instanceof MainTarget) {
 			if (Renderer.bindPortalFBO(pSetViewport)) {
 				ci.cancel();

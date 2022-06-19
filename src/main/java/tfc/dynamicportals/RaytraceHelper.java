@@ -41,18 +41,23 @@ public class RaytraceHelper {
 							reachVec.z * dist
 					);
 					
-					Vec3 offset = portal.raytraceOffset();
-					interpStart = interpStart.subtract(offset);
-					offset = portal.target.raytraceOffset();
+					// this confuses me way more than it should
+					Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 					interpStart = interpStart.add(offset);
-					
+
 					Quaternion quat = portal.raytraceRotation();
-					Quaternion q = new Quaternion((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 0.0f);
-					q.mul(quat);
-					quat.conj();
-					quat.mul(q);
-					interpReach = new Vec3(q.i(), q.j(), q.k());
-					
+//					Quaternion q = new Quaternion((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 0.0f);
+//					q.mul(quat);
+//					quat.conj();
+//					quat.mul(q);
+//					interpReach = new Vec3(q.i(), q.j(), q.k());
+					Matrix4f matrix4f = new Matrix4f();
+					matrix4f.setIdentity();
+					matrix4f.multiply(quat);
+					Vector4f vec4f = new Vector4f((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 1);
+					vec4f.transform(matrix4f);
+					interpReach = new Vec3(vec4f.x(), vec4f.y(), vec4f.z());
+
 //					quat = portal.target.raytraceRotation();
 //					q = new Quaternion((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 0.0f);
 //					q.mul(quat);

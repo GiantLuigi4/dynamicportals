@@ -8,6 +8,10 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.DynamicPortals;
 
+/**
+ * the base class for all portals
+ * {@link Portal} for some examples
+ */
 public abstract class AbstractPortal {
 	public AbstractPortal target = this;
 	
@@ -76,6 +80,14 @@ public abstract class AbstractPortal {
 	 */
 	public abstract Quaternion raytraceRotation();
 	
+	/**
+	 * raytraces between the start vec and the portal
+	 *
+	 * @param start the start vector
+	 * @param end   the end vector
+	 * @return the distance between the start vec and the portal
+	 * if it does not hit the portal, it should return 1
+	 */
 	public abstract double trace(Vec3 start, Vec3 end);
 	
 	/**
@@ -90,7 +102,7 @@ public abstract class AbstractPortal {
 	
 	/**
 	 * this is where you'd setup the render state for the portal
-	 * an example of this is switching which face is the backface for a mirror
+	 * an example of this is switching which face is the back face for a mirror
 	 */
 	public void setupRenderState() {
 	}

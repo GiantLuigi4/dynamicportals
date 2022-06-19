@@ -61,32 +61,32 @@ public class Renderer {
 			return;
 		}
 		
-		Vec3 start = Minecraft.getInstance().cameraEntity.getEyePosition(Minecraft.getInstance().getFrameTime());
-		Vec3 end = Minecraft.getInstance().cameraEntity.getLookAngle();
-		end = end.scale(8);
-		end = start.add(end);
-		double dist = portal.trace(start, end);
-		
 		// declare variables
 		ShaderInstance shaderInstance;
 		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
 		
-		Vec3 interp = new Vec3(
-				Mth.lerp(dist, start.x, end.x),
-				Mth.lerp(dist, start.y, end.y),
-				Mth.lerp(dist, start.z, end.z)
-		);
-		if (dist != 1){
-			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-			LevelRenderer.renderLineBox(
-					a, consumer,
-					interp.x - 0.1, interp.y - 0.1, interp.z - 0.1,
-					interp.x + 0.1, interp.y + 0.1, interp.z + 0.1,
-					1, 1, 1, 1
-			);
-			forceDraw(source);
-		}
+		// raytracing debug
+//		Vec3 start = Minecraft.getInstance().cameraEntity.getEyePosition(Minecraft.getInstance().getFrameTime());
+//		Vec3 end = Minecraft.getInstance().cameraEntity.getLookAngle();
+//		end = end.scale(8);
+//		end = start.add(end);
+//		double dist = portal.trace(start, end);
+//		Vec3 interp = new Vec3(
+//				Mth.lerp(dist, start.x, end.x),
+//				Mth.lerp(dist, start.y, end.y),
+//				Mth.lerp(dist, start.z, end.z)
+//		);
+//		if (dist != 1){
+//			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+//			LevelRenderer.renderLineBox(
+//					a, consumer,
+//					interp.x - 0.1, interp.y - 0.1, interp.z - 0.1,
+//					interp.x + 0.1, interp.y + 0.1, interp.z + 0.1,
+//					1, 1, 1, 1
+//			);
+//			forceDraw(source);
+//		}
 		
 		// copy stack (easier to work with, as I don't need to reset the stack's state)
 		PoseStack stack = new PoseStack();
@@ -106,7 +106,6 @@ public class Renderer {
 		GLUtils.boundTarget().unbindWrite();
 		
 		// setup to draw to the portal FBO
-		portalTarget.setClearColor(0, 0, 0, 0);
 		portalTarget.clear(Minecraft.ON_OSX);
 		portalTarget.bindWrite(false);
 		GLUtils.switchFBO(portalTarget);
@@ -152,12 +151,6 @@ public class Renderer {
 		// draw portal frame (if there is one)
 		portal.drawFrame(source, stack);
 		forceDraw(source);
-
-//		portalTarget.blitToScreen(
-//				Minecraft.getInstance().getMainRenderTarget().width / 5,
-//				Minecraft.getInstance().getMainRenderTarget().height / 5
-//		);
-//		GLUtils.switchFBO(target);
 		
 		// attempt to reset gl state
 		RenderSystem.enableCull();
@@ -182,8 +175,6 @@ public class Renderer {
 	}
 	
 	private static void forceDraw(MultiBufferSource.BufferSource source) {
-//		source.getBuffer(RenderType.leash());
-//		source.getBuffer(RenderType.LINES);
 		source.endLastBatch();
 	}
 	
@@ -192,9 +183,12 @@ public class Renderer {
 	private static double camX, camY, camZ;
 	
 	public static void onBeginFrame(BeginFrameEvent event) {
+		// store the camera position
 		camX = event.getCamera().getPosition().x;
 		camY = event.getCamera().getPosition().y;
 		camZ = event.getCamera().getPosition().z;
+		// setup clear colors
+		portalTarget.setClearColor(0, 0, 0, 0);
 		portalTarget.setClearColor(0, 0, 0, 0);
 	}
 	
@@ -202,6 +196,7 @@ public class Renderer {
 		if (recursion > 1) return;
 		
 		/* enable stencils */
+		// truthfully this is unused, this is just for compatibility
 		if (!Minecraft.getInstance().getMainRenderTarget().isStencilEnabled())
 			Minecraft.getInstance().getMainRenderTarget().enableStencil();
 		if (!portalTarget.isStencilEnabled())
@@ -229,34 +224,6 @@ public class Renderer {
 		stack.popPose();
 		recursion = recursion - 1;
 	}
-
-//	public static Vector3f computeNormal(Portal portal) {
-//		Vector3f portalPos = new Vector3f((float) portal.position.x, (float) portal.position.y, (float) portal.position.z);
-////		Vector3f a = portalPos.copy();
-////		a.add((float) -portal.size.x / 2, (float) portal.size.y, 0);
-//		Vector3f b = portalPos.copy();
-//		b.add((float) portal.size.x / 2, (float) portal.size.y, 0);
-//		Vector3f c = portalPos.copy();
-//		c.add((float) -portal.size.x / 2, 0, 0);
-//		Vector3f d = portalPos.copy();
-//		d.add((float) portal.size.x / 2, 0, 0);
-//
-//		Matrix3f matrix3f = new Matrix3f();
-//		matrix3f.setIdentity();
-//		matrix3f.mul(new Quaternion(0, (float) portal.rotation.x, 0, false));
-////		a.transform(matrix3f);
-//		b.transform(matrix3f);
-//		c.transform(matrix3f);
-//		d.transform(matrix3f);
-//
-//		Vector3f first = b.copy();
-//		first.sub(d);
-//		Vector3f second = c.copy();
-//		second.sub(d);
-//
-//		first.cross(second);
-//		return first;
-//	}
 	
 	public static void refreshStencilBuffer(int framebufferWidth, int framebufferHeight) {
 		stencilTarget.resize(framebufferWidth, framebufferHeight, Minecraft.ON_OSX);
