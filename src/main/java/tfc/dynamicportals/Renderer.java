@@ -116,7 +116,7 @@ public class Renderer {
 		stk.last().pose().load(a.last().pose());
 		stk.last().normal().load(a.last().normal());
 		// setup transform
-		portal.negateTransform(stk);
+		portal.setupMatrix(stk);
 		portal.target.setupAsTarget(stk);
 		portal.setupRenderState();
 		// setup state

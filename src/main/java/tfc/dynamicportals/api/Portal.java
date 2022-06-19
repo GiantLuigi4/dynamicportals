@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
+import tfc.dynamicportals.DynamicPortals;
 
 public class Portal extends AbstractPortal {
 	Vector3d position;
@@ -51,6 +52,16 @@ public class Portal extends AbstractPortal {
 	public Portal setNormal(Vector3f normal) {
 		this.normal = normal;
 		return this;
+	}
+	
+	@Override
+	public Vec3 raytraceOffset() {
+		return new Vec3(position.x, position.y, position.z);
+	}
+	
+	@Override
+	public Quaternion raytraceRotation() {
+		return new Quaternion((float) this.rotation.y, (float) this.rotation.x, 0, false);
 	}
 	
 	public void computeNormal() {
@@ -131,27 +142,6 @@ public class Portal extends AbstractPortal {
 	}
 	
 	@Override
-	public void negateTransform(PoseStack stack) {
-		// translate
-		stack.translate(position.x, position.y, position.z);
-		// rotate
-		// TODO: figure out vertical rotation
-		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-//		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-	}
-	
-	@Override
-	public void negateTrace(PoseStack stack) {
-		// TODO: figure out vertical rotation
-		stack.translate(-position.x, -position.y, -position.z);
-	}
-	
-	@Override
-	public void setupTrace(PoseStack stack) {
-		stack.translate(position.x, position.y, position.z);
-	}
-	
-	@Override
 	public void setupAsTarget(PoseStack stack) {
 		boolean isMirror = target == this;
 		Vector3d position = this.position;
@@ -159,9 +149,10 @@ public class Portal extends AbstractPortal {
 		// TODO: figure out vertical rotation
 		// rotate
 //		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 		if (isMirror) stack.mulPose(new Quaternion(0, -90, 0, true));
-		stack.mulPose(new Quaternion(0, 180, 0, true));
+		// TODO: I'm not sure where this 180 is coming from
+		if (DynamicPortals.isRotate180Needed()) stack.mulPose(new Quaternion(0, 180, 0, true));
 		// translate
 		stack.translate(-position.x, -position.y, isMirror ? position.z : -position.z);
 		// mirror
@@ -171,8 +162,6 @@ public class Portal extends AbstractPortal {
 	@Override
 	public boolean shouldRender(Frustum frustum, double camX, double camY, double camZ) {
 		if (normal == null || normal.dot(new Vector3f((float) (camX - position.x), (float) (camY - position.y), (float) (camZ - position.z))) > 0) {
-			// TODO: figure out why frustum culling is finding if the camera is in the box
-//			return true;
 			// TODO: deal with vertical rotation
 			double c = Math.cos(rotation.x);
 			double s = Math.sin(rotation.x);

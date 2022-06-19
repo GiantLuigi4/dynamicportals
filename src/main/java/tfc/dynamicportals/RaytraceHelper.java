@@ -1,6 +1,7 @@
 package tfc.dynamicportals;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
 import com.mojang.math.Vector4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
@@ -28,28 +29,36 @@ public class RaytraceHelper {
 					double distance = reachVec.scale(dist).length();
 					double d = minecraft.hitResult.getLocation().distanceTo(start);
 					if (distance > d) continue;
-					Vector4f interpStart = new Vector4f(
-							(float) Mth.lerp(dist, start.x, end.x),
-							(float) Mth.lerp(dist, start.y, end.y),
-							(float) Mth.lerp(dist, start.z, end.z),
-							1
+					Vec3 interpStart = new Vec3(
+							Mth.lerp(dist, start.x, end.x),
+							Mth.lerp(dist, start.y, end.y),
+							Mth.lerp(dist, start.z, end.z)
 					);
 					dist = 1 - dist;
-					Vector4f interpReach = new Vector4f(
-							(float) (reachVec.x * dist),
-							(float) (reachVec.y * dist),
-							(float) (reachVec.z * dist),
-							1
+					Vec3 interpReach = new Vec3(
+							reachVec.x * dist,
+							reachVec.y * dist,
+							reachVec.z * dist
 					);
-					PoseStack stack = new PoseStack();
-					stack.pushPose();
-					portal.negateTrace(stack);
-					interpStart.transform(stack.last().pose());
-					interpReach.transform(stack.last().pose());
-					stack.popPose();
-					portal.target.setupTrace(stack);
-					interpStart.transform(stack.last().pose());
-					interpReach.transform(stack.last().pose());
+					
+					Vec3 offset = portal.raytraceOffset();
+					interpStart = interpStart.subtract(offset);
+					offset = portal.target.raytraceOffset();
+					interpStart = interpStart.add(offset);
+					
+					Quaternion quat = portal.raytraceRotation();
+					Quaternion q = new Quaternion((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 0.0f);
+					q.mul(quat);
+					quat.conj();
+					quat.mul(q);
+					interpReach = new Vec3(q.i(), q.j(), q.k());
+					
+//					quat = portal.target.raytraceRotation();
+//					q = new Quaternion((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 0.0f);
+//					q.mul(quat);
+//					quat.conj();
+//					quat.mul(q);
+//					interpReach = new Vec3(quat.i(), quat.j(), quat.k());
 					
 					Vec3 istart = new Vec3(interpStart.x(), interpStart.y(), interpStart.z());
 					Vec3 iend = new Vec3(interpStart.x() + interpReach.x(), interpStart.y() + interpReach.y(), interpStart.z() + interpReach.z());
