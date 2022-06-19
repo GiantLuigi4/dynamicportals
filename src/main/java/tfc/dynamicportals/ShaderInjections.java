@@ -26,12 +26,12 @@ public class ShaderInjections {
 						yes +
 						"\t} else if (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {\n" +
 						"\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
-						"\t\tdynamicPortalsColor = texture2D(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
+						"\t\tdynamicPortalsColor = texture(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
 						"\t\tif (dynamicPortalsColor.a <= 0.00390625) {\n" +
 						"\t\t\tdiscard;\n" +
 						"\t\t\treturn;\n" +
 						"\t\t}\n" +
-						"\t\tdynamicPortalsDepth = texture2D(dynamicPortalsStencilDepth, dynamicPortalsPos);\n" +
+						"\t\tdynamicPortalsDepth = texture(dynamicPortalsStencilDepth, dynamicPortalsPos);\n" +
 //						"\t\tfragColor = vec4(dynamicPortalsDepth.rrr, 1);\n" +
 //						"\t\tfragColor = vec4(gl_FragDepth, gl_FragDepth, gl_FragDepth, 1);\n" +
 //						"\t\tfragColor = vec4(gl_FragCoord.zzz, 1);\n" +
