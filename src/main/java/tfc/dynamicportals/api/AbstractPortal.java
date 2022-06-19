@@ -81,6 +81,14 @@ public abstract class AbstractPortal {
 	public abstract Quaternion raytraceRotation();
 	
 	/**
+	 * @return whether or not the raytrace rotation needs to be rotated
+	 * if the portal is rotated to face the opposite direction of the target portal, the look vector does not need rotation
+	 */
+	public boolean requireTraceRotation() {
+		return true;
+	}
+	
+	/**
 	 * raytraces between the start vec and the portal
 	 *
 	 * @param start the start vector

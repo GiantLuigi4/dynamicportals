@@ -55,6 +55,22 @@ public class Portal extends AbstractPortal {
 	}
 	
 	@Override
+	public boolean requireTraceRotation() {
+		if (target instanceof Portal) {
+			double xRot = ((Portal) target).rotation.x;
+			double xr = rotation.x;
+			xRot += Math.toRadians(180);
+			xRot %= Math.PI * 2;
+			xr %= Math.PI * 2;
+			if (xr == xRot) {
+				// TODO: check yRot
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	@Override
 	public Vec3 raytraceOffset() {
 		return new Vec3(position.x, position.y, position.z);
 	}

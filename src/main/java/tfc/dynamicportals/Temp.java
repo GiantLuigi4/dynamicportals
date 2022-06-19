@@ -24,19 +24,19 @@ public class Temp {
 		int rotation = 45;
 		Portal other = new Portal()
 				.setSize(width, 2)
-				.setPosition(-5, 5, -5)
-//				.setPosition(0, 5, -2)
-				.setRotation(Math.toRadians(rotation), 0);
-//				.setRotation(Math.toRadians(0), 0);
+//				.setPosition(-5, 5, -5)
+				.setPosition(0, 5, -2)
+//				.setRotation(Math.toRadians(rotation), 0);
+				.setRotation(Math.toRadians(0), 0);
 		other.computeNormal();
 		portals.add(other);
 		{
 			Portal portal = new Portal()
 					.setSize(width, 2)
-					.setPosition(5, 5, 5)
-//					.setPosition(0, 5, 2)
-					.setRotation(Math.toRadians(rotation + 180), 0);
-//					.setRotation(Math.toRadians(0), 0);
+//					.setPosition(5, 5, 5)
+					.setPosition(0, 5, 2)
+//					.setRotation(Math.toRadians(rotation + 180), 0);
+					.setRotation(Math.toRadians(180), 0);
 			portal.computeNormal();
 			portals.add(portal);
 			other.target = portal;
