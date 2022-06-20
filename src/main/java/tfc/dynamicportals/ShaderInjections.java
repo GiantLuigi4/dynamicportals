@@ -58,7 +58,7 @@ public class ShaderInjections {
 				"\n\t/* Dynamic Portals injection */\n" +
 						"\tif (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {\n" +
 						"\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
-						"\t\tdynamicPortalsColor = texture2D(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
+						"\t\tdynamicPortalsColor = texture(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
 						"\t\tfragColor = fragColor * dynamicPortalsColor;\n" +
 						"\t}\n" +
 						"\t/* end Dynamic Portals injection */\n";

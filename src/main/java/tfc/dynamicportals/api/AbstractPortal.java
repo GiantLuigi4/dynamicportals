@@ -7,6 +7,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.DynamicPortals;
 
@@ -134,4 +135,13 @@ public abstract class AbstractPortal {
 	 * @return a dummy camera to use for rendering
 	 */
 	public abstract Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera);
+	
+	public abstract boolean overlaps(AABB box);
+	
+	public boolean isInfront(Entity entity, Vec3 position) {
+		return true;
+	}
+	
+	public void moveEntity(Entity entity, Vec3 position, Vec3 motion) {
+	}
 }

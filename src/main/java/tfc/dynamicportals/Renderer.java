@@ -65,27 +65,27 @@ public class Renderer {
 		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
 		
-		// raytracing debug
-		Vec3 start = Minecraft.getInstance().cameraEntity.getEyePosition(Minecraft.getInstance().getFrameTime());
-		Vec3 end = Minecraft.getInstance().cameraEntity.getLookAngle();
-		end = end.scale(8);
-		end = start.add(end);
-		double dist = portal.trace(start, end);
-		Vec3 interp = new Vec3(
-				Mth.lerp(dist, start.x, end.x),
-				Mth.lerp(dist, start.y, end.y),
-				Mth.lerp(dist, start.z, end.z)
-		);
-		if (dist != 1){
-			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-			LevelRenderer.renderLineBox(
-					a, consumer,
-					interp.x - 0.1, interp.y - 0.1, interp.z - 0.1,
-					interp.x + 0.1, interp.y + 0.1, interp.z + 0.1,
-					1, 1, 1, 1
-			);
-			forceDraw(source);
-		}
+//		// raytracing debug
+//		Vec3 start = Minecraft.getInstance().cameraEntity.getEyePosition(Minecraft.getInstance().getFrameTime());
+//		Vec3 end = Minecraft.getInstance().cameraEntity.getLookAngle();
+//		end = end.scale(8);
+//		end = start.add(end);
+//		double dist = portal.trace(start, end);
+//		Vec3 interp = new Vec3(
+//				Mth.lerp(dist, start.x, end.x),
+//				Mth.lerp(dist, start.y, end.y),
+//				Mth.lerp(dist, start.z, end.z)
+//		);
+//		if (dist != 1){
+//			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+//			LevelRenderer.renderLineBox(
+//					a, consumer,
+//					interp.x - 0.1, interp.y - 0.1, interp.z - 0.1,
+//					interp.x + 0.1, interp.y + 0.1, interp.z + 0.1,
+//					1, 1, 1, 1
+//			);
+//			forceDraw(source);
+//		}
 		
 		// copy stack (easier to work with, as I don't need to reset the stack's state)
 		PoseStack stack = new PoseStack();

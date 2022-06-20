@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.*;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -16,6 +17,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
 import tfc.dynamicportals.DynamicPortals;
+import tfc.dynamicportals.util.Plane;
+import tfc.dynamicportals.util.VecMath;
 
 public class BasicPortal extends AbstractPortal {
 	Vector3d position;
@@ -23,34 +26,71 @@ public class BasicPortal extends AbstractPortal {
 	Vector2d rotation;
 	Vector3f normal;
 	PortalCamera cam;
+	Vec3 compNorm;
 	
 	public BasicPortal setPosition(double x, double y, double z) {
 		this.position = new Vector3d(x, y, z);
+		if (rotation != null) {
+			Vector3f oldNorm = normal;
+			computeNormal();
+			compNorm = new Vec3(normal.x(), normal.y(), normal.z());
+			normal = oldNorm;
+		}
 		return this;
 	}
 	
 	public BasicPortal setPosition(Vector3d position) {
 		this.position = position;
+		if (position != null && rotation != null) {
+			Vector3f oldNorm = normal;
+			computeNormal();
+			compNorm = new Vec3(normal.x(), normal.y(), normal.z());
+			normal = oldNorm;
+		}
 		return this;
 	}
 	
 	public BasicPortal setSize(double x, double y) {
 		this.size = new Vector2d(x, y);
+		if (position != null && rotation != null) {
+			Vector3f oldNorm = normal;
+			computeNormal();
+			compNorm = new Vec3(normal.x(), normal.y(), normal.z());
+			normal = oldNorm;
+		}
 		return this;
 	}
 	
 	public BasicPortal setSize(Vector2d size) {
 		this.size = size;
+		if (position != null && rotation != null) {
+			Vector3f oldNorm = normal;
+			computeNormal();
+			compNorm = new Vec3(normal.x(), normal.y(), normal.z());
+			normal = oldNorm;
+		}
 		return this;
 	}
 	
 	public BasicPortal setRotation(double x, double y) {
 		this.rotation = new Vector2d(x, y);
+		if (position != null) {
+			Vector3f oldNorm = normal;
+			computeNormal();
+			compNorm = new Vec3(normal.x(), normal.y(), normal.z());
+			normal = oldNorm;
+		}
 		return this;
 	}
 	
 	public BasicPortal setRotation(Vector2d rotation) {
 		this.rotation = rotation;
+		if (position != null && rotation != null) {
+			Vector3f oldNorm = normal;
+			computeNormal();
+			compNorm = new Vec3(normal.x(), normal.y(), normal.z());
+			normal = oldNorm;
+		}
 		return this;
 	}
 	
@@ -61,25 +101,25 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public boolean requireTraceRotation() {
-//		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
-//		if (target instanceof BasicPortal) {
-//			double xRot = ((BasicPortal) target).rotation.x;
-//			double xr = rotation.x;
-//			xRot += Math.toRadians(180);
-//			xRot %= Math.PI * 2;
-//			xr %= Math.PI * 2;
-//			if (xr == xRot) {
-//				double yRot = ((BasicPortal) target).rotation.y;
-//				if (yRot < 0) yRot = -(-yRot % Math.PI);
-//				else yRot %= Math.PI;
-//
-//				double yr = rotation.y;
-//				if (yr < 0) yr = -(-yr % Math.PI);
-//				else yr %= Math.PI;
-//
-//				return yRot != -yr;
-//			}
-//		}
+		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
+		if (target instanceof BasicPortal) {
+			double xRot = ((BasicPortal) target).rotation.x;
+			double xr = rotation.x;
+			xRot += Math.toRadians(180);
+			xRot %= Math.PI * 2;
+			xr %= Math.PI * 2;
+			if (xr == xRot) {
+				double yRot = ((BasicPortal) target).rotation.y;
+				if (yRot < 0) yRot = -(-yRot % Math.PI);
+				else yRot %= Math.PI;
+
+				double yr = rotation.y;
+				if (yr < 0) yr = -(-yr % Math.PI);
+				else yr %= Math.PI;
+
+				return yRot != -yr;
+			}
+		}
 		return true;
 	}
 	
@@ -204,7 +244,8 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public boolean shouldRender(Frustum frustum, double camX, double camY, double camZ) {
 		if (normal == null || normal.dot(new Vector3f((float) (camX - position.x), (float) (camY - position.y), (float) (camZ - position.z))) > 0) {
-			// TODO: deal with vertical rotation
+			if (frustum == null) return true;
+			// TODO: this isn't perfect, but for now it works
 			Quaternion quaternion = new Quaternion((float) rotation.y, 0, 0, false);
 			quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
 			
@@ -295,5 +336,55 @@ public class BasicPortal extends AbstractPortal {
 		// tick and return
 		cam.tick();
 		return cam;
+	}
+	
+	@Override
+	public boolean isInfront(Entity entity, Vec3 position) {
+		return
+				shouldRender(null, position.x, position.y, position.z) ||
+						shouldRender(null, position.x, entity.getEyePosition(Minecraft.getInstance().getFrameTime()).y, position.z);
+	}
+	
+	@Override
+	public boolean overlaps(AABB box) {
+		Quaternion rotation = raytraceRotation();
+		Vec3 vec0 = new Vec3(-size.x / 2, 0, 0);
+		vec0 = VecMath.rotate(vec0, rotation);
+		Vec3 vec1 = new Vec3(size.x / 2, 0, 0);
+		vec1 = VecMath.rotate(vec1, rotation);
+		Vec3 vec2 = new Vec3(size.x / 2, size.y, 0);
+		vec2 = VecMath.rotate(vec2, rotation);
+		Vec3 vec3 = new Vec3(-size.x / 2, size.y, 0);
+		vec3 = VecMath.rotate(vec3, rotation);
+		Plane plane = new Plane(vec0, vec1, vec2, vec3);
+		return plane.overlaps(box.move(-position.x, -position.y, -position.z));
+	}
+	
+	@Override
+	public void moveEntity(Entity entity, Vec3 position, Vec3 motion) {
+		if (isInfront(entity, position) && !isInfront(entity, position.add(motion))) {
+//			double angle = rotation.x * 180 / Math.PI;
+//			if (angle % 90 == 0) {
+//				// TODO: this calculation can be drastically more reliable
+//			}
+			if (overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
+				Vec3 pos = position.subtract(raytraceOffset());
+				// TODO: rotate?
+				pos = pos.add(target.raytraceOffset());
+				// TODO: rotate?
+				// TODO: this doesn't work with crouching
+				if (entity.level.isClientSide) entity.moveTo(pos.x, pos.y, pos.z);
+				else entity.setPosRaw(pos.x, pos.y, pos.z);
+				entity.setDeltaMovement(motion);
+				
+				Quaternion quaternion = raytraceRotation();
+				Quaternion otherQuat = target.raytraceRotation();
+				otherQuat.conj();
+				quaternion.mul(otherQuat);
+				
+				// TODO: rotate motion
+				// TODO: rotate look
+			}
+		}
 	}
 }

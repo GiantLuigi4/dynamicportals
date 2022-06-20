@@ -22,6 +22,9 @@ public class RaytraceHelper {
 				
 				BasicPortal[] portals = Temp.getPortals(minecraft.level);
 				for (BasicPortal portal : portals) {
+					if (!portal.isInfront(entity, start)) {
+						continue;
+					}
 					double dist = portal.trace(start, end);
 					if (dist == 1) continue;
 					double distance = reachVec.scale(dist).length();
