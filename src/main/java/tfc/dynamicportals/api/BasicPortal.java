@@ -14,10 +14,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
 import tfc.dynamicportals.DynamicPortals;
-import tfc.dynamicportals.util.Plane;
+import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.VecMath;
 
 public class BasicPortal extends AbstractPortal {
@@ -112,11 +113,11 @@ public class BasicPortal extends AbstractPortal {
 				double yRot = ((BasicPortal) target).rotation.y;
 				if (yRot < 0) yRot = -(-yRot % Math.PI);
 				else yRot %= Math.PI;
-
+				
 				double yr = rotation.y;
 				if (yr < 0) yr = -(-yr % Math.PI);
 				else yr %= Math.PI;
-
+				
 				return yRot != -yr;
 			}
 		}
@@ -236,6 +237,8 @@ public class BasicPortal extends AbstractPortal {
 		// TODO: I'm not sure where this 180 is coming from
 		if (DynamicPortals.isRotate180Needed()) stack.mulPose(new Quaternion(0, 180, 0, true));
 		// translate
+//		stack.mulPose(new Quaternion(0, 90, 180, true));
+//		stack.translate(0, -2, 0);
 		stack.translate(-position.x, -position.y, isMirror ? position.z : -position.z);
 		// mirror
 		if (isMirror) stack.scale(1, 1, -1);
@@ -356,8 +359,16 @@ public class BasicPortal extends AbstractPortal {
 		vec2 = VecMath.rotate(vec2, rotation);
 		Vec3 vec3 = new Vec3(-size.x / 2, size.y, 0);
 		vec3 = VecMath.rotate(vec3, rotation);
-		Plane plane = new Plane(vec0, vec1, vec2, vec3);
+		Quad plane = new Quad(vec0, vec1, vec2, vec3);
 		return plane.overlaps(box.move(-position.x, -position.y, -position.z));
+	}
+	
+	@Override
+	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
+		if (reverse)
+			// TODO: vertical rotation
+			return new Vec2(vector.x - (float) Math.toDegrees(rotation.x), vector.y);
+		return new Vec2(vector.x + (float) Math.toDegrees(rotation.x), vector.y);
 	}
 	
 	@Override
@@ -368,19 +379,35 @@ public class BasicPortal extends AbstractPortal {
 //				// TODO: this calculation can be drastically more reliable
 //			}
 			if (overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
+				Quaternion quaternion = raytraceRotation();
+				if (target != this) {
+					Quaternion otherQuat = target.raytraceRotation();
+					otherQuat.conj();
+					quaternion.mul(otherQuat);
+					quaternion.mul(new Quaternion(0, 180, 0, true));
+				} else {
+					Quaternion otherQuat = target.raytraceRotation();
+					quaternion.mul(otherQuat);
+				}
+				
 				Vec3 pos = position.subtract(raytraceOffset());
+				pos = VecMath.rotate(pos, quaternion);
 				// TODO: rotate?
 				pos = pos.add(target.raytraceOffset());
 				// TODO: rotate?
 				// TODO: this doesn't work with crouching
 				if (entity.level.isClientSide) entity.moveTo(pos.x, pos.y, pos.z);
 				else entity.setPosRaw(pos.x, pos.y, pos.z);
+				motion = VecMath.rotate(motion, quaternion);
 				entity.setDeltaMovement(motion);
 				
-				Quaternion quaternion = raytraceRotation();
-				Quaternion otherQuat = target.raytraceRotation();
-				otherQuat.conj();
-				quaternion.mul(otherQuat);
+				Vec2 vec = entity.getRotationVector();
+//				System.out.println(vec);
+				vec = adjustLook(vec, false);
+				vec = target.adjustLook(vec, true);
+				// I believe these methods are inversed, so I believe this is right
+				entity.setYRot(vec.x);
+				entity.setXRot(vec.y);
 				
 				// TODO: rotate motion
 				// TODO: rotate look

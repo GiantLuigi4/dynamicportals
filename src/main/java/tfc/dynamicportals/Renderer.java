@@ -7,12 +7,11 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.Matrix4f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
@@ -64,7 +63,7 @@ public class Renderer {
 		ShaderInstance shaderInstance;
 		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
-		
+
 //		// raytracing debug
 //		Vec3 start = Minecraft.getInstance().cameraEntity.getEyePosition(Minecraft.getInstance().getFrameTime());
 //		Vec3 end = Minecraft.getInstance().cameraEntity.getLookAngle();
@@ -122,7 +121,6 @@ public class Renderer {
 		double camX = Renderer.camX, camY = Renderer.camY, camZ = Renderer.camZ;
 		Camera camera = portal.setupCamera(Minecraft.getInstance().gameRenderer.getMainCamera().getEntity(), camX, camY, camZ, Minecraft.getInstance().gameRenderer.getMainCamera());
 		stk.translate(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
-		
 		// draw
 		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 		// restore camera pos

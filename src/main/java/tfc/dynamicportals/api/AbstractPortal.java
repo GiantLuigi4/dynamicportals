@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.DynamicPortals;
 
@@ -137,6 +138,9 @@ public abstract class AbstractPortal {
 	public abstract Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera);
 	
 	public abstract boolean overlaps(AABB box);
+	
+	// TODO: see if I can get a default implementation for this
+	public abstract Vec2 adjustLook(Vec2 vector, boolean reverse);
 	
 	public boolean isInfront(Entity entity, Vec3 position) {
 		return true;

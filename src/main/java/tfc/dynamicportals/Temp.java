@@ -35,7 +35,7 @@ public class Temp {
 					.setSize(width, 2)
 					.setPosition(5, 5, 5)
 //					.setPosition(0, 5, 2)
-					.setRotation(Math.toRadians(rotation + 180), Math.toRadians(0));
+					.setRotation(Math.toRadians(rotation + 0), Math.toRadians(0));
 //					.setRotation(Math.toRadians(180), 0);
 			portal.computeNormal();
 			portals.add(portal);

@@ -6,6 +6,17 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.opengl.GL13;
 
 public class ShaderInjections {
+	public static String tailVertex() {
+		return "\n\t/* Dynamic Portals injection */\n" +
+				"if (float(dynamicPortalsHasStencilTextureSet) > 1.5f) {\n" +
+				// TODO: get this working
+//				"\t\tif (gl_Position.z < 0.01) {\n" +
+//				"\t\t\tgl_Position.z = 0.01;\n" +
+//				"\t\t}\n" +
+				"\t}\n" +
+				"\t/* end Dynamic Portals injection */\n";
+	}
+	
 	public static String headInjection(boolean hasTexCoord, String samplerName) {
 		// TODO: checking of stuff
 		// TODO: this should only really be done for the POSITION_TEX shader

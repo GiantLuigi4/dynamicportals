@@ -3,11 +3,11 @@ package tfc.dynamicportals.util;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class Plane {
+public class Quad {
 	// bottom left, bottom right, top right, top left
 	Vec3 pt0, pt1, pt2, pt3;
 	
-	public Plane(Vec3 pt0, Vec3 pt1, Vec3 pt2, Vec3 pt3) {
+	public Quad(Vec3 pt0, Vec3 pt1, Vec3 pt2, Vec3 pt3) {
 		this.pt0 = pt0;
 		this.pt1 = pt1;
 		this.pt2 = pt2;
@@ -30,13 +30,13 @@ public class Plane {
 		if (x > z) {
 			double dx0 = Math.abs(box.getCenter().x + (x / 2)) / x;
 			if (dx0 < 0 || dx0 > 1) return false;
-			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
-			return true;
+//			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
 //			return box.contains(point);
+			return true;
 		} else {
 			double dx0 = Math.abs(box.getCenter().z + (z / 2)) / z;
 			if (dx0 < 0 || dx0 > 1) return false;
-			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
+//			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
 //			return box.contains(point);
 			return true;
 		}

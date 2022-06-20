@@ -113,6 +113,12 @@ public class GlStateManagerMixin {
 							"uniform vec2 dynamicPortalsFBOSize;\n" +
 							"/* end Dynamic Portals injection */\n";
 			srcStr = str + srcStr;
+		} else if (type == GL42.GL_VERTEX_SHADER) {
+			String str =
+					"/* Dynamic Portals injection */\n" +
+							"uniform int dynamicPortalsHasStencilTextureSet;\n" +
+							"/* end Dynamic Portals injection */\n";
+			srcStr = str + srcStr;
 		}
 		return srcStr;
 	}
@@ -143,6 +149,9 @@ public class GlStateManagerMixin {
 				if (lCC.get() == 0) {
 					if (type == GL42.GL_FRAGMENT_SHADER) {
 						String injection = ShaderInjections.tailInjection();
+						builder.append(injection);
+					} else if (type == GL42.GL_VERTEX_SHADER) {
+						String injection = ShaderInjections.tailVertex();
 						builder.append(injection);
 					}
 				}
