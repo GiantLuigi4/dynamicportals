@@ -38,7 +38,7 @@ public class Temp {
 					.setRotation(Math.toRadians(rotation), Math.toRadians(0));
 //					.setRotation(Math.toRadians(180), 0);
 			portal.computeNormal();
-			portals.add(portal);
+//			portals.add(portal);
 			other.target = portal;
 			portal.target = other;
 		}
