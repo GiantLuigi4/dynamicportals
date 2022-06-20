@@ -22,6 +22,8 @@ public class ShaderInjections {
 						"\tvec2 dynamicPortalsPos;\n" +
 						"\tvec4 dynamicPortalsColor;\n" +
 						"\tvec4 dynamicPortalsDepth;\n" +
+//						"\tfloat dynamicPortalsRoundingVar0;\n" +
+//						"\tfloat dynamicPortalsRoundingVar1;\n" +
 						"\tif (float(dynamicPortalsHasStencilTextureSet) > 1.5f) { // gotta love glsl, yk?\n" +
 						yes +
 						"\t} else if (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {\n" +
@@ -35,6 +37,14 @@ public class ShaderInjections {
 //						"\t\tfragColor = vec4(dynamicPortalsDepth.rrr, 1);\n" +
 //						"\t\tfragColor = vec4(gl_FragDepth, gl_FragDepth, gl_FragDepth, 1);\n" +
 //						"\t\tfragColor = vec4(gl_FragCoord.zzz, 1);\n" +
+						// TODO: figure out how to make a more lenient depth test
+//						"\t\tdynamicPortalsRoundingVar0 = dynamicPortalsDepth.r;\n" +
+//						"\t\tdynamicPortalsRoundingVar1 = gl_FragCoord.z;\n" +
+//						"\t\tdynamicPortalsRoundingVar0 *= 1000.;\n" +
+//						"\t\tdynamicPortalsRoundingVar1 *= 1000.;\n" +
+//						"\t\tdynamicPortalsRoundingVar0 = floor(dynamicPortalsRoundingVar0);\n" +
+//						"\t\tdynamicPortalsRoundingVar1 = floor(dynamicPortalsRoundingVar1);\n" +
+//						"\t\tif (dynamicPortalsRoundingVar0 > dynamicPortalsRoundingVar1) {\n" +
 						"\t\tif (dynamicPortalsDepth.r > gl_FragCoord.z) {\n" +
 						"\t\t\tdiscard;\n" +
 						"\t\t\treturn;\n" +

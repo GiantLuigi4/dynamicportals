@@ -1,13 +1,13 @@
 package tfc.dynamicportals;
 
 import net.minecraft.world.level.Level;
-import tfc.dynamicportals.api.Portal;
+import tfc.dynamicportals.api.BasicPortal;
 
 import java.util.ArrayList;
 
 public class Temp {
-	public static Portal[] getPortals(Level level) {
-		ArrayList<Portal> portals = new ArrayList<>();
+	public static BasicPortal[] getPortals(Level level) {
+		ArrayList<BasicPortal> portals = new ArrayList<>();
 		
 		double width = Math.sqrt(2 * 4);
 
@@ -22,27 +22,27 @@ public class Temp {
 //		}
 		
 		int rotation = 45;
-		Portal other = new Portal()
+		BasicPortal other = new BasicPortal()
 				.setSize(width, 2)
-//				.setPosition(-5, 5, -5)
-				.setPosition(0, 5, -2)
-//				.setRotation(Math.toRadians(rotation), 0);
-				.setRotation(Math.toRadians(0), 0);
+				.setPosition(-5, 5, -5)
+//				.setPosition(0, 5, -2)
+				.setRotation(Math.toRadians(rotation), Math.toRadians(0));
+//				.setRotation(Math.toRadians(0), 0);
 		other.computeNormal();
 		portals.add(other);
 		{
-			Portal portal = new Portal()
+			BasicPortal portal = new BasicPortal()
 					.setSize(width, 2)
-//					.setPosition(5, 5, 5)
-					.setPosition(0, 5, 2)
-//					.setRotation(Math.toRadians(rotation + 180), 0);
-					.setRotation(Math.toRadians(180), 0);
+					.setPosition(5, 5, 5)
+//					.setPosition(0, 5, 2)
+					.setRotation(Math.toRadians(rotation), Math.toRadians(0));
+//					.setRotation(Math.toRadians(180), 0);
 			portal.computeNormal();
 			portals.add(portal);
 			other.target = portal;
 			portal.target = other;
 		}
 		
-		return portals.toArray(new Portal[0]);
+		return portals.toArray(new BasicPortal[0]);
 	}
 }

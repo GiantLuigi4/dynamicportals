@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import tfc.dynamicportals.api.Portal;
+import tfc.dynamicportals.api.BasicPortal;
 
 public class RaytraceHelper {
 	public static void trace(Minecraft minecraft, float pPartialTicks) {
@@ -22,8 +22,8 @@ public class RaytraceHelper {
 				Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);
 				Vec3 end = start.add(reachVec);
 				
-				Portal[] portals = Temp.getPortals(minecraft.level);
-				for (Portal portal : portals) {
+				BasicPortal[] portals = Temp.getPortals(minecraft.level);
+				for (BasicPortal portal : portals) {
 					double dist = portal.trace(start, end);
 					if (dist == 1) continue;
 					double distance = reachVec.scale(dist).length();
@@ -45,28 +45,30 @@ public class RaytraceHelper {
 					Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 					interpStart = interpStart.add(offset);
 
-					Quaternion quat = portal.raytraceRotation();
 //					Quaternion q = new Quaternion((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 0.0f);
 //					q.mul(quat);
 //					quat.conj();
 //					quat.mul(q);
 //					interpReach = new Vec3(q.i(), q.j(), q.k());
 					if (portal.requireTraceRotation()) {
-						// TODO: fix this code
+						Quaternion quat = portal.raytraceRotation();
 						Matrix4f matrix4f = new Matrix4f();
 						matrix4f.setIdentity();
 						matrix4f.multiply(quat);
 						Vector4f vec4f = new Vector4f((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 1);
 						vec4f.transform(matrix4f);
 						interpReach = new Vec3(vec4f.x(), vec4f.y(), vec4f.z());
+						
+						quat = portal.target.raytraceRotation();
+						quat.conj();
+						
+						matrix4f = new Matrix4f();
+						matrix4f.setIdentity();
+						matrix4f.multiply(quat);
+						vec4f = new Vector4f((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 1);
+						vec4f.transform(matrix4f);
+						interpReach = new Vec3(vec4f.x(), vec4f.y(), vec4f.z());
 					}
-
-//					quat = portal.target.raytraceRotation();
-//					q = new Quaternion((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 0.0f);
-//					q.mul(quat);
-//					quat.conj();
-//					quat.mul(q);
-//					interpReach = new Vec3(quat.i(), quat.j(), quat.k());
 					
 					Vec3 istart = new Vec3(interpStart.x(), interpStart.y(), interpStart.z());
 					Vec3 iend = new Vec3(interpStart.x() + interpReach.x(), interpStart.y() + interpReach.y(), interpStart.z() + interpReach.z());

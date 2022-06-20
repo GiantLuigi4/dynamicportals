@@ -3,14 +3,16 @@ package tfc.dynamicportals.api;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Quaternion;
+import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.DynamicPortals;
 
 /**
  * the base class for all portals
- * {@link Portal} for some examples
+ * {@link BasicPortal} for some examples
  */
 public abstract class AbstractPortal {
 	public AbstractPortal target = this;
@@ -21,7 +23,7 @@ public abstract class AbstractPortal {
 	 *
 	 * @param target the other portal in the pair
 	 */
-	public void setTarget(Portal target) {
+	public void setTarget(BasicPortal target) {
 		this.target = target;
 	}
 	
@@ -121,4 +123,15 @@ public abstract class AbstractPortal {
 	public void teardownRenderState() {
 	}
 	
+	/**
+	 * Sets up the camera for the render info
+	 *
+	 * @param cameraEntity the entity the player is spectating, or the actual player
+	 * @param camX         camera position
+	 * @param camY         camera position
+	 * @param camZ         camera position
+	 * @param gameCamera   the actual camera
+	 * @return a dummy camera to use for rendering
+	 */
+	public abstract Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera);
 }

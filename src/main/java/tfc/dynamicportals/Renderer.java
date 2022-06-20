@@ -4,6 +4,7 @@ import com.jozufozu.flywheel.backend.gl.GlStateTracker;
 import com.jozufozu.flywheel.event.BeginFrameEvent;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
@@ -14,9 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import tfc.dynamicportals.api.AbstractPortal;
-import tfc.dynamicportals.api.Portal;
-
-import java.util.ArrayList;
+import tfc.dynamicportals.api.BasicPortal;
 
 public class Renderer {
 	private static final RenderTarget stencilTarget = new TextureTarget(
@@ -67,26 +66,26 @@ public class Renderer {
 		MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
 		
 		// raytracing debug
-//		Vec3 start = Minecraft.getInstance().cameraEntity.getEyePosition(Minecraft.getInstance().getFrameTime());
-//		Vec3 end = Minecraft.getInstance().cameraEntity.getLookAngle();
-//		end = end.scale(8);
-//		end = start.add(end);
-//		double dist = portal.trace(start, end);
-//		Vec3 interp = new Vec3(
-//				Mth.lerp(dist, start.x, end.x),
-//				Mth.lerp(dist, start.y, end.y),
-//				Mth.lerp(dist, start.z, end.z)
-//		);
-//		if (dist != 1){
-//			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-//			LevelRenderer.renderLineBox(
-//					a, consumer,
-//					interp.x - 0.1, interp.y - 0.1, interp.z - 0.1,
-//					interp.x + 0.1, interp.y + 0.1, interp.z + 0.1,
-//					1, 1, 1, 1
-//			);
-//			forceDraw(source);
-//		}
+		Vec3 start = Minecraft.getInstance().cameraEntity.getEyePosition(Minecraft.getInstance().getFrameTime());
+		Vec3 end = Minecraft.getInstance().cameraEntity.getLookAngle();
+		end = end.scale(8);
+		end = start.add(end);
+		double dist = portal.trace(start, end);
+		Vec3 interp = new Vec3(
+				Mth.lerp(dist, start.x, end.x),
+				Mth.lerp(dist, start.y, end.y),
+				Mth.lerp(dist, start.z, end.z)
+		);
+		if (dist != 1){
+			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+			LevelRenderer.renderLineBox(
+					a, consumer,
+					interp.x - 0.1, interp.y - 0.1, interp.z - 0.1,
+					interp.x + 0.1, interp.y + 0.1, interp.z + 0.1,
+					1, 1, 1, 1
+			);
+			forceDraw(source);
+		}
 		
 		// copy stack (easier to work with, as I don't need to reset the stack's state)
 		PoseStack stack = new PoseStack();
@@ -121,8 +120,11 @@ public class Renderer {
 		// setup state
 		RenderSystem.enableCull();
 		double camX = Renderer.camX, camY = Renderer.camY, camZ = Renderer.camZ;
+		Camera camera = portal.setupCamera(Minecraft.getInstance().gameRenderer.getMainCamera().getEntity(), camX, camY, camZ, Minecraft.getInstance().gameRenderer.getMainCamera());
+		stk.translate(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
+		
 		// draw
-		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, false, new Camera(), Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
+		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 		// restore camera pos
 		Renderer.camX = camX;
 		Renderer.camY = camY;
@@ -154,6 +156,7 @@ public class Renderer {
 		
 		// attempt to reset gl state
 		RenderSystem.enableCull();
+		Lighting.setupFor3DItems();
 		state.restore();
 		// TODO: fix the lighting
 	}
@@ -212,10 +215,10 @@ public class Renderer {
 		RenderBuffers buffers = Minecraft.getInstance().renderBuffers();
 		RenderType type = RenderType.solid();
 		
-		Portal[] portals = Temp.getPortals(Minecraft.getInstance().level);
+		BasicPortal[] portals = Temp.getPortals(Minecraft.getInstance().level);
 		
 		frustum.prepare(camX, camY, camZ);
-		for (Portal portal1 : portals) {
+		for (BasicPortal portal1 : portals) {
 			if (portal1.shouldRender(frustum, camX, camY, camZ)) {
 				renderPortal(stack, type, buffers, portal1, state);
 			}
