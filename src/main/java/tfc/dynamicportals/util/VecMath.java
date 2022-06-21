@@ -26,6 +26,7 @@ public class VecMath {
 		if (motion) {
 			Vec3 pos = src;
 			
+			// TODO: this doesn't work properly and I want to scream because of that
 			Quaternion conj = selfRotation.copy();
 			conj.conj();
 			pos = VecMath.rotate(pos, conj);
