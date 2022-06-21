@@ -11,7 +11,8 @@ public class TeleportationHandler {
 	public static void handle(Entity entity, Vec3 motion) {
 		AbstractPortal[] portals = Temp.getPortals(entity.level);
 		for (AbstractPortal portal : portals) {
-			if (portal.isInfront(entity, entity.getPosition(0))) {
+			Vec3 pos = entity.position();
+			if (portal.shouldRender(null, pos.x, pos.y, pos.z)) {
 				if (portal.moveEntity(entity, entity.getPosition(0), motion)) {
 					((IMaySkipPacket) entity).setSkipTeleportPacket();
 					// TODO: better handling, deny teleporting through the pair

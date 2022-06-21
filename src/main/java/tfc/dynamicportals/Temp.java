@@ -26,15 +26,18 @@ public class Temp {
 //		if (Minecraft.getInstance().level != null) {
 //			time = Minecraft.getInstance().level.getGameTime() + Minecraft.getInstance().getFrameTime();
 //		}
-//		double rotation = time;
-		double rotation = 0;
+		double time = 12;
+		double rotation = time;
+//		double rotation = 0;
 		for (int i = 0; i < 2; i++) {
 			rotation += 360 / 4d;
 			double c = Math.cos(Math.toRadians(rotation));
 			double s = Math.sin(Math.toRadians(rotation));
+			double s1 = Math.sin(Math.toRadians((rotation / 3.) + 180));
+			double c1 = Math.sin(Math.toRadians((rotation / 8.) + 180));
 			BasicPortal other = new BasicPortal()
-					.setSize(width, 2)
-					.setPosition(s * -7, 5, c * -7)
+					.setSize(2, 3)
+					.setPosition(s * -7 - c1 * 10, 5, c * -7 - c1 * 10)
 //					.setPosition(0, 5, -2)
 					.setRotation(Math.toRadians(rotation), Math.toRadians(0));
 //					.setRotation(Math.toRadians(0), 0);
@@ -42,8 +45,8 @@ public class Temp {
 			portals.add(other);
 			{
 				BasicPortal portal = new BasicPortal()
-						.setSize(width, 2)
-						.setPosition(s * 7, 5, c * 7)
+						.setSize(2, 3)
+						.setPosition(s * 7 + s1 * 10, 5, c * 7 + s1 * 10)
 //						.setPosition(0, 5, 2)
 						.setRotation(Math.toRadians(rotation + 180), Math.toRadians(0));
 //						.setRotation(Math.toRadians(180), 0);

@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
@@ -346,9 +345,13 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public boolean isInfront(Entity entity, Vec3 position) {
-		return
+		Vector3f oldNorm = normal;
+		normal = new Vector3f((float) compNorm.x, (float) compNorm.y, (float) compNorm.z);
+		boolean result =
 				shouldRender(null, position.x, position.y, position.z) ||
 						shouldRender(null, position.x, entity.getEyePosition(Minecraft.getInstance().getFrameTime()).y, position.z);
+		normal = oldNorm;
+		return result;
 	}
 	
 	@Override
@@ -374,58 +377,63 @@ public class BasicPortal extends AbstractPortal {
 		return new Vec2(vector.x, vector.y + (float) Math.toDegrees(rotation.x));
 	}
 	
+	// TODO: for some reason, backface teleportation is busted
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
-		if (isInfront(entity, position) && !isInfront(entity, position.add(motion))) {
+		if (shouldRender(null, position.x, position.y, position.z)) {
+			boolean wasInfront = isInfront(entity, position);
+			boolean isInfront = isInfront(entity, position.add(motion));
+			if (wasInfront != isInfront) {
 //			double angle = rotation.x * 180 / Math.PI;
 //			if (angle % 90 == 0) {
 //				// TODO: this calculation can be drastically more reliable
 //			}
-			if (overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
-				Quaternion quaternion = raytraceRotation();
-				Quaternion other = target.raytraceRotation();
-				
-				Vec3 srcOff = raytraceOffset();
-				Vec3 dstOff = target.raytraceOffset();
-				
-				Vec3 oldPos = new Vec3(entity.xOld, entity.yOld, entity.zOld);
-				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
-				Vec3 pos = position;
-				if (target != this) {
-					oldPos = VecMath.transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
-					oPos = VecMath.transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
-					pos = VecMath.transform(pos, quaternion, other, this != target, false, srcOff, dstOff);
-				}
-				
-				Vec2 vec = entity.getRotationVector();
-				Vec2 vecOld = new Vec2(entity.xRotO, entity.yRotO);
+				if (overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
+					Quaternion quaternion = raytraceRotation();
+					Quaternion other = target.raytraceRotation();
+					
+					Vec3 srcOff = raytraceOffset();
+					Vec3 dstOff = target.raytraceOffset();
+					
+					Vec3 oldPos = new Vec3(entity.xOld, entity.yOld, entity.zOld);
+					Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
+					Vec3 pos = position;
+					if (target != this) {
+						oldPos = VecMath.transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
+						oPos = VecMath.transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
+						pos = VecMath.transform(pos, quaternion, other, this != target, false, srcOff, dstOff);
+					}
+					
+					Vec2 vec = entity.getRotationVector();
+					Vec2 vecOld = new Vec2(entity.xRotO, entity.yRotO);
 //				System.out.println(vec);
-				vec = adjustLook(vec, false);
-				vecOld = adjustLook(vecOld, false);
-				vec = target.adjustLook(vec, true);
-				vecOld = target.adjustLook(vecOld, true);
-				entity.setXRot(vec.x);
-				entity.xRotO = vecOld.x;
-				entity.setYRot(vec.y + 180);
-				entity.yRotO = vecOld.y + 180;
-				
-				motion = VecMath.transform(motion, quaternion, other, false, true, srcOff, dstOff);
-				entity.setDeltaMovement(motion);
-				if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
-				else entity.absMoveTo(pos.x, pos.y, pos.z);
-				entity.setDeltaMovement(motion);
-				entity.setXRot(vec.x);
-				entity.xRotO = vecOld.x;
-				entity.setYRot(vec.y + 180);
-				entity.yRotO = vecOld.y + 180;
-				entity.xo = oPos.x;
-				entity.xOld = oldPos.x;
-				entity.yo = oPos.y;
-				entity.yOld = oldPos.y;
-				entity.zo = oPos.z;
-				entity.zOld = oldPos.z;
-				
-				return true;
+					vec = adjustLook(vec, false);
+					vecOld = adjustLook(vecOld, false);
+					vec = target.adjustLook(vec, true);
+					vecOld = target.adjustLook(vecOld, true);
+					entity.setXRot(vec.x);
+					entity.xRotO = vecOld.x;
+					entity.setYRot(vec.y + 180);
+					entity.yRotO = vecOld.y + 180;
+					
+					motion = VecMath.transform(motion, quaternion, other, false, true, srcOff, dstOff);
+					entity.setDeltaMovement(motion);
+					if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
+					else entity.absMoveTo(pos.x, pos.y, pos.z);
+					entity.setDeltaMovement(motion);
+					entity.setXRot(vec.x);
+					entity.xRotO = vecOld.x;
+					entity.setYRot(vec.y + 180);
+					entity.yRotO = vecOld.y + 180;
+					entity.xo = oPos.x;
+					entity.xOld = oldPos.x;
+					entity.yo = oPos.y;
+					entity.yOld = oldPos.y;
+					entity.zo = oPos.z;
+					entity.zOld = oldPos.z;
+					
+					return true;
+				}
 			}
 		}
 		return false;
