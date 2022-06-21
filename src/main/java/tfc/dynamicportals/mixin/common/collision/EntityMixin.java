@@ -24,7 +24,10 @@ public abstract class EntityMixin {
 		AbstractPortal[] portals = Temp.getPortals(level);
 		for (AbstractPortal portal : portals) {
 			if (portal.isInfront((Entity) (Object) this, this.getPosition(0))) {
-				portal.moveEntity((Entity)(Object)this, this.getPosition(0), vec31);
+				if (portal.moveEntity((Entity)(Object)this, this.getPosition(0), vec31)) {
+					// TODO: better handling, deny teleporting through the pair
+					break;
+				}
 			}
 		}
 	}

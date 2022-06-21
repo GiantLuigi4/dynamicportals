@@ -85,6 +85,7 @@ repositories {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.19'
+
     implementation fg.deobf("curse.maven:flywheel-486392:3737402")
     runtimeOnly fg.deobf("curse.maven:spark-361579:3670050")
 

@@ -8,6 +8,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.BasicPortal;
+import tfc.dynamicportals.util.VecMath;
 
 public class RaytraceHelper {
 	public static void trace(Minecraft minecraft, float pPartialTicks) {
@@ -42,34 +43,42 @@ public class RaytraceHelper {
 							reachVec.z * dist
 					);
 					
-					// this confuses me way more than it should
-					Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
-					interpStart = interpStart.add(offset);
-
-//					Quaternion q = new Quaternion((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 0.0f);
-//					q.mul(quat);
-//					quat.conj();
-//					quat.mul(q);
-//					interpReach = new Vec3(q.i(), q.j(), q.k());
-					if (portal.requireTraceRotation()) {
-						Quaternion quat = portal.raytraceRotation();
-						quat.conj();
-						interpReach = rotateQuat(interpReach, quat);
-						interpReach = interpReach.multiply(1, 1, -1);
-						quat.conj();
-						interpReach = rotateQuat(interpReach, quat);
-						interpReach = rotateQuat(interpReach, quat);
-						
-						quat = portal.target.raytraceRotation();
-						interpReach = rotateQuat(interpReach, quat);
-						interpReach = interpReach.multiply(1, 1, 1);
-						quat.conj();
-						interpReach = rotateQuat(interpReach, quat);
-						interpReach = rotateQuat(interpReach, quat);
-					}
+					Quaternion srcQuat = portal.raytraceRotation();
+					Quaternion dstQuat = portal.target.raytraceRotation();
+					Vec3 srcOff = portal.raytraceOffset();
+					Vec3 dstOff = portal.target.raytraceOffset();
+					Vec3 istart = VecMath.transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+					Vec3 ireach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+					Vec3 iend = istart.add(ireach);
 					
-					Vec3 istart = new Vec3(interpStart.x(), interpStart.y(), interpStart.z());
-					Vec3 iend = new Vec3(interpStart.x() + interpReach.x(), interpStart.y() + interpReach.y(), interpStart.z() + interpReach.z());
+//					// this confuses me way more than it should
+//					Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
+//					interpStart = interpStart.add(offset);
+//
+////					Quaternion q = new Quaternion((float) interpReach.x, (float) interpReach.y, (float) interpReach.z, 0.0f);
+////					q.mul(quat);
+////					quat.conj();
+////					quat.mul(q);
+////					interpReach = new Vec3(q.i(), q.j(), q.k());
+//					if (portal.requireTraceRotation()) {
+//						Quaternion quat = portal.raytraceRotation();
+//						quat.conj();
+//						interpReach = rotateQuat(interpReach, quat);
+//						interpReach = interpReach.multiply(1, 1, -1);
+//						quat.conj();
+//						interpReach = rotateQuat(interpReach, quat);
+//						interpReach = rotateQuat(interpReach, quat);
+//
+//						quat = portal.target.raytraceRotation();
+//						interpReach = rotateQuat(interpReach, quat);
+//						interpReach = interpReach.multiply(1, 1, 1);
+//						quat.conj();
+//						interpReach = rotateQuat(interpReach, quat);
+//						interpReach = rotateQuat(interpReach, quat);
+//					}
+//
+//					Vec3 istart = new Vec3(interpStart.x(), interpStart.y(), interpStart.z());
+//					Vec3 iend = new Vec3(interpStart.x() + interpReach.x(), interpStart.y() + interpReach.y(), interpStart.z() + interpReach.z());
 					HitResult result = entity.level.clip(
 							new ClipContext(
 									istart, iend,

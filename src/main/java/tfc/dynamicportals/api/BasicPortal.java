@@ -372,7 +372,7 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	@Override
-	public void moveEntity(Entity entity, Vec3 position, Vec3 motion) {
+	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		if (isInfront(entity, position) && !isInfront(entity, position.add(motion))) {
 //			double angle = rotation.x * 180 / Math.PI;
 //			if (angle % 90 == 0) {
@@ -380,38 +380,39 @@ public class BasicPortal extends AbstractPortal {
 //			}
 			if (overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
 				Quaternion quaternion = raytraceRotation();
-				if (target != this) {
-					Quaternion otherQuat = target.raytraceRotation();
-					otherQuat.conj();
-					quaternion.mul(otherQuat);
-					quaternion.mul(new Quaternion(0, 180, 0, true));
-				} else {
-					Quaternion otherQuat = target.raytraceRotation();
-					quaternion.mul(otherQuat);
-				}
+				Quaternion other = target.raytraceRotation();
 				
-				Vec3 pos = position.subtract(raytraceOffset());
-				pos = VecMath.rotate(pos, quaternion);
-				// TODO: rotate?
-				pos = pos.add(target.raytraceOffset());
-				// TODO: rotate?
-				// TODO: this doesn't work with crouching
-				if (entity.level.isClientSide) entity.moveTo(pos.x, pos.y, pos.z);
-				else entity.setPosRaw(pos.x, pos.y, pos.z);
-				motion = VecMath.rotate(motion, quaternion);
-				entity.setDeltaMovement(motion);
+				Vec3 srcOff = raytraceOffset();
+				Vec3 dstOff = target.raytraceOffset();
+				
+				Vec3 oldPos = new Vec3(entity.xo, entity.yo, entity.zo);
+				oldPos = VecMath.transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
+				Vec3 pos = VecMath.transform(position, quaternion, other, this != target, false, srcOff, dstOff);
 				
 				Vec2 vec = entity.getRotationVector();
 //				System.out.println(vec);
 				vec = adjustLook(vec, false);
 				vec = target.adjustLook(vec, true);
-				// I believe these methods are inversed, so I believe this is right
-				entity.setYRot(vec.x);
-				entity.setXRot(vec.y);
+				entity.setXRot(vec.x);
+				entity.setYRot(vec.y + 180);
 				
-				// TODO: rotate motion
-				// TODO: rotate look
+				motion = VecMath.transform(motion, quaternion, other, false, true, srcOff, dstOff);
+//				pos = pos.add(motion);
+//				motion = VecMath.rotate(motion, new Quaternion(0, 180, 0, true));
+				entity.setDeltaMovement(motion);
+				if (entity.level.isClientSide) entity.setPosRaw(pos.x, pos.y, pos.z);
+				else entity.moveTo(pos.x, pos.y, pos.z);
+				entity.setDeltaMovement(motion);
+				entity.xo = oldPos.x;
+				entity.xOld = oldPos.x;
+				entity.yo = oldPos.y;
+				entity.yOld = oldPos.y;
+				entity.zo = oldPos.z;
+				entity.zOld = oldPos.z;
+				
+				return true;
 			}
 		}
+		return false;
 	}
 }

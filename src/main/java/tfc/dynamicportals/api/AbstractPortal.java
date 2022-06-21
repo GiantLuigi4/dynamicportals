@@ -146,6 +146,7 @@ public abstract class AbstractPortal {
 		return true;
 	}
 	
-	public void moveEntity(Entity entity, Vec3 position, Vec3 motion) {
+	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
+		return false;
 	}
 }
