@@ -14,7 +14,8 @@
     "client.core.ShaderMixin",
     "client.hackery.RenderSystemMixin",
     "client.hackery.RenderTargetMixin",
-    "client.selection.GameRendererMixin"
+    "client.selection.GameRendererMixin",
+    "client.quality.ClientNetworkingMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -367,8 +367,8 @@ public class BasicPortal extends AbstractPortal {
 	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
 		if (reverse)
 			// TODO: vertical rotation
-			return new Vec2(vector.x - (float) Math.toDegrees(rotation.x), vector.y);
-		return new Vec2(vector.x + (float) Math.toDegrees(rotation.x), vector.y);
+			return new Vec2(vector.x, vector.y - (float) Math.toDegrees(rotation.x));
+		return new Vec2(vector.x, vector.y + (float) Math.toDegrees(rotation.x));
 	}
 	
 	@Override
@@ -385,29 +385,38 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 srcOff = raytraceOffset();
 				Vec3 dstOff = target.raytraceOffset();
 				
-				Vec3 oldPos = new Vec3(entity.xo, entity.yo, entity.zo);
+				Vec3 oldPos = new Vec3(entity.xOld, entity.yOld, entity.zOld);
+				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 				oldPos = VecMath.transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
+				oPos = VecMath.transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
 				Vec3 pos = VecMath.transform(position, quaternion, other, this != target, false, srcOff, dstOff);
 				
 				Vec2 vec = entity.getRotationVector();
+				Vec2 vecOld = new Vec2(entity.xRotO, entity.yRotO);
 //				System.out.println(vec);
 				vec = adjustLook(vec, false);
+				vecOld = adjustLook(vecOld, false);
 				vec = target.adjustLook(vec, true);
+				vecOld = target.adjustLook(vecOld, true);
 				entity.setXRot(vec.x);
+				entity.xRotO = vecOld.x;
 				entity.setYRot(vec.y + 180);
+				entity.yRotO = vecOld.y + 180;
 				
 				motion = VecMath.transform(motion, quaternion, other, false, true, srcOff, dstOff);
-//				pos = pos.add(motion);
-//				motion = VecMath.rotate(motion, new Quaternion(0, 180, 0, true));
 				entity.setDeltaMovement(motion);
-				if (entity.level.isClientSide) entity.setPosRaw(pos.x, pos.y, pos.z);
-				else entity.moveTo(pos.x, pos.y, pos.z);
+				if (entity.level.isClientSide) entity.teleportTo(pos.x, pos.y, pos.z);
+				else entity.teleportTo(pos.x, pos.y, pos.z);
 				entity.setDeltaMovement(motion);
-				entity.xo = oldPos.x;
+				entity.setXRot(vec.x);
+				entity.xRotO = vecOld.x;
+				entity.setYRot(vec.y + 180);
+				entity.yRotO = vecOld.y + 180;
+				entity.xo = oPos.x;
 				entity.xOld = oldPos.x;
-				entity.yo = oldPos.y;
+				entity.yo = oPos.y;
 				entity.yOld = oldPos.y;
-				entity.zo = oldPos.z;
+				entity.zo = oPos.z;
 				entity.zOld = oldPos.z;
 				
 				return true;
