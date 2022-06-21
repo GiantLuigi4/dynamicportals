@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "dynamicportals.refmap.json",
   "mixins": [
-    "common.collision.EntityMixin"
+    "common.collision.EntityMixin",
+    "common.quality.ServerNetworkingMixin"
   ],
   "client": [
     "client.core.GlStateManagerMixin",

@@ -17,6 +17,13 @@ public class ShaderInjections {
 				"\t/* end Dynamic Portals injection */\n";
 	}
 	
+	// about iris/oculus/OF
+	/*
+		// gl_FragData[0] // seems to be the color component of the pixel
+		// (assumption) gl_FragCoord // plain glsl builtin, representing the point on screen
+		// (assumption) gl_FragDepth // plain glsl builtin, representing the depth of the pixel
+		// vertexDistance // ??
+	 */
 	public static String headInjection(boolean hasTexCoord, String samplerName) {
 		// TODO: checking of stuff
 		// TODO: this should only really be done for the POSITION_TEX shader
@@ -28,7 +35,7 @@ public class ShaderInjections {
 						"\t\treturn;\n";
 		if (!hasTexCoord) yes = "";
 		return
-//				yes;
+				// TODO: something needs to change when sodium is present
 				"\n\t/* Dynamic Portals injection */\n" +
 						"\tvec2 dynamicPortalsPos;\n" +
 						"\tvec4 dynamicPortalsColor;\n" +
@@ -45,9 +52,6 @@ public class ShaderInjections {
 						"\t\t\treturn;\n" +
 						"\t\t}\n" +
 						"\t\tdynamicPortalsDepth = texture(dynamicPortalsStencilDepth, dynamicPortalsPos);\n" +
-//						"\t\tfragColor = vec4(dynamicPortalsDepth.rrr, 1);\n" +
-//						"\t\tfragColor = vec4(gl_FragDepth, gl_FragDepth, gl_FragDepth, 1);\n" +
-//						"\t\tfragColor = vec4(gl_FragCoord.zzz, 1);\n" +
 						// TODO: figure out how to make a more lenient depth test
 //						"\t\tdynamicPortalsRoundingVar0 = dynamicPortalsDepth.r;\n" +
 //						"\t\tdynamicPortalsRoundingVar1 = gl_FragCoord.z;\n" +

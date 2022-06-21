@@ -27,15 +27,15 @@ public class Quad {
 		
 		double x = interpLeft.x - interpRight.x;
 		double z = interpLeft.z - interpRight.z;
-		if (x > z) {
+		if (Math.abs(x) > z) {
 			double dx0 = Math.abs(box.getCenter().x + (x / 2)) / x;
-			if (dx0 < 0 || dx0 > 1) return false;
+			if (dx0 < -1 || dx0 > 1) return false;
 //			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
 //			return box.contains(point);
 			return true;
 		} else {
 			double dx0 = Math.abs(box.getCenter().z + (z / 2)) / z;
-			if (dx0 < 0 || dx0 > 1) return false;
+			if (dx0 < -1 || dx0 > 1) return false;
 //			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
 //			return box.contains(point);
 			return true;

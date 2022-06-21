@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
@@ -132,8 +133,10 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public Quaternion raytraceRotation() {
 		Quaternion quat;
-//		quat = (new Quaternion((float) -rotation.y, 0, 0, false));
-		quat = (new Quaternion(0, (float) -rotation.x, 0, false));
+		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
+		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
+		quat = second;
+		quat.mul(first);
 //		quat = new Quaternion(0,0,0,false);
 		return quat;
 	}
@@ -387,9 +390,12 @@ public class BasicPortal extends AbstractPortal {
 				
 				Vec3 oldPos = new Vec3(entity.xOld, entity.yOld, entity.zOld);
 				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
-				oldPos = VecMath.transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
-				oPos = VecMath.transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
-				Vec3 pos = VecMath.transform(position, quaternion, other, this != target, false, srcOff, dstOff);
+				Vec3 pos = position;
+				if (target != this) {
+					oldPos = VecMath.transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
+					oPos = VecMath.transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
+					pos = VecMath.transform(pos, quaternion, other, this != target, false, srcOff, dstOff);
+				}
 				
 				Vec2 vec = entity.getRotationVector();
 				Vec2 vecOld = new Vec2(entity.xRotO, entity.yRotO);
@@ -405,8 +411,8 @@ public class BasicPortal extends AbstractPortal {
 				
 				motion = VecMath.transform(motion, quaternion, other, false, true, srcOff, dstOff);
 				entity.setDeltaMovement(motion);
-				if (entity.level.isClientSide) entity.teleportTo(pos.x, pos.y, pos.z);
-				else entity.teleportTo(pos.x, pos.y, pos.z);
+				if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
+				else entity.absMoveTo(pos.x, pos.y, pos.z);
 				entity.setDeltaMovement(motion);
 				entity.setXRot(vec.x);
 				entity.xRotO = vecOld.x;

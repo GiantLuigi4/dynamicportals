@@ -7,11 +7,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.ShaderInjections;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +36,13 @@ public class GlStateManagerMixin {
 		shaderToTypeMap.remove(pShader);
 	}
 	
+	// compatibility hack
+	@ModifyVariable(at = @At("HEAD"), method = "glShaderSource", index = 1, argsOnly = true)
+	private static List<String> convertToArrayList(List<String> lines) {
+		return new ArrayList<>(lines);
+	}
+	
+	// shader injections
 	@Inject(at = @At("HEAD"), method = "glShaderSource")
 	private static void preGlShaderSource(int s, List<String> pointerbuffer, CallbackInfo ci) {
 		int type = shaderToTypeMap.get(s);
@@ -96,7 +106,26 @@ public class GlStateManagerMixin {
 			}
 			output.append(srcStr).append("\n");
 		}
-		System.out.println(output.toString());
+//		System.out.println(output.toString());
+//		if (output.toString().contains("iris")) {
+//			String path =
+//					"shader/" +
+//							((type == GL42.GL_FRAGMENT_SHADER) ? "frag" : ((type == GL42.GL_VERTEX_SHADER) ? "vert" : "geom")) +
+//							s + "." +
+//							((type == GL42.GL_FRAGMENT_SHADER) ? "fsh" : ((type == GL42.GL_VERTEX_SHADER) ? "vsh" : "glsl"));
+//			File file = new File("shader");
+//			if (!file.exists()) file.mkdirs();
+//			File fl = new File(path);
+//			try {
+//				if (!fl.exists()) fl.createNewFile();
+//				FileOutputStream outputStream = new FileOutputStream(fl);
+//				outputStream.write(output.toString().getBytes());
+//				outputStream.close();
+//				outputStream.flush();
+//			} catch (Throwable ignored) {
+//				ignored.printStackTrace();
+//			}
+//		}
 		pointerbuffer.clear();
 		for (String s1 : output.toString().split("\n")) {
 			pointerbuffer.add(s1 + "\n");

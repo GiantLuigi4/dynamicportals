@@ -43,14 +43,21 @@ public class RaytraceHelper {
 							reachVec.z * dist
 					);
 					
-					Quaternion srcQuat = portal.raytraceRotation();
-					Quaternion dstQuat = portal.target.raytraceRotation();
-					Vec3 srcOff = portal.raytraceOffset();
-					Vec3 dstOff = portal.target.raytraceOffset();
-					Vec3 istart = VecMath.transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-					Vec3 ireach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+					if (portal.requireTraceRotation()) {
+						Quaternion srcQuat = portal.raytraceRotation();
+						Quaternion dstQuat = portal.target.raytraceRotation();
+						Vec3 srcOff = portal.raytraceOffset();
+						Vec3 dstOff = portal.target.raytraceOffset();
+						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+					} else {
+						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
+						interpStart = interpStart.add(offset);
+					}
+					Vec3 istart = interpStart;
+					Vec3 ireach = interpReach;
 					Vec3 iend = istart.add(ireach);
-					
+
 //					// this confuses me way more than it should
 //					Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 //					interpStart = interpStart.add(offset);
