@@ -9,7 +9,7 @@ public class Temp {
 	public static BasicPortal[] getPortals(Level level) {
 		ArrayList<BasicPortal> portals = new ArrayList<>();
 		
-		double width = Math.sqrt(Math.pow(45, 2) * 2);
+		double width = Math.sqrt(Math.pow(2, 2) * 2);
 
 //		{
 //			Portal portal = new Portal();
@@ -23,7 +23,7 @@ public class Temp {
 		
 		int rotation = 45;
 		BasicPortal other = new BasicPortal()
-				.setSize(width, 50)
+				.setSize(width, 2)
 				.setPosition(-5, 5, -5)
 //				.setPosition(0, 5, -2)
 				.setRotation(Math.toRadians(rotation), Math.toRadians(0));
@@ -32,7 +32,7 @@ public class Temp {
 		portals.add(other);
 		{
 			BasicPortal portal = new BasicPortal()
-					.setSize(width, 50)
+					.setSize(width, 2)
 					.setPosition(5, 5, 5)
 //					.setPosition(0, 5, 2)
 					.setRotation(Math.toRadians(rotation + 180), Math.toRadians(0));
