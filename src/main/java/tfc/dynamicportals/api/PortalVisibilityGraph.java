@@ -2,12 +2,8 @@ package tfc.dynamicportals.api;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.phys.AABB;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class PortalVisibilityGraph {
 	private final ObjectArrayList<LevelRenderer.RenderChunkInfo> renderChunksInFrustum = new ObjectArrayList<>(16);
@@ -22,9 +18,12 @@ public class PortalVisibilityGraph {
 		this.frustum = frustum;
 	}
 	
+	// TODO: improve this
 	public void update() {
 		renderChunksInFrustum.clear();
-		for (LevelRenderer.RenderChunkInfo renderChunk : renderer.renderChunkStorage.get().renderChunks) {
+		for (LevelRenderer.RenderChunkInfo renderChunk : renderer.renderChunkStorage.get().renderInfoMap.infos) {
+			// TODO: side checking
+			if (renderChunk == null) continue;
 			AABB box = renderChunk.chunk.getBoundingBox();
 			if (frustum.isVisible(box)) {
 				renderChunksInFrustum.add(renderChunk);

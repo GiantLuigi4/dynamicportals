@@ -8,6 +8,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -68,19 +69,6 @@ public class Renderer {
 			return;
 		}
 		
-		if (portal.getGraph() == null) {
-			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
-			portal.getGraph().setFrustum(frustum);
-			portal.getGraph().update();
-		} else if (orx != rx || ory != ry || oldPos.equals(camVec)) {
-			Matrix4f matr = RenderSystem.getProjectionMatrix();
-			PoseStack stack = new PoseStack();
-			portal.setupMatrix(stack);
-			Frustum frustum1 = new Frustum(stack.last().pose(), matr);
-			portal.getGraph().setFrustum(frustum1);
-			portal.getGraph().update();
-		}
-		
 		// declare variables
 		ShaderInstance shaderInstance;
 		Tesselator tesselator = RenderSystem.renderThreadTesselator();
@@ -112,6 +100,31 @@ public class Renderer {
 		PoseStack stack = new PoseStack();
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
+		
+		// frustum culling
+		if (portal.getGraph() == null) {
+			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
+			portal.getGraph().setFrustum(frustum);
+			portal.getGraph().update();
+		} else if (
+				(int) orx != (int) rx || (int) ory != (int) ry ||
+						(int) oldPos.x != (int) camVec.x ||
+						(int) oldPos.y != (int) camVec.y ||
+						(int) oldPos.z != (int) camVec.z
+		) {
+			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
+			Matrix4f matr = RenderSystem.getProjectionMatrix();
+			PoseStack stk = new PoseStack();
+			stk.last().pose().multiply(a.last().pose());
+			Quaternion quaternion = Minecraft.getInstance().gameRenderer.getMainCamera().rotation().copy();
+//				quaternion.conj();
+			portal.setupMatrix(stk);
+			portal.target.setupAsTarget(stk);
+			// TODO: fix smth here, not sure what?
+			Frustum frustum1 = new Frustum(stk.last().pose(), matr);
+			portal.getGraph().setFrustum(frustum1);
+			portal.getGraph().update();
+		}
 		
 		// setup matrix
 		portal.setupMatrix(stack);

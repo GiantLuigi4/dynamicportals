@@ -10,7 +10,7 @@ public class Temp {
 	
 	static {
 		ArrayList<BasicPortal> portals = new ArrayList<>();
-
+		
 		double width = Math.sqrt(Math.pow(2, 2) * 2);
 
 //		{
@@ -30,8 +30,9 @@ public class Temp {
 //		double time = 12;
 //		double rotation = time;
 		double rotation = 0;
-		for (int i = 0; i < 2; i++) {
-			rotation += 360 / 4d;
+		int count = 2;
+		for (int i = 0; i < count; i++) {
+			rotation += 360 / (count * 2d);
 			double c = Math.cos(Math.toRadians(rotation));
 			double s = Math.sin(Math.toRadians(rotation));
 			double s1 = Math.sin(Math.toRadians((rotation / 3.) + 180));
@@ -57,11 +58,11 @@ public class Temp {
 				portal.target = other;
 			}
 		}
-
+		
 		Temp.portals = portals.toArray(new BasicPortal[0]);
 	}
 	
 	public static BasicPortal[] getPortals(Level level) {
-		return portals;
+		return Temp.portals;
 	}
 }
