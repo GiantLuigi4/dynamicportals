@@ -12,12 +12,12 @@ public class VecMath {
 				Mth.lerp(pct, start.z, end.z)
 		);
 	}
-	
+
 	public static Vec3 rotate(Vec3 v, Quaternion rotation) {
 		double q0 = rotation.r(), q1 = rotation.i(), q2 = rotation.j(), q3 = rotation.k();
-		double x = (1-2*q2*q2-2*q3*q3)  * v.x + 2*(q1*q2+q0*q3)       * v.y + 2*(q1*q3-q0*q2)       * v.z;
-		double y = 2*(q1*q2-q0*q3)      * v.x + (1-2*q1*q1-2*q3*q3)   * v.y + 2*(q2*q3+q0*q1)       * v.z;
-		double z = 2*(q1*q3+q0*q2)      * v.x + 2*(q2*q3-q0*q1)       * v.y + (1-2*q1*q1-2*q2*q2)   * v.z;
+		double x = (1 - 2 * q2 * q2 - 2 * q3 * q3) * v.x + 2 * (q1 * q2 + q0 * q3) * v.y + 2 * (q1 * q3 - q0 * q2) * v.z;
+		double y = 2 * (q1 * q2 - q0 * q3) * v.x + (1 - 2 * q1 * q1 - 2 * q3 * q3) * v.y + 2 * (q2 * q3 + q0 * q1) * v.z;
+		double z = 2 * (q1 * q3 + q0 * q2) * v.x + 2 * (q2 * q3 - q0 * q1) * v.y + (1 - 2 * q1 * q1 - 2 * q2 * q2) * v.z;
 		return new Vec3(x, y, z);
 
 //		Quaternion p = new Quaternion((float) v.x, (float) v.y, (float) v.z, 0);
@@ -28,11 +28,11 @@ public class VecMath {
 //		return new Vec3(p.i(), p.j(), p.k());
 
 	}
-	
+
 	public static Vec3 transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
 		if (motion) {
 			Vec3 pos = src;
-			
+
 			// TODO: this doesn't work properly and I want to scream because of that
 			Quaternion conj = selfRotation.copy();
 			conj.conj();

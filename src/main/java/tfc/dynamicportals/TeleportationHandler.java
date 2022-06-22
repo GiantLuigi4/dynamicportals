@@ -21,7 +21,7 @@ public class TeleportationHandler {
 			}
 		}
 	}
-	
+
 	public static void handlePacket(ServerPlayer player, ServerboundMovePlayerPacket i) {
 		double x = i.getX(player.getX());
 		double y = i.getY(player.getY());

@@ -8,15 +8,15 @@ import org.lwjgl.opengl.GL13;
 public class ShaderInjections {
 	public static String tailVertex() {
 		return "\n\t/* Dynamic Portals injection */\n" +
-				"if (float(dynamicPortalsHasStencilTextureSet) > 1.5f) {\n" +
-				// TODO: get this working
+				       "if (float(dynamicPortalsHasStencilTextureSet) > 1.5f) {\n" +
+				       // TODO: get this working
 //				"\t\tif (gl_Position.z < 0.01) {\n" +
 //				"\t\t\tgl_Position.z = 0.01;\n" +
 //				"\t\t}\n" +
-				"\t}\n" +
-				"\t/* end Dynamic Portals injection */\n";
+				       "\t}\n" +
+				       "\t/* end Dynamic Portals injection */\n";
 	}
-	
+
 	// about iris/oculus/OF
 	/*
 		// gl_FragData[0] // seems to be the color component of the pixel
@@ -67,7 +67,7 @@ public class ShaderInjections {
 						"\t}\n" +
 						"\t/* end Dynamic Portals injection */";
 	}
-	
+
 	public static String tailInjection() {
 		String str =
 				"\n\t/* Dynamic Portals injection */\n" +
@@ -79,7 +79,7 @@ public class ShaderInjections {
 						"\t/* end Dynamic Portals injection */\n";
 		return str;
 	}
-	
+
 	public static void setupTextures(AbstractUniform STENCIL_TEXTURE, AbstractUniform STENCIL_DEPTH) {
 		RenderSystem.activeTexture(GL13.GL_TEXTURE10);
 		RenderSystem.enableTexture();

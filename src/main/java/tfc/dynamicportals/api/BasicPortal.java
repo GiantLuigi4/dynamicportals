@@ -28,7 +28,7 @@ public class BasicPortal extends AbstractPortal {
 	Vector3f normal;
 	PortalCamera cam;
 	Vec3 compNorm;
-	
+
 	public BasicPortal setPosition(double x, double y, double z) {
 		this.position = new Vector3d(x, y, z);
 		if (rotation != null) {
@@ -39,7 +39,7 @@ public class BasicPortal extends AbstractPortal {
 		}
 		return this;
 	}
-	
+
 	public BasicPortal setPosition(Vector3d position) {
 		this.position = position;
 		if (position != null && rotation != null) {
@@ -50,7 +50,7 @@ public class BasicPortal extends AbstractPortal {
 		}
 		return this;
 	}
-	
+
 	public BasicPortal setSize(double x, double y) {
 		this.size = new Vector2d(x, y);
 		if (position != null && rotation != null) {
@@ -61,7 +61,7 @@ public class BasicPortal extends AbstractPortal {
 		}
 		return this;
 	}
-	
+
 	public BasicPortal setSize(Vector2d size) {
 		this.size = size;
 		if (position != null && rotation != null) {
@@ -72,7 +72,7 @@ public class BasicPortal extends AbstractPortal {
 		}
 		return this;
 	}
-	
+
 	public BasicPortal setRotation(double x, double y) {
 		this.rotation = new Vector2d(x, y);
 		if (position != null) {
@@ -83,7 +83,7 @@ public class BasicPortal extends AbstractPortal {
 		}
 		return this;
 	}
-	
+
 	public BasicPortal setRotation(Vector2d rotation) {
 		this.rotation = rotation;
 		if (position != null && rotation != null) {
@@ -94,12 +94,12 @@ public class BasicPortal extends AbstractPortal {
 		}
 		return this;
 	}
-	
+
 	public BasicPortal setNormal(Vector3f normal) {
 		this.normal = normal;
 		return this;
 	}
-	
+
 	@Override
 	public boolean requireTraceRotation() {
 		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
@@ -113,22 +113,22 @@ public class BasicPortal extends AbstractPortal {
 				double yRot = ((BasicPortal) target).rotation.y;
 				if (yRot < 0) yRot = -(-yRot % Math.PI);
 				else yRot %= Math.PI;
-				
+
 				double yr = rotation.y;
 				if (yr < 0) yr = -(-yr % Math.PI);
 				else yr %= Math.PI;
-				
+
 				return yRot != -yr;
 			}
 		}
 		return true;
 	}
-	
+
 	@Override
 	public Vec3 raytraceOffset() {
 		return new Vec3(position.x, position.y, position.z);
 	}
-	
+
 	@Override
 	public Quaternion raytraceRotation() {
 		Quaternion quat;
@@ -139,7 +139,7 @@ public class BasicPortal extends AbstractPortal {
 //		quat = new Quaternion(0,0,0,false);
 		return quat;
 	}
-	
+
 	public void computeNormal() {
 		Vector3f portalPos = new Vector3f((float) position.x, (float) position.y, (float) position.z);
 //		Vector3f a = portalPos.copy();
@@ -150,7 +150,7 @@ public class BasicPortal extends AbstractPortal {
 		c.add((float) -size.x / 2, 0, 0);
 		Vector3f d = portalPos.copy();
 		d.add((float) size.x / 2, 0, 0);
-		
+
 		Matrix3f matrix3f = new Matrix3f();
 		matrix3f.setIdentity();
 		matrix3f.mul(new Quaternion(0, (float) rotation.x, 0, false));
@@ -159,16 +159,16 @@ public class BasicPortal extends AbstractPortal {
 		b.transform(matrix3f);
 		c.transform(matrix3f);
 		d.transform(matrix3f);
-		
+
 		Vector3f first = b.copy();
 		first.sub(d);
 		Vector3f second = c.copy();
 		second.sub(d);
-		
+
 		first.cross(second);
 		this.normal = first;
 	}
-	
+
 	@Override
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
@@ -197,7 +197,7 @@ public class BasicPortal extends AbstractPortal {
 //		// draw
 //		LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
 //		stack.popPose();
-		
+
 		LevelRenderer.renderLineBox(
 				stack, consumer,
 				-size.x / 2, 0, 0,
@@ -205,7 +205,7 @@ public class BasicPortal extends AbstractPortal {
 				1, 1, 1, 1
 		);
 	}
-	
+
 	@Override
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
 		float r = 1, b = r, g = b, a = g;
@@ -216,7 +216,7 @@ public class BasicPortal extends AbstractPortal {
 		builder.vertex(mat, ((float) size.x / 2), (float) size.y, 0).color(r, g, b, a).uv(0, 0).endVertex();
 		builder.vertex(mat, -((float) size.x / 2), (float) size.y, 0).color(r, g, b, a).uv(0, 0).endVertex();
 	}
-	
+
 	@Override
 	public void setupMatrix(PoseStack stack) {
 		// translate
@@ -225,7 +225,7 @@ public class BasicPortal extends AbstractPortal {
 		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
 	}
-	
+
 	@Override
 	public void setupAsTarget(PoseStack stack) {
 		boolean isMirror = target == this;
@@ -245,7 +245,7 @@ public class BasicPortal extends AbstractPortal {
 		// mirror
 		if (isMirror) stack.scale(1, 1, -1);
 	}
-	
+
 	@Override
 	public boolean shouldRender(Frustum frustum, double camX, double camY, double camZ) {
 		if (normal == null || normal.dot(new Vector3f((float) (camX - position.x), (float) (camY - position.y), (float) (camZ - position.z))) > 0) {
@@ -253,7 +253,7 @@ public class BasicPortal extends AbstractPortal {
 			// TODO: this isn't perfect, but for now it works
 			Quaternion quaternion = new Quaternion((float) rotation.y, 0, 0, false);
 			quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-			
+
 			Quaternion point = new Quaternion((float) (-size.x / 2), (float) size.y, 0, 1);
 			Quaternion quat = quaternion.copy();
 			point.mul(quat);
@@ -268,20 +268,20 @@ public class BasicPortal extends AbstractPortal {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void setupRenderState() {
 		// TODO: check if this works well enough
 		if (target == this)
 			GL11.glCullFace(GL11.GL_FRONT);
 	}
-	
+
 	@Override
 	public void teardownRenderState() {
 		if (target == this)
 			GL11.glCullFace(GL11.GL_BACK);
 	}
-	
+
 	@Override
 	public double trace(Vec3 start, Vec3 end) {
 		// setup a matrix stack
@@ -295,7 +295,7 @@ public class BasicPortal extends AbstractPortal {
 		// transform
 		startVec.transform(stack.last().pose());
 		endVec.transform(stack.last().pose());
-		
+
 		// trace
 		double dx = endVec.x() - startVec.x();
 		double dy = endVec.y() - startVec.y();
@@ -309,7 +309,7 @@ public class BasicPortal extends AbstractPortal {
 		);
 		return dist[0];
 	}
-	
+
 	@Override
 	public Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera) {
 		// TODO: this is a bit finicky
@@ -342,7 +342,7 @@ public class BasicPortal extends AbstractPortal {
 		cam.tick();
 		return cam;
 	}
-	
+
 	@Override
 	public boolean isInfront(Entity entity, Vec3 position) {
 		Vector3f oldNorm = normal;
@@ -353,7 +353,7 @@ public class BasicPortal extends AbstractPortal {
 		normal = oldNorm;
 		return result;
 	}
-	
+
 	@Override
 	public boolean overlaps(AABB box) {
 		Quaternion rotation = raytraceRotation();
@@ -368,7 +368,7 @@ public class BasicPortal extends AbstractPortal {
 		Quad plane = new Quad(vec0, vec1, vec2, vec3);
 		return plane.overlaps(box.move(-position.x, -position.y, -position.z));
 	}
-	
+
 	@Override
 	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
 		if (reverse)
@@ -376,7 +376,7 @@ public class BasicPortal extends AbstractPortal {
 			return new Vec2(vector.x, vector.y - (float) Math.toDegrees(rotation.x));
 		return new Vec2(vector.x, vector.y + (float) Math.toDegrees(rotation.x));
 	}
-	
+
 	// TODO: for some reason, backface teleportation is busted
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
@@ -391,10 +391,10 @@ public class BasicPortal extends AbstractPortal {
 				if (overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
 					Quaternion quaternion = raytraceRotation();
 					Quaternion other = target.raytraceRotation();
-					
+
 					Vec3 srcOff = raytraceOffset();
 					Vec3 dstOff = target.raytraceOffset();
-					
+
 					Vec3 oldPos = new Vec3(entity.xOld, entity.yOld, entity.zOld);
 					Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 					Vec3 pos = position;
@@ -403,7 +403,7 @@ public class BasicPortal extends AbstractPortal {
 						oPos = VecMath.transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
 						pos = VecMath.transform(pos, quaternion, other, this != target, false, srcOff, dstOff);
 					}
-					
+
 					Vec2 vec = entity.getRotationVector();
 					Vec2 vecOld = new Vec2(entity.xRotO, entity.yRotO);
 //				System.out.println(vec);
@@ -415,7 +415,7 @@ public class BasicPortal extends AbstractPortal {
 					entity.xRotO = vecOld.x;
 					entity.setYRot(vec.y + 180);
 					entity.yRotO = vecOld.y + 180;
-					
+
 					motion = VecMath.transform(motion, quaternion, other, false, true, srcOff, dstOff);
 					entity.setDeltaMovement(motion);
 					if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
@@ -431,7 +431,7 @@ public class BasicPortal extends AbstractPortal {
 					entity.yOld = oldPos.y;
 					entity.zo = oPos.z;
 					entity.zOld = oldPos.z;
-					
+
 					return true;
 				}
 			}

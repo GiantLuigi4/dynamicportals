@@ -23,28 +23,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class GlStateManagerMixin {
 	@Unique
 	private static HashMap<Integer, Integer> shaderToTypeMap = new HashMap<>();
-	
+
 	@Inject(at = @At("RETURN"), method = "glCreateShader")
 	private static void postCreateShader(int pType, CallbackInfoReturnable<Integer> cir) {
 		shaderToTypeMap.put(cir.getReturnValue(), pType);
 	}
-	
+
 	@Inject(at = @At("HEAD"), method = "glDeleteShader")
 	private static void preDeleteShader(int pShader, CallbackInfo ci) {
 		shaderToTypeMap.remove(pShader);
 	}
-	
+
 	// compatibility hack
 	@ModifyVariable(at = @At("HEAD"), method = "glShaderSource", index = 1, argsOnly = true)
 	private static List<String> convertToArrayList(List<String> lines) {
 		return new ArrayList<>(lines);
 	}
-	
+
 	// shader injections
 	@Inject(at = @At("HEAD"), method = "glShaderSource")
 	private static void preGlShaderSource(int s, List<String> pointerbuffer, CallbackInfo ci) {
 		int type = shaderToTypeMap.get(s);
-		
+
 		StringBuilder str = new StringBuilder();
 		for (String s1 : pointerbuffer) {
 			str.append(s1).append("\n");
@@ -56,10 +56,10 @@ public class GlStateManagerMixin {
 		boolean hitOuts = false;
 		boolean hitInputs = false;
 		StringBuilder output = new StringBuilder();
-		
+
 		boolean hasTexCoordInput = false;
 		String samplerName = null;
-		
+
 		for (String s1 : list) {
 			String srcStr = s1;
 			int len = s1.length();
@@ -129,7 +129,7 @@ public class GlStateManagerMixin {
 			pointerbuffer.add(s1 + "\n");
 		}
 	}
-	
+
 	private static String injectUniforms(int type, String srcStr) {
 		if (type == GL42.GL_FRAGMENT_SHADER) {
 			String str =
@@ -149,15 +149,15 @@ public class GlStateManagerMixin {
 		}
 		return srcStr;
 	}
-	
+
 	private static String injectOuts(int type, String srcStr) {
 		return srcStr;
 	}
-	
+
 	private static String injectIns(int type, String srcStr) {
 		return srcStr;
 	}
-	
+
 	private static String checkLineAndInject(int type, String line, AtomicInteger lCC, boolean hasTexCoordInput, String samplerName) {
 		String[] split = split(line, "{}");
 		StringBuilder builder = new StringBuilder();
@@ -189,7 +189,7 @@ public class GlStateManagerMixin {
 		}
 		return builder.toString();
 	}
-	
+
 	@Unique
 	private static String[] split(String str, String delim) {
 		ArrayList<String> strings = new ArrayList<>();
@@ -208,7 +208,7 @@ public class GlStateManagerMixin {
 			strings.add(builder.toString());
 		return strings.toArray(new String[0]);
 	}
-	
+
 	@Inject(at = @At("HEAD"), method = "_enableCull")
 	private static void preEnableCull(CallbackInfo ci) {
 		if (GLUtils.shouldSwapBackface())

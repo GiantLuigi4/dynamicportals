@@ -16,25 +16,24 @@ import tfc.dynamicportals.access.IMaySkipPacket;
 public abstract class EntityMixin implements IMaySkipPacket {
 	@Shadow
 	public Level level;
-	
-	@Shadow
-	public abstract Vec3 getPosition(float pPartialTicks);
-	
 	@Shadow
 	private Vec3 deltaMovement;
 	@Unique
 	private boolean skipTeleportPacket = false;
-	
+
+	@Shadow
+	public abstract Vec3 getPosition(float pPartialTicks);
+
 	@Inject(at = @At("HEAD"), method = "collide")
 	public void preMove(Vec3 vec31, CallbackInfoReturnable<Vec3> cir) {
 		TeleportationHandler.handle((Entity) (Object) this, vec31);
 	}
-	
+
 	@Override
 	public void setSkipTeleportPacket() {
 		skipTeleportPacket = true;
 	}
-	
+
 	@Override
 	public boolean skip() {
 		boolean old = skipTeleportPacket;

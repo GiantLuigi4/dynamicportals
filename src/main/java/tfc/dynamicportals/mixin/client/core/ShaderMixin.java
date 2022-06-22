@@ -20,9 +20,6 @@ import java.util.Map;
 @Mixin(ShaderInstance.class)
 public abstract class ShaderMixin {
 	@Shadow
-	public abstract AbstractUniform safeGetUniform(String pName);
-	
-	@Shadow
 	@Final
 	private Map<String, Uniform> uniformMap;
 	@Shadow
@@ -42,7 +39,6 @@ public abstract class ShaderMixin {
 	private Map<String, Object> samplerMap;
 	@Unique
 	private boolean isInitialized = false;
-	
 	@Unique
 	private AbstractUniform STENCIL_PRESENT;
 	@Unique
@@ -51,7 +47,10 @@ public abstract class ShaderMixin {
 	private AbstractUniform STENCIL_DEPTH;
 	@Unique
 	private AbstractUniform FBO_SIZE;
-	
+
+	@Shadow
+	public abstract AbstractUniform safeGetUniform(String pName);
+
 	// make sure all dyn portals uniforms are found
 	@Inject(at = @At("HEAD"), method = "markDirty")
 	public void preMarkDirty(CallbackInfo ci) {
@@ -69,7 +68,7 @@ public abstract class ShaderMixin {
 			}
 		}
 	}
-	
+
 	// finds the uniforms
 	@Unique
 	private void getUniform(String name, String typeStr, int count) {
@@ -82,7 +81,7 @@ public abstract class ShaderMixin {
 			uniformMap.put(name, uniform);
 		}
 	}
-	
+
 	// sets up dyn portals uniforms
 	@Inject(at = @At(value = "TAIL"), method = "apply")
 	public void preApply(CallbackInfo ci) {

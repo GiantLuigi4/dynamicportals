@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Temp {
 	public static BasicPortal[] getPortals(Level level) {
 		ArrayList<BasicPortal> portals = new ArrayList<>();
-		
+
 		double width = Math.sqrt(Math.pow(2, 2) * 2);
 
 //		{
@@ -20,7 +20,7 @@ public class Temp {
 ////			portal.computeNormal();
 //			portals.add(portal);
 //		}
-		
+
 //		double time = 0;
 //		if (Minecraft.getInstance().level != null) {
 //			time = Minecraft.getInstance().level.getGameTime() + Minecraft.getInstance().getFrameTime();
@@ -55,7 +55,7 @@ public class Temp {
 				portal.target = other;
 			}
 		}
-		
+
 		return portals.toArray(new BasicPortal[0]);
 	}
 }

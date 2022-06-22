@@ -15,7 +15,7 @@ public class RenderTargetMixin {
 	public void preBindWrite(boolean pSetViewport, CallbackInfo ci) {
 		// track the active fbo
 		GLUtils.setBound((RenderTarget) (Object) this);
-		
+
 		// if the main frame buffer gets bound, bind the dynportals fbo instead
 		if (((Object) this) instanceof MainTarget) {
 			if (Renderer.bindPortalFBO(pSetViewport)) {

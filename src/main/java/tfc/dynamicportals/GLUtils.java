@@ -11,22 +11,29 @@ import net.minecraft.client.renderer.ShaderInstance;
 import org.lwjgl.opengl.GL11;
 
 public class GLUtils {
+	static RenderTarget bound;
+	private static float red;
+	private static float green;
+	private static float blue;
+	private static float alpha;
+	private static boolean swapBackface = false;
+
 	public static void clearColor() {
 		float pWidth = Minecraft.getInstance().getMainRenderTarget().width;
 		float pHeight = Minecraft.getInstance().getMainRenderTarget().height;
 		ShaderInstance shaderinstance = GameRenderer.getPositionColorShader();
 		Matrix4f project = RenderSystem.getProjectionMatrix();
-		
+
 		Matrix4f matrix4f = Matrix4f.orthographic((float) pWidth, (float) (-pHeight), 1000.0F, 3000.0F);
 		RenderSystem.setProjectionMatrix(matrix4f);
 		if (shaderinstance.MODEL_VIEW_MATRIX != null) {
 			shaderinstance.MODEL_VIEW_MATRIX.set(Matrix4f.createTranslateMatrix(0.0F, 0.0F, -2000.0F));
 		}
-		
+
 		if (shaderinstance.PROJECTION_MATRIX != null) {
 			shaderinstance.PROJECTION_MATRIX.set(matrix4f);
 		}
-		
+
 		shaderinstance.apply();
 		alpha = 1;
 		RenderSystem.disableDepthTest();
@@ -46,22 +53,17 @@ public class GLUtils {
 		shaderinstance.clear();
 		GlStateManager._depthMask(true);
 		GlStateManager._colorMask(true, true, true, true);
-		
+
 		RenderSystem.setProjectionMatrix(project);
 	}
-	
-	private static float red;
-	private static float green;
-	private static float blue;
-	private static float alpha;
-	
+
 	public static void setClearColor(float pRed, float pGreen, float pBlue, float pAlpha) {
 		red = pRed;
 		green = pGreen;
 		blue = pBlue;
 		alpha = pAlpha;
 	}
-	
+
 	public static void clearDepth() {
 		// TODO
 		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
@@ -103,7 +105,7 @@ public class GLUtils {
 //
 //		RenderSystem.setProjectionMatrix(project);
 	}
-	
+
 	public static boolean clear(int pMask) {
 		GlStateManager._clear(pMask, Minecraft.ON_OSX);
 //		boolean didSpecial = false;
@@ -115,28 +117,24 @@ public class GLUtils {
 //		if ((pMask & GL11.GL_STENCIL_BUFFER_BIT) == GL11.GL_STENCIL_BUFFER_BIT) GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
 		return true;
 	}
-	
-	static RenderTarget bound;
-	
+
 	public static void setBound(RenderTarget bound) {
 		GLUtils.bound = bound;
 	}
-	
+
 	public static RenderTarget boundTarget() {
 		return bound;
 	}
-	
+
 	public static void switchFBO(RenderTarget target) {
 		bound.unbindWrite();
 		target.bindWrite(false);
 	}
-	
-	private static boolean swapBackface = false;
-	
+
 	public static boolean shouldSwapBackface() {
 		return swapBackface;
 	}
-	
+
 	public static void swapBackface(boolean b) {
 		swapBackface = b;
 	}

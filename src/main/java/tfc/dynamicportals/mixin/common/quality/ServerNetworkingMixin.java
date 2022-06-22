@@ -20,16 +20,14 @@ import javax.annotation.Nullable;
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerNetworkingMixin {
 	@Shadow
+	@Final
+	private static Logger LOGGER;
+	@Shadow
 	public ServerPlayer player;
-	
 	@Shadow
 	private double lastGoodX;
-	
 	@Shadow
 	private double lastGoodY;
-	
-	@Shadow
-	private double lastGoodZ;
 
 //	@Unique
 //	private boolean doSkip = false;
@@ -40,24 +38,21 @@ public abstract class ServerNetworkingMixin {
 //			awaitingPositionFromClient = null;
 //		}
 //	}
-
+	@Shadow
+	private double lastGoodZ;
 	@Shadow
 	private int receivedMovePacketCount;
-	
-	@Shadow
-	@Final
-	private static Logger LOGGER;
-	
 	@Shadow
 	private int knownMovePacketCount;
-	
+	@Shadow
+	@Nullable
+	private Vec3 awaitingPositionFromClient;
+	@Shadow
+	private int awaitingTeleport;
+
 	@Shadow
 	public abstract void teleport(double pX, double pY, double pZ, float pYaw, float pPitch);
-	
-	@Shadow @Nullable private Vec3 awaitingPositionFromClient;
-	
-	@Shadow private int awaitingTeleport;
-	
+
 	@Inject(at = @At("HEAD"), method = "handleMovePlayer", cancellable = true)
 	public void preMove(ServerboundMovePlayerPacket packet, CallbackInfo ci) {
 		TeleportationHandler.handlePacket(player, packet);
