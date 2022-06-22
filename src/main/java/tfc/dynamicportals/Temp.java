@@ -6,7 +6,9 @@ import tfc.dynamicportals.api.BasicPortal;
 import java.util.ArrayList;
 
 public class Temp {
-	public static BasicPortal[] getPortals(Level level) {
+	private static BasicPortal[] portals;
+	
+	static {
 		ArrayList<BasicPortal> portals = new ArrayList<>();
 
 		double width = Math.sqrt(Math.pow(2, 2) * 2);
@@ -25,9 +27,9 @@ public class Temp {
 //		if (Minecraft.getInstance().level != null) {
 //			time = Minecraft.getInstance().level.getGameTime() + Minecraft.getInstance().getFrameTime();
 //		}
-		double time = 12;
-		double rotation = time;
-//		double rotation = 0;
+//		double time = 12;
+//		double rotation = time;
+		double rotation = 0;
 		for (int i = 0; i < 2; i++) {
 			rotation += 360 / 4d;
 			double c = Math.cos(Math.toRadians(rotation));
@@ -56,6 +58,10 @@ public class Temp {
 			}
 		}
 
-		return portals.toArray(new BasicPortal[0]);
+		Temp.portals = portals.toArray(new BasicPortal[0]);
+	}
+	
+	public static BasicPortal[] getPortals(Level level) {
+		return portals;
 	}
 }
