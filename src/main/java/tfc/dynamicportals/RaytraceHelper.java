@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.BasicPortal;
 import tfc.dynamicportals.util.VecMath;
@@ -49,7 +49,7 @@ public class RaytraceHelper {
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
 						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+						//interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
 					} else {
 						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 						interpStart = interpStart.add(offset);
@@ -86,7 +86,7 @@ public class RaytraceHelper {
 //
 //					Vec3 istart = new Vec3(interpStart.x(), interpStart.y(), interpStart.z());
 //					Vec3 iend = new Vec3(interpStart.x() + interpReach.x(), interpStart.y() + interpReach.y(), interpStart.z() + interpReach.z());
-					HitResult result = entity.level.clip(
+					BlockHitResult result = entity.level.clip(
 							new ClipContext(
 									istart, iend,
 									ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY,
@@ -94,7 +94,6 @@ public class RaytraceHelper {
 							)
 					);
 					minecraft.hitResult = result;
-//						System.out.println(result);
 				}
 			}
 		}

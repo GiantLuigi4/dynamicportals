@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tfc.dynamicportals.ShaderInjections;
 import tfc.dynamicportals.Renderer;
+import tfc.dynamicportals.ShaderInjections;
 
 import java.util.List;
 import java.util.Map;
