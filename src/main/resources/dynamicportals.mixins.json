@@ -9,14 +9,14 @@
     "common.quality.ServerNetworkingMixin"
   ],
   "client": [
-    "client.core.GlStateManagerMixin",
-    "client.core.WindowMixin",
     "client.MojangWhy",
+    "client.core.GlStateManagerMixin",
     "client.core.ShaderMixin",
+    "client.core.WindowMixin",
     "client.hackery.RenderSystemMixin",
     "client.hackery.RenderTargetMixin",
-    "client.selection.GameRendererMixin",
-    "client.quality.ClientNetworkingMixin"
+    "client.quality.ClientNetworkingMixin",
+    "client.selection.GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

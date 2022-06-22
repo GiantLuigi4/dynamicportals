@@ -13,8 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.ShaderInjections;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

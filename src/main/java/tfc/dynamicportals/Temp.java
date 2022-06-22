@@ -1,6 +1,5 @@
 package tfc.dynamicportals;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import tfc.dynamicportals.api.BasicPortal;
 
