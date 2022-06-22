@@ -115,9 +115,7 @@ public class Renderer {
 			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
 			Matrix4f matr = RenderSystem.getProjectionMatrix();
 			PoseStack stk = new PoseStack();
-			stk.last().pose().multiply(a.last().pose());
-			Quaternion quaternion = Minecraft.getInstance().gameRenderer.getMainCamera().rotation().copy();
-//				quaternion.conj();
+			stk.last().pose().load(a.last().pose());
 			portal.setupMatrix(stk);
 			portal.target.setupAsTarget(stk);
 			// TODO: fix smth here, not sure what?

@@ -1,5 +1,6 @@
 package tfc.dynamicportals;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import tfc.dynamicportals.api.BasicPortal;
 
@@ -63,6 +64,11 @@ public class Temp {
 	}
 	
 	public static BasicPortal[] getPortals(Level level) {
+//		portals[0].setPosition(
+//				Minecraft.getInstance().player.position().x - 5,
+//				Minecraft.getInstance().player.position().y,
+//				Minecraft.getInstance().player.position().z
+//		);
 		return Temp.portals;
 	}
 }

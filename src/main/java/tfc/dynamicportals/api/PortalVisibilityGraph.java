@@ -21,7 +21,8 @@ public class PortalVisibilityGraph {
 	// TODO: improve this
 	public void update() {
 		renderChunksInFrustum.clear();
-		for (LevelRenderer.RenderChunkInfo renderChunk : renderer.renderChunkStorage.get().renderInfoMap.infos) {
+//		for (LevelRenderer.RenderChunkInfo renderChunk : renderer.renderChunkStorage.get().renderInfoMap.infos) {
+		for (LevelRenderer.RenderChunkInfo renderChunk : renderer.renderChunkStorage.get().renderChunks) {
 			// TODO: side checking
 			if (renderChunk == null) continue;
 			AABB box = renderChunk.chunk.getBoundingBox();
