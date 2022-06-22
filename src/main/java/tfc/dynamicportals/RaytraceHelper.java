@@ -2,7 +2,7 @@ package tfc.dynamicportals;
 
 import com.mojang.math.Quaternion;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.Mth;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
@@ -31,25 +31,16 @@ public class RaytraceHelper {
 					double distance = reachVec.scale(dist).length();
 					double d = minecraft.hitResult.getLocation().distanceTo(start);
 					if (distance > d) continue;
-					Vec3 interpStart = new Vec3(
-							Mth.lerp(dist, start.x, end.x),
-							Mth.lerp(dist, start.y, end.y),
-							Mth.lerp(dist, start.z, end.z)
-					);
-					dist = 1 - dist;
-					Vec3 interpReach = new Vec3(
-							reachVec.x * dist,
-							reachVec.y * dist,
-							reachVec.z * dist
-					);
+					Vec3 interpStart = VecMath.lerp(dist, start, end);
+					Vec3 interpReach = VecMath.lerp(1 - dist, Vec3.ZERO, reachVec);
 
 					if (portal.requireTraceRotation()) {
 						Quaternion srcQuat = portal.raytraceRotation();
 						Quaternion dstQuat = portal.target.raytraceRotation();
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
-						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-						//interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+						interpStart = VecMath.start_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+						interpReach = VecMath.reach_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 					} else {
 						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 						interpStart = interpStart.add(offset);
@@ -93,6 +84,7 @@ public class RaytraceHelper {
 									entity
 							)
 					);
+					System.out.println("Result: " + result.getBlockPos());
 					minecraft.hitResult = result;
 				}
 			}

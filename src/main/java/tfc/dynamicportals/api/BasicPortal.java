@@ -104,12 +104,16 @@ public class BasicPortal extends AbstractPortal {
 	public boolean requireTraceRotation() {
 		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
 		if (target instanceof BasicPortal) {
-			double xRot = ((BasicPortal) target).rotation.x;
-			double xr = rotation.x;
-			xRot += Math.toRadians(180);
-			xRot %= Math.PI * 2;
-			xr %= Math.PI * 2;
-			if (xr == xRot) {
+			//Rounding because doubles are bad in binary
+			double pairXRot = Math.round((Math.toDegrees(((BasicPortal) target).rotation.x) % 360) * 1000.0) / 1000.0;
+			double thisXR = Math.round((Math.toDegrees(rotation.x) % 360) * 1000.0) / 1000.0;
+			if (pairXRot < 0) pairXRot += 360;
+			if (thisXR < 0) thisXR += 360;
+
+//			pairXRot += Math.toRadians(180);
+//			pairXRot %= Math.PI * 2;
+//			thisXR %= Math.PI * 2;
+			if ((thisXR % 180) == (pairXRot % 180) && (thisXR != pairXRot)) {
 				double yRot = ((BasicPortal) target).rotation.y;
 				if (yRot < 0) yRot = -(-yRot % Math.PI);
 				else yRot %= Math.PI;
@@ -138,6 +142,7 @@ public class BasicPortal extends AbstractPortal {
 		quat.mul(first);
 //		quat = new Quaternion(0,0,0,false);
 		return quat;
+//		return Quaternion.fromXYZ((float) -rotation.y, (float) -rotation.x, 0);
 	}
 
 	public void computeNormal() {
@@ -399,9 +404,9 @@ public class BasicPortal extends AbstractPortal {
 					Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 					Vec3 pos = position;
 					if (target != this) {
-						oldPos = VecMath.transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
-						oPos = VecMath.transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
-						pos = VecMath.transform(pos, quaternion, other, this != target, false, srcOff, dstOff);
+						oldPos = VecMath.start_transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
+						oPos = VecMath.start_transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
+						pos = VecMath.start_transform(pos, quaternion, other, this != target, false, srcOff, dstOff);
 					}
 
 					Vec2 vec = entity.getRotationVector();
@@ -416,7 +421,7 @@ public class BasicPortal extends AbstractPortal {
 					entity.setYRot(vec.y + 180);
 					entity.yRotO = vecOld.y + 180;
 
-					motion = VecMath.transform(motion, quaternion, other, false, true, srcOff, dstOff);
+					motion = VecMath.start_transform(motion, quaternion, other, false, true, srcOff, dstOff);
 					entity.setDeltaMovement(motion);
 					if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
 					else entity.absMoveTo(pos.x, pos.y, pos.z);
