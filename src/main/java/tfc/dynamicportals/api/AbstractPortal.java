@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Quaternion;
 import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +19,16 @@ import tfc.dynamicportals.DynamicPortals;
  */
 public abstract class AbstractPortal {
 	public AbstractPortal target = this;
-
+	protected PortalVisibilityGraph graph;
+	
+	public void setupVisGraph(LevelRenderer renderer) {
+		graph = new PortalVisibilityGraph(renderer);
+	}
+	
+	public PortalVisibilityGraph getGraph() {
+		return graph;
+	}
+	
 	/**
 	 * sets the target portal, thus creating a linked pair
 	 * if a portal is linked to itself, it should be a mirror

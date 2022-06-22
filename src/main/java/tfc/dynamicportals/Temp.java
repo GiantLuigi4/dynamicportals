@@ -1,14 +1,17 @@
 package tfc.dynamicportals;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import tfc.dynamicportals.api.BasicPortal;
 
 import java.util.ArrayList;
 
 public class Temp {
-	public static BasicPortal[] getPortals(Level level) {
+	private static BasicPortal[] portals;
+	
+	static {
 		ArrayList<BasicPortal> portals = new ArrayList<>();
-
+		
 		double width = Math.sqrt(Math.pow(2, 2) * 2);
 
 //		{
@@ -25,11 +28,12 @@ public class Temp {
 //		if (Minecraft.getInstance().level != null) {
 //			time = Minecraft.getInstance().level.getGameTime() + Minecraft.getInstance().getFrameTime();
 //		}
-		double time = 12;
-		double rotation = time;
-//		double rotation = 0;
-		for (int i = 0; i < 2; i++) {
-			rotation += 360 / 4d;
+//		double time = 12;
+//		double rotation = time;
+		double rotation = 0;
+		int count = 2;
+		for (int i = 0; i < count; i++) {
+			rotation += 360 / (count * 2d);
 			double c = Math.cos(Math.toRadians(rotation));
 			double s = Math.sin(Math.toRadians(rotation));
 			double s1 = Math.sin(Math.toRadians((rotation / 3.) + 180));
@@ -55,7 +59,16 @@ public class Temp {
 				portal.target = other;
 			}
 		}
-
-		return portals.toArray(new BasicPortal[0]);
+		
+		Temp.portals = portals.toArray(new BasicPortal[0]);
+	}
+	
+	public static BasicPortal[] getPortals(Level level) {
+//		portals[0].setPosition(
+//				Minecraft.getInstance().player.position().x - 5,
+//				Minecraft.getInstance().player.position().y,
+//				Minecraft.getInstance().player.position().z
+//		);
+		return Temp.portals;
 	}
 }
