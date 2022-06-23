@@ -2,15 +2,16 @@ package tfc.dynamicportals;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
+import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
 
 import java.util.ArrayList;
 
 public class Temp {
-	private static BasicPortal[] portals;
+	private static AbstractPortal[] portals;
 	
 	static {
-		ArrayList<BasicPortal> portals = new ArrayList<>();
+		ArrayList<AbstractPortal> portals = new ArrayList<>();
 		
 		double width = Math.sqrt(Math.pow(2, 2) * 2);
 
@@ -60,10 +61,10 @@ public class Temp {
 			}
 		}
 		
-		Temp.portals = portals.toArray(new BasicPortal[0]);
+		Temp.portals = portals.toArray(new AbstractPortal[0]);
 	}
 	
-	public static BasicPortal[] getPortals(Level level) {
+	public static AbstractPortal[] getPortals(Level level) {
 //		portals[0].setPosition(
 //				Minecraft.getInstance().player.position().x - 5,
 //				Minecraft.getInstance().player.position().y,

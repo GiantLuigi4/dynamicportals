@@ -8,7 +8,6 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -18,6 +17,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
+import tfc.dynamicportals.util.async.ReusableThread;
+
+import java.util.ArrayList;
 
 public class Renderer {
 	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
@@ -101,28 +103,8 @@ public class Renderer {
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
 		
-		// frustum culling
-		if (portal.getGraph() == null) {
-			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
-			portal.getGraph().setFrustum(frustum);
-			portal.getGraph().update();
-		} else if (
-				(int) orx != (int) rx || (int) ory != (int) ry ||
-						(int) oldPos.x != (int) camVec.x ||
-						(int) oldPos.y != (int) camVec.y ||
-						(int) oldPos.z != (int) camVec.z
-		) {
-			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
-			Matrix4f matr = RenderSystem.getProjectionMatrix();
-			PoseStack stk = new PoseStack();
-			stk.last().pose().load(a.last().pose());
-			portal.setupMatrix(stk);
-			portal.target.setupAsTarget(stk);
-			// TODO: fix smth here, not sure what?
-			Frustum frustum1 = new Frustum(stk.last().pose(), matr);
-			portal.getGraph().setFrustum(frustum1);
-			portal.getGraph().update();
-		}
+		// TODO: move this off the main thread
+		updatePortal(portal, a.last().pose(), RenderSystem.getProjectionMatrix());
 		
 		// setup matrix
 		portal.setupMatrix(stack);
@@ -196,6 +178,34 @@ public class Renderer {
 		// TODO: fix the lighting
 	}
 	
+	private static Frustum getFrustum(AbstractPortal portal, Matrix4f mat, Matrix4f matr) {
+		PoseStack stk = new PoseStack();
+		stk.last().pose().load(mat);
+		portal.setupMatrix(stk);
+		portal.target.setupAsTarget(stk);
+		// TODO: fix smth here, not sure what?
+		Frustum frustum1 = new Frustum(stk.last().pose(), matr);
+		return frustum1;
+	}
+	
+	public static void updatePortal(AbstractPortal portal, Matrix4f mat, Matrix4f proj) {
+		// frustum culling
+		if (portal.getGraph() == null) {
+			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
+			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
+			portal.getGraph().update();
+		} else if (
+				(int) orx != (int) rx || (int) ory != (int) ry ||
+						(int) oldPos.x != (int) camVec.x ||
+						(int) oldPos.y != (int) camVec.y ||
+						(int) oldPos.z != (int) camVec.z
+		) {
+			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
+			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
+			portal.getGraph().update();
+		}
+	}
+	
 	private static BufferBuilder setupTesselator(ShaderInstance shaderInstance, VertexFormat format) {
 		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		BufferBuilder builder = tesselator.getBuilder();
@@ -234,6 +244,10 @@ public class Renderer {
 	public static void onRenderEvent(RenderLevelLastEvent event) {
 		if (recursion > 1) return;
 		
+		for (ReusableThread thread : threads) {
+			thread.await();
+		}
+		
 		/* enable stencils */
 		// truthfully this is unused, this is just for compatibility
 		if (!Minecraft.getInstance().getMainRenderTarget().isStencilEnabled())
@@ -251,10 +265,10 @@ public class Renderer {
 		RenderBuffers buffers = Minecraft.getInstance().renderBuffers();
 		RenderType type = RenderType.solid();
 		
-		BasicPortal[] portals = Temp.getPortals(Minecraft.getInstance().level);
+		AbstractPortal[] portals = Temp.getPortals(Minecraft.getInstance().level);
 		
 		frustum.prepare(camX, camY, camZ);
-		for (BasicPortal portal1 : portals) {
+		for (AbstractPortal portal1 : portals) {
 			if (portal1.shouldRender(frustum, camX, camY, camZ)) {
 				renderPortal(stack, type, buffers, portal1, state, frustum);
 			}
@@ -298,5 +312,11 @@ public class Renderer {
 			return true;
 		}
 		return false;
+	}
+	
+	private static final ArrayList<ReusableThread> threads = new ArrayList<>();
+	
+	public static void addThread(ReusableThread thread) {
+		threads.add(thread);
 	}
 }

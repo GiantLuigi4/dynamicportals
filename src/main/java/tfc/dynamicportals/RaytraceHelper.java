@@ -7,6 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
 import tfc.dynamicportals.util.VecMath;
 
@@ -20,9 +21,9 @@ public class RaytraceHelper {
 				Vec3 look = entity.getViewVector(1.0F);
 				Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);
 				Vec3 end = start.add(reachVec);
-
-				BasicPortal[] portals = Temp.getPortals(minecraft.level);
-				for (BasicPortal portal : portals) {
+				
+				AbstractPortal[] portals = Temp.getPortals(minecraft.level);
+				for (AbstractPortal portal : portals) {
 					if (!portal.shouldRender(null, start.x, start.y, start.z)) {
 						continue;
 					}

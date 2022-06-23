@@ -17,7 +17,8 @@
     "client.hackery.RenderTargetMixin",
     "client.quality.ClientNetworkingMixin",
     "client.selection.GameRendererMixin",
-    "client.quality.LevelRendererMixin"
+    "client.quality.LevelRendererMixin",
+    "client.optimization.GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
