@@ -203,12 +203,12 @@ public class BasicPortal extends AbstractPortal {
 //		LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
 //		stack.popPose();
 
-		LevelRenderer.renderLineBox(
-				stack, consumer,
-				-size.x / 2, 0, 0,
-				size.x / 2, size.y, 0,
-				1, 1, 1, 1
-		);
+//		LevelRenderer.renderLineBox(
+//				stack, consumer,
+//				-size.x / 2, 0, 0,
+//				size.x / 2, size.y, 0,
+//				1, 1, 1, 1
+//		);
 	}
 
 	@Override

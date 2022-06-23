@@ -35,7 +35,7 @@ public class VecMath {
 
 	}
 
-	public static Vec3 start_transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
+	public static Vec3 old_transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
 		if (motion) {
 			Vec3 pos = src;
 
@@ -53,52 +53,36 @@ public class VecMath {
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);
-		pos = start_transform(pos, selfRotation, otherRotation, isMirror, true, sourceTransformation, destTransformation);
+		pos = old_transform(pos, selfRotation, otherRotation, isMirror, true, sourceTransformation, destTransformation);
 		pos = pos.add(destTransformation);
 		return pos;
 	}
 
-	public static Vec3 reach_transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
+	public static Vec3 start_transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
 		if (motion) {
 			Vec3 pos = src;
-			// TODO: abstract this to the higher dimensions
-			pos = pos.multiply(-1, 1, -1);
-			Quaternion otherRotConj = otherRotation.copy();
-			otherRotConj.conj();
 			Quaternion selfRotConj = selfRotation.copy();
 			selfRotConj.conj();
+			Quaternion otherRotConj = otherRotation.copy();
+			otherRotConj.conj();
 
-			Vector3f otherRotVec = otherRotConj.toYXZ();
 			Vector3f selfRotationVec = selfRotConj.toYXZ();
-			otherRotVec.sub(selfRotationVec);
-//			System.out.println(otherRotVec);
-			pos = pos.yRot(otherRotVec.y());
-//			System.out.println(otherRotation.toYXZDegrees() + ", " + otherRotation.toXYZDegrees());
-//			System.out.println(selfRotation.toYXZDegrees() + ", " + selfRotation.toXYZDegrees());
+			Vector3f otherRotVec = otherRotConj.toYXZ();
 
-//			pos.xRot(otherRotation.toYXZ().y());
-//			pos.yRot(otherRotation.toYXZ().x());
-//			pos.zRot(otherRotation.toYXZ().z());
-//			Quaternion selfConj = selfRotation.copy();
-//			selfConj.conj();
-//			selfConj.conj();
-//			pos = VecMath.rotate(pos, selfConj);
-//			System.out.println(selfRotation.toYXZDegrees());
-//			Quaternion conj = selfRotation.copy();
-//			conj.conj();
-//			pos = VecMath.rotate(pos, conj);
-//			//pos = VecMath.rotate(pos, Quaternion.fromXYZ(0, 0, (float) Math.PI));
-//			pos = pos.multiply(-1, 1, -1);
-//			pos = VecMath.rotate(pos, selfRotation);
-//			pos = VecMath.rotate(pos, selfRotation);
-//			Quaternion otherConj = otherRotation.copy();
-//			otherConj.conj();
-//			pos = VecMath.rotate(pos, otherConj);
+			//So, if one rotation is 0, rotate by otherConj and then by self
+
+			pos = pos
+//					.yRot(selfRotationVec.y())
+					.yRot(otherRotVec.y())
+					.yRot(-selfRotationVec.y())
+			;
+			pos = pos.yRot((float) Math.PI); //idk...
+
 
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);
-		pos = reach_transform(pos, selfRotation, otherRotation, isMirror, true, sourceTransformation, destTransformation);
+		pos = start_transform(pos, selfRotation, otherRotation, isMirror, true, sourceTransformation, destTransformation);
 		pos = pos.add(destTransformation);
 		return pos;
 	}

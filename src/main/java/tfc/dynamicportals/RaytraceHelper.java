@@ -41,7 +41,7 @@ public class RaytraceHelper {
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
 						interpStart = VecMath.start_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-						interpReach = VecMath.reach_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
+						interpReach = VecMath.start_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 					} else {
 						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 						interpStart = interpStart.add(offset);
