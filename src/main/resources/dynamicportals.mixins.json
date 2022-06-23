@@ -7,7 +7,7 @@
   "mixins": [
     "common.collision.EntityMixin",
     "common.quality.ServerNetworkingMixin",
-    "common.quality.ChunkMapMixin",
+//    "common.quality.ChunkMapMixin",
     "common.quality.ServerPlayerMixin"
   ],
   "client": [
@@ -21,7 +21,7 @@
     "client.selection.GameRendererMixin",
     "client.quality.LevelRendererMixin",
     "client.optimization.GameRendererMixin",
-    "client.quality.ClientChunkCacheMixin",
+//    "client.quality.ClientChunkCacheMixin",
     "client.access.ChunkStorageAccessor"
   ],
   "injectors": {
