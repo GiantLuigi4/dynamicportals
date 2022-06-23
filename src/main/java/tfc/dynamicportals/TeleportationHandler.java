@@ -40,7 +40,7 @@ public class TeleportationHandler {
 				)
 		);
 		if (((IMaySkipPacket) player).skip()) {
-			player.setPosRaw(player.position().x + dx, player.position().y + dy, player.position().z + dz);
+//			player.setPosRaw(player.position().x + dx, player.position().y + dy, player.position().z + dz);
 			((IMaySkipPacket) player).setSkipTeleportPacket();
 		}
 	}

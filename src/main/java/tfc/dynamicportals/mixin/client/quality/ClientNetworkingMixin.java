@@ -28,7 +28,7 @@ public class ClientNetworkingMixin {
 				double x = pPacket.getX();
 				double y = pPacket.getY();
 				double z = pPacket.getZ();
-				e.absMoveTo(x, y, z, e.getYRot(), e.getXRot());
+//				e.absMoveTo(x, y, z, e.getYRot(), e.getXRot());
 
 				this.connection.send(new ServerboundAcceptTeleportationPacket(pPacket.getId()));
 //				this.connection.send(new ServerboundMovePlayerPacket.PosRot(e.getX(), e.getY(), e.getZ(), e.getYRot(), e.getXRot(), false));

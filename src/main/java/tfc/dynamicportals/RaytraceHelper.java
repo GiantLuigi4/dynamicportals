@@ -85,7 +85,7 @@ public class RaytraceHelper {
 									entity
 							)
 					);
-					System.out.println("Result: " + result.getBlockPos());
+//					System.out.println("Result: " + result.getBlockPos());
 					minecraft.hitResult = result;
 				}
 			}
