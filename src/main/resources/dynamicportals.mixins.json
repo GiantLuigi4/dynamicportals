@@ -6,7 +6,9 @@
   "refmap": "dynamicportals.refmap.json",
   "mixins": [
     "common.collision.EntityMixin",
-    "common.quality.ServerNetworkingMixin"
+    "common.quality.ServerNetworkingMixin",
+    "common.quality.ChunkMapMixin",
+    "common.quality.ServerPlayerMixin"
   ],
   "client": [
     "client.MojangWhy",
@@ -18,7 +20,9 @@
     "client.quality.ClientNetworkingMixin",
     "client.selection.GameRendererMixin",
     "client.quality.LevelRendererMixin",
-    "client.optimization.GameRendererMixin"
+    "client.optimization.GameRendererMixin",
+    "client.quality.ClientChunkCacheMixin",
+    "client.access.ChunkStorageAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

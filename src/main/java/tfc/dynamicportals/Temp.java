@@ -43,7 +43,7 @@ public class Temp {
 					.setSize(2, 3)
 					.setPosition(s * -7 - c1 * 10, 5, c * -7 - c1 * 10)
 //					.setPosition(0, 5, -2)
-					.setRotation(Math.toRadians(22), Math.toRadians(0)); //22=>rotation
+					.setRotation(Math.toRadians(rotation), Math.toRadians(0)); //22=>rotation
 //					.setRotation(Math.toRadians(0), 0);
 			other.computeNormal();
 			portals.add(other);
@@ -52,7 +52,7 @@ public class Temp {
 						.setSize(2, 3)
 						.setPosition(s * 7 + s1 * 10, 5, c * 7 + s1 * 10)
 //						.setPosition(0, 5, 2)
-						.setRotation(Math.toRadians(70), Math.toRadians(0)); //30=>rotation+180
+						.setRotation(Math.toRadians(rotation + 180), Math.toRadians(0)); //30=>rotation+180
 //						.setRotation(Math.toRadians(180), 0);
 				portal.computeNormal();
 				portals.add(portal);
@@ -65,11 +65,12 @@ public class Temp {
 	}
 	
 	public static AbstractPortal[] getPortals(Level level) {
-//		portals[0].setPosition(
-//				Minecraft.getInstance().player.position().x - 5,
-//				Minecraft.getInstance().player.position().y,
-//				Minecraft.getInstance().player.position().z
-//		);
+		((BasicPortal) portals[0]).setPosition(
+//				(int) Minecraft.getInstance().player.position().x - 5,
+//				(int) Minecraft.getInstance().player.position().y,
+//				(int) Minecraft.getInstance().player.position().z
+				-160, -60, 8
+		);
 		return Temp.portals;
 	}
 }
