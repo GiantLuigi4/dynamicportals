@@ -103,7 +103,7 @@ public class Temp {
 					.setSize(2, 3)
 					.setPosition(s * -7 - c1 * 10, 5, c * -7 - c1 * 10)
 //					.setPosition(0, 5, -2)
-					.setRotation(Math.toRadians(45), Math.toRadians(0)); //22=>rotation
+					.setRotation(Math.toRadians(23), Math.toRadians(0)); //22=>rotation
 //					.setRotation(Math.toRadians(0), 0);
 			other.computeNormal();
 			portals.add(other);
@@ -112,7 +112,7 @@ public class Temp {
 						.setSize(2, 3)
 						.setPosition(s * 7 + s1 * 10, 5, c * 7 + s1 * 10)
 //						.setPosition(0, 5, 2)
-						.setRotation(Math.toRadians(225), Math.toRadians(0)); //30=>rotation+180
+						.setRotation(Math.toRadians(56), Math.toRadians(0)); //30=>rotation+180
 //						.setRotation(Math.toRadians(180), 0);
 				portal.computeNormal();
 				portals.add(portal);
