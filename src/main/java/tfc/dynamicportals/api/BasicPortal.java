@@ -413,9 +413,9 @@ public class BasicPortal extends AbstractPortal {
 					Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 					Vec3 pos = position;
 					if (target != this) {
-						oldPos = VecMath.start_transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
-						oPos = VecMath.start_transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
-						pos = VecMath.start_transform(pos, quaternion, other, this != target, false, srcOff, dstOff);
+						oldPos = VecMath.transform(oldPos, quaternion, other, this != target, false, srcOff, dstOff);
+						oPos = VecMath.transform(oPos, quaternion, other, this != target, false, srcOff, dstOff);
+						pos = VecMath.transform(pos, quaternion, other, this != target, false, srcOff, dstOff);
 //						interpStart = VecMath.start_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
 //						interpReach = VecMath.start_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 					}
@@ -432,7 +432,7 @@ public class BasicPortal extends AbstractPortal {
 					entity.setYRot(vec.y + 180);
 					entity.yRotO = vecOld.y + 180;
 					
-					motion = VecMath.start_transform(motion, quaternion, other, false, true, srcOff, dstOff);
+					motion = VecMath.transform(motion, quaternion, other, false, true, srcOff, dstOff);
 					entity.setDeltaMovement(motion);
 					if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
 					else entity.absMoveTo(pos.x, pos.y, pos.z);

@@ -2,13 +2,11 @@ package tfc.dynamicportals;
 
 import com.mojang.math.Quaternion;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.AbstractPortal;
-import tfc.dynamicportals.api.BasicPortal;
 import tfc.dynamicportals.util.VecMath;
 
 public class RaytraceHelper {
@@ -40,8 +38,8 @@ public class RaytraceHelper {
 						Quaternion dstQuat = portal.target.raytraceRotation();
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
-						interpStart = VecMath.start_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-						interpReach = VecMath.start_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
+						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 					} else {
 						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 						interpStart = interpStart.add(offset);
@@ -85,7 +83,7 @@ public class RaytraceHelper {
 									entity
 							)
 					);
-//					System.out.println("Result: " + result.getBlockPos());
+					System.out.println("Result: " + result.getBlockPos());
 					minecraft.hitResult = result;
 				}
 			}
