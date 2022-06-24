@@ -73,7 +73,6 @@ public abstract class ClientChunkCacheMixin {
 		boolean wasLoaded = chunk != null;
 		if (!this.storage.inRange(pX, pZ)) chunk = new LevelChunk(this.level, pos);
 		if (chunk == null) return;
-		System.out.println("chunk was outside of bounds, manually tracking it");
 		chunk.replaceWithPacketData(pBuffer, pTag, pConsumer);
 		if (!wasLoaded) chunks.put(pos, chunk);
 		// event and whatnot

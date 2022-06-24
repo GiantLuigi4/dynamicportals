@@ -1,11 +1,12 @@
 package tfc.dynamicportals.api;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Quaternion;
 import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
@@ -165,5 +166,23 @@ public abstract class AbstractPortal {
 
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		return false;
+	}
+	
+	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
+	private static final RenderType STENCIL_DRAW = RenderType.create(
+			"dynamic_portals_stencil",
+			DefaultVertexFormat.POSITION_COLOR,
+			VertexFormat.Mode.QUADS,
+			256,
+			RenderType.CompositeState.builder()
+					.setShaderState(RENDERTYPE_LEASH_SHADER)
+					.setTextureState(RenderType.NO_TEXTURE)
+					.setCullState(RenderType.NO_CULL)
+					.setLightmapState(RenderType.NO_LIGHTMAP)
+					.createCompositeState(false)
+	);
+	
+	public RenderType getRenderType() {
+		return STENCIL_DRAW;
 	}
 }

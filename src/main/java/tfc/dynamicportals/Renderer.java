@@ -21,7 +21,6 @@ import tfc.dynamicportals.util.async.ReusableThread;
 import java.util.ArrayList;
 
 public class Renderer {
-	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
 	private static final RenderTarget stencilTarget = new TextureTarget(
 			1, 1,
 			true, Minecraft.ON_OSX
@@ -29,18 +28,6 @@ public class Renderer {
 	private static final RenderTarget portalTarget = new TextureTarget(
 			1, 1,
 			true, Minecraft.ON_OSX
-	);
-	private static final RenderType STENCIL_DRAW = RenderType.create(
-			"dynamic_portals_stencil",
-			DefaultVertexFormat.POSITION_COLOR,
-			VertexFormat.Mode.QUADS,
-			256,
-			RenderType.CompositeState.builder()
-					.setShaderState(RENDERTYPE_LEASH_SHADER)
-					.setTextureState(RenderType.NO_TEXTURE)
-					.setCullState(RenderType.NO_CULL)
-					.setLightmapState(RenderType.NO_LIGHTMAP)
-					.createCompositeState(false)
 	);
 	private static final ArrayList<ReusableThread> threads = new ArrayList<>();
 	private static boolean isStencilPresent = false;
@@ -112,7 +99,7 @@ public class Renderer {
 		stencilTarget.setClearColor(0, 0, 0, 0);
 		stencilTarget.clear(Minecraft.ON_OSX);
 		GLUtils.switchFBO(stencilTarget);
-		portal.drawStencil(source.getBuffer(STENCIL_DRAW), stack);
+		portal.drawStencil(source.getBuffer(portal.getRenderType()), stack);
 		forceDraw(source);
 		GLUtils.boundTarget().unbindWrite();
 

@@ -24,12 +24,12 @@ import tfc.dynamicportals.util.VecMath;
 import java.util.UUID;
 
 public class BasicPortal extends AbstractPortal {
-	Vector3d position;
-	Vector2d size;
-	Vector2d rotation;
-	Vector3f normal;
-	PortalCamera cam;
-	Vec3 compNorm;
+	protected Vector3d position;
+	protected Vector2d size;
+	protected Vector2d rotation;
+	protected Vector3f normal;
+	protected PortalCamera cam;
+	protected Vec3 compNorm;
 
 	public BasicPortal(UUID uuid) {
 		super(uuid);
