@@ -14,7 +14,7 @@ public class RaytraceHelper {
 		Entity entity = minecraft.getCameraEntity();
 		if (entity != null) {
 			if (minecraft.level != null) {
-				double reach = (double) minecraft.gameMode.getPickRange();
+				double reach = minecraft.gameMode.getPickRange();
 				Vec3 start = entity.getEyePosition(pPartialTicks);
 				Vec3 look = entity.getViewVector(1.0F);
 				Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);

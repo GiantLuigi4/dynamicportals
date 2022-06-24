@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Mixin(GlStateManager.class)
 public class GlStateManagerMixin {
 	@Unique
-	private static HashMap<Integer, Integer> shaderToTypeMap = new HashMap<>();
+	private static final HashMap<Integer, Integer> shaderToTypeMap = new HashMap<>();
 
 	@Inject(at = @At("RETURN"), method = "glCreateShader")
 	private static void postCreateShader(int pType, CallbackInfoReturnable<Integer> cir) {
