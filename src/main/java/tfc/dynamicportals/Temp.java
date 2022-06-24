@@ -71,7 +71,8 @@ public class Temp {
 //				Minecraft.getInstance().player.position().z
 //		);
 		ArrayList<AbstractPortal> portals = new ArrayList<>();
-		double width = Math.sqrt(Math.pow(2, 2) * 2);
+//		double width = Math.sqrt(Math.pow(2, 2) * 2);
+		double width = Math.sqrt(4 * 2); //4 == Math.pow(2, 2)......
 
 //		{
 //			Portal portal = new Portal();
@@ -101,7 +102,7 @@ public class Temp {
 					.setSize(2, 3)
 					.setPosition(s * -7 - c1 * 10, 5, c * -7 - c1 * 10)
 //					.setPosition(0, 5, -2)
-					.setRotation(Math.toRadians((System.currentTimeMillis() / 30.) % 360), Math.toRadians(0)); //22=>rotation
+					.setRotation(Math.toRadians((System.currentTimeMillis() / 30.) % 360 + 190), Math.toRadians(0)); //22=>rotation
 //					.setRotation(Math.toRadians(0), 0);
 			other.computeNormal();
 			portals.add(other);

@@ -44,7 +44,6 @@ public class VecMath {
 			selfRotConj.conj();
 			Quaternion otherRotConj = otherRotation.copy();
 			otherRotConj.conj();
-			Vec3 pos = src;
 
 			//Luigi, in your previous code you were doing this:
 			//  rotate by selfConj, rotate by 180, rotate by self, rotate by self, rotate by other
@@ -57,7 +56,7 @@ public class VecMath {
 			//But in theory quaternion multiplication is almost never commutative, so why is it now??
 			//Maybe because the rotation happens around the Y axis?
 
-			pos = VecMath.rotate(src, otherRotConj);
+			Vec3 pos = VecMath.rotate(src, otherRotConj);
 			pos = VecMath.rotate(pos, selfRotation);
 
 //			pos = VecMath.rotate(pos, selfRotation);
