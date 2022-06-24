@@ -26,7 +26,7 @@ import java.util.UUID;
 public class BasicPortal extends AbstractPortal {
 	Vector3d position;
 	Vector2d size;
-	Vector3d rotation;
+	Vector2d rotation;
 	Vector3f normal;
 	PortalCamera cam;
 	Vec3 compNorm;
@@ -79,8 +79,8 @@ public class BasicPortal extends AbstractPortal {
 		return this;
 	}
 
-	public BasicPortal setRotation(double x, double y, double z) {
-		this.rotation = new Vector3d(x, y, z);
+	public BasicPortal setRotation(double x, double y) {
+		this.rotation = new Vector2d(x, y);
 		if (position != null) {
 			Vector3f oldNorm = normal;
 			computeNormal();
@@ -90,7 +90,7 @@ public class BasicPortal extends AbstractPortal {
 		return this;
 	}
 
-	public BasicPortal setRotation(Vector3d rotation) {
+	public BasicPortal setRotation(Vector2d rotation) {
 		this.rotation = rotation;
 		if (position != null && rotation != null) {
 			Vector3f oldNorm = normal;
@@ -241,12 +241,11 @@ public class BasicPortal extends AbstractPortal {
 	public void setupAsTarget(PoseStack stack) {
 		boolean isMirror = target == this;
 		Vector3d position = this.position;
-		Vector3d rotation = this.rotation;
+		Vector2d rotation = this.rotation;
 		// TODO: figure out vertical rotation
 		// rotate
 		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-		stack.mulPose(new Quaternion(0, 0, (float) -rotation.z, false));
 		if (isMirror) stack.mulPose(new Quaternion(0, -90, 0, true));
 		// TODO: I'm not sure where this 180 is coming from
 		if (DynamicPortals.isRotate180Needed()) stack.mulPose(new Quaternion(0, 180, 0, true));

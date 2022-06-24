@@ -10,7 +10,6 @@ import java.util.UUID;
 public class Temp {
 	private static AbstractPortal[] portals;
 
-	//
 //	static {
 //		ArrayList<AbstractPortal> portals = new ArrayList<>();
 //
@@ -64,7 +63,7 @@ public class Temp {
 //
 //		Temp.portals = portals.toArray(new AbstractPortal[0]);
 //	}
-//
+
 	public static AbstractPortal[] getPortals(Level level) {
 //		portals[0].setPosition(
 //				Minecraft.getInstance().player.position().x - 5,
@@ -102,7 +101,7 @@ public class Temp {
 					.setSize(2, 3)
 					.setPosition(s * -7 - c1 * 10, 5, c * -7 - c1 * 10)
 //					.setPosition(0, 5, -2)
-					.setRotation(Math.toRadians((System.currentTimeMillis() / 30.) % 360), Math.toRadians(0), Math.toRadians(20)); //22=>rotation
+					.setRotation(Math.toRadians((System.currentTimeMillis() / 30.) % 360), Math.toRadians(0)); //22=>rotation
 //					.setRotation(Math.toRadians(0), 0);
 			other.computeNormal();
 			portals.add(other);
@@ -111,7 +110,7 @@ public class Temp {
 						.setSize(2, 3)
 						.setPosition(s * 7 + s1 * 10, 5, c * 7 + s1 * 10)
 //						.setPosition(0, 5, 2)
-						.setRotation(Math.toRadians(-(System.currentTimeMillis() / 30.) % 360), Math.toRadians(0), Math.toRadians(20)); //30=>rotation+180
+						.setRotation(Math.toRadians(-(System.currentTimeMillis() / 30.) % 360), Math.toRadians(0)); //30=>rotation+180
 //						.setRotation(Math.toRadians(180), 0);
 				portal.computeNormal();
 				portals.add(portal);
