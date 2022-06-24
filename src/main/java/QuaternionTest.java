@@ -6,6 +6,7 @@ public class QuaternionTest {
 
 		//Alright, so if I have quaternions "q1" and "q2"
 		//q1*q2 => q2.mul(q1);
+		//q2^ * q1^ = (q1*q2)^
 		//..
 		//..
 
@@ -18,10 +19,11 @@ public class QuaternionTest {
 
 		System.out.println(q1c + "; " + q2c);
 
-		Quaternion a = q2c.copy(); a.mul(q1c);
+		Quaternion q1cTimesQ2c = q2c.copy(); q1cTimesQ2c.mul(q1c);
+		Quaternion q2cTimesQ1c = q1c.copy(); q2cTimesQ1c.mul(q2c);
 
-		System.out.println(a);
-		a = q1c.copy(); a.mul(q2c);
-		System.out.println(a);
+		Quaternion q1TimesQ2Conj = q2.copy(); q1TimesQ2Conj.mul(q1); q1TimesQ2Conj.conj();
+		System.out.println(q1cTimesQ2c + "; " + q1TimesQ2Conj);
+		System.out.println(q2cTimesQ1c + "; " + "");
 	}
 }
