@@ -15,29 +15,53 @@ public class VecMath {
 	}
 
 	public static Vec3 rotate(Vec3 src, Quaternion rotation) {
-		Quaternion point = new Quaternion(new Vector3f(src), 180, true);
-		Quaternion quat = rotation.copy();
-//		quat.normalize();
-		point.mul(quat);
-		quat.conj();
-		quat.mul(point);
-		return new Vec3(quat.i(), quat.j(), quat.k());
+		Quaternion point = new Quaternion((float) src.x,(float) src.y,(float) src.z, 0);
+
+		Quaternion newPoint = rotation.copy();
+
+		//https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
+		// We take the conj before because we're doing an ACTIVE rotation
+		// (point rotated around the plane) not a PASSIVE one (plane rotated around the point)
+		// ACTIVELY ROTATED p' = q^ * p * q (q^ is inverse, since magnitude is 1, conjugate==inverse)
+
+		newPoint.conj(); //convert q to q^
+		point.mul(newPoint); //pre-multiplication q^ * p
+		newPoint.conj(); //revert q^ to q
+		newPoint.mul(point); //post-multiplication p * q
+
+		// I have no idea if I explained it well, it's already hard for me to grasp it
+		// God bless who created that website
+		return new Vec3(newPoint.i(), newPoint.j(), newPoint.k());
+	}
+
+	public static double getQuaternionMagnitude(Quaternion q) {
+		return Mth.fastInvSqrt(q.r() * q.r() + q.i() * q.i() + q.j() * q.j() + q.k() * q.k());
 	}
 
 	public static Vec3 old_transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
 		if (motion) {
+			Quaternion selfRotConj = selfRotation.copy(); selfRotConj.conj();
+			Quaternion otherRotConj = otherRotation.copy(); otherRotConj.conj();
 			Vec3 pos = src;
-			
-			// TODO: this doesn't work properly and I want to scream because of that
-			Quaternion conj = selfRotation.copy();
-			conj.conj();
-			pos = VecMath.rotate(pos, conj);
-			pos = pos.multiply(-1, 1, -1);
+
+			//Luigi, in your previous code you were doing this:
+			//  rotate by selfConj, rotate by 180, rotate by self, rotate by self, rotate by other
+			//Now, we can rotate by 180 whenever you want, since it just flips the signs of x and y
+			//If we move this rotation at the end, we have:
+			//  rotate by selfConj, rotate by self, rotate by self, rotate by other, rotate by 180
+			//But wait! We rotate by selfConj and then self: they nullify each other. So we are just doing:
+			//  rotate by self, rotate by other, rotate by 180
+			//Which is exactly what I do, but the rotations are reversed
+			//But in theory quaternion multiplication is almost never commutative, so why is it now??
+			//Maybe because the rotation happens around the Y axis?
+
+//			pos = VecMath.rotate(src, otherRotConj);
+//			pos = VecMath.rotate(pos, selfRotation);
+
 			pos = VecMath.rotate(pos, selfRotation);
-			pos = VecMath.rotate(pos, selfRotation);
-			Quaternion otherConj = otherRotation.copy();
-			otherConj.conj();
-			pos = VecMath.rotate(pos, otherConj);
+			pos = VecMath.rotate(pos, otherRotConj);
+
+			pos = VecMath.rotate(pos, new Quaternion(0, 1, 0, 0));
 
 			return pos;
 		}
@@ -60,11 +84,7 @@ public class VecMath {
 					.yRot(selfRotationVec.y())
 					.yRot((float) Math.PI)
 			;
-			pos = pos.xRot(0);
-//			pos = pos
-//					.xRot(selfRotationVec.x())
-//					.xRot(-otherRotVec.x())
-//			;
+
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);

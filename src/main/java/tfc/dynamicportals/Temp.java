@@ -102,16 +102,16 @@ public class Temp {
 			double c1 = Math.sin(Math.toRadians((rotation / 8.) + 180));
 			BasicPortal other = new BasicPortal(new UUID(2372, i * 2))
 					.setSize(2, 3)
-					.setPosition(s * -7 - c1 * 100, 5, c * -7 - c1 * 100)
+					.setPosition(s * -7 - c1 * 10, 5, c * -7 - c1 * 10)
 //					.setPosition(0, 5, -2)
-					.setRotation(Math.toRadians(23), Math.toRadians(0)); //22=>rotation
+					.setRotation(Math.toRadians((System.currentTimeMillis()/30.)%360), Math.toRadians(0)); //22=>rotation
 //					.setRotation(Math.toRadians(0), 0);
 			other.computeNormal();
 			portals.add(other);
 			{
 				BasicPortal portal = new BasicPortal(new UUID(2372, i * 2 + 1))
 						.setSize(2, 3)
-						.setPosition(s * 7 + s1 * 100, 5, c * 7 + s1 * 100)
+						.setPosition(s * 7 + s1 * 10, 5, c * 7 + s1 * 10)
 //						.setPosition(0, 5, 2)
 						.setRotation(Math.toRadians(56), Math.toRadians(0)); //30=>rotation+180
 //						.setRotation(Math.toRadians(180), 0);
