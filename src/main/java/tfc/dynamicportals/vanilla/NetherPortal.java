@@ -34,8 +34,10 @@ public class NetherPortal extends BasicPortal {
 		float minV = texture.getV(0);
 		float maxV = texture.getV(texture.getHeight());
 		VertexConsumer builder = source.getBuffer(RenderType.translucent());
-		double distance = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
-		stack.translate(0, 0, 0.0001 * distance);
+		double distance = 0.0001 *Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
+		// makes z fighting drastically less noticable
+		distance = Math.min(distance, 0.1);
+		stack.translate(0, 0, distance);
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		for (int x = (int) -size.x / 2; x < size.x / 2; x++) {
@@ -69,7 +71,8 @@ public class NetherPortal extends BasicPortal {
 		
 		builder = source.getBuffer(RenderType.translucent());
 		stack.pushPose();
-		stack.translate(-size.x / 2, 0, 0.0001 * distance);
+		// makes z fighting drastically less noticable
+		stack.translate(-size.x / 2, 0, distance);
 		mat = stack.last().pose();
 		for (int y = 0; y < size.y; y++) {
 			builder

@@ -24,9 +24,10 @@ public abstract class EntityMixin implements IMaySkipPacket {
 	@Shadow
 	public abstract Vec3 getPosition(float pPartialTicks);
 
-	@Inject(at = @At("HEAD"), method = "collide")
+	@Inject(at = @At("HEAD"), method = "collide", cancellable = true)
 	public void preMove(Vec3 vec31, CallbackInfoReturnable<Vec3> cir) {
-		TeleportationHandler.handle((Entity) (Object) this, vec31);
+		Vec3 motion = TeleportationHandler.handle((Entity) (Object) this, vec31);
+		if (motion != null) cir.setReturnValue(motion);
 	}
 
 	@Override

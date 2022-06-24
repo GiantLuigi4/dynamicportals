@@ -67,4 +67,8 @@ public class PortalVisibilityGraph {
 //		recentlyCompiledChunks.addAll(chunks);
 ////		});
 	}
+	
+	public void nudgeRenderer() {
+		renderer.renderChunksInFrustum = new ObjectArrayList<>(renderChunksInFrustum);
+	}
 }

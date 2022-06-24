@@ -8,18 +8,23 @@ import tfc.dynamicportals.access.IMaySkipPacket;
 import tfc.dynamicportals.api.AbstractPortal;
 
 public class TeleportationHandler {
-	public static void handle(Entity entity, Vec3 motion) {
+	public static Vec3 handle(Entity entity, Vec3 motion) {
+		boolean didMove = false;
 		AbstractPortal[] portals = Temp.getPortals(entity.level);
 		for (AbstractPortal portal : portals) {
 			Vec3 pos = entity.position();
 			if (portal.shouldRender(null, pos.x, pos.y, pos.z)) {
 				if (portal.moveEntity(entity, entity.getPosition(0), motion)) {
 					((IMaySkipPacket) entity).setSkipTeleportPacket();
+					didMove = true;
 					// TODO: better handling, deny teleporting through the pair
 					break;
 				}
 			}
 		}
+		if (!didMove) return null;
+		// TODO: handle collision
+		return entity.getDeltaMovement().multiply(1, 0, 1);
 	}
 
 	public static void handlePacket(ServerPlayer player, ServerboundMovePlayerPacket i) {
