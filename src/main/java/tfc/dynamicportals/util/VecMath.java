@@ -56,8 +56,12 @@ public class VecMath {
 			//But in theory quaternion multiplication is almost never commutative, so why is it now??
 			//Maybe because the rotation happens around the Y axis?
 
-			Vec3 pos = VecMath.rotate(src, otherRotConj);
-			pos = VecMath.rotate(pos, selfRotation);
+			Quaternion q1 = otherRotation.copy(); q1.conj();
+			Quaternion q2 = selfRotation.copy();
+			q2.mul(q1);
+			Vec3 pos = VecMath.rotate(src, q2);
+//			Vec3 pos = VecMath.rotate(src, otherRotConj);
+//			pos = VecMath.rotate(pos, selfRotation);
 
 //			pos = VecMath.rotate(pos, selfRotation);
 //			pos = VecMath.rotate(pos, otherRotConj);
