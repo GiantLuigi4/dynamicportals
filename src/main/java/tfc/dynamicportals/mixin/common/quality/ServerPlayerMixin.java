@@ -20,24 +20,24 @@ public class ServerPlayerMixin implements ITrackChunks {
 	private ArrayList<ChunkPos> chunksBeingTracked;
 	@Unique
 	private ArrayList<ChunkPos> lastChunksBeingTracked;
-	
+
 	@Inject(at = @At("TAIL"), method = "<init>")
 	public void postInit(MinecraftServer p_143384_, ServerLevel p_143385_, GameProfile p_143386_, CallbackInfo ci) {
 		chunksBeingTracked = new ArrayList<>();
 		lastChunksBeingTracked = new ArrayList<>();
 	}
-	
+
 	@Override
 	public void tickTracking() {
 		lastChunksBeingTracked = chunksBeingTracked;
 		chunksBeingTracked = new ArrayList<>();
 	}
-	
+
 	@Override
 	public ArrayList<ChunkPos> oldTrackedChunks() {
 		return lastChunksBeingTracked;
 	}
-	
+
 	@Override
 	public ArrayList<ChunkPos> trackedChunks() {
 		return chunksBeingTracked;

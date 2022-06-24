@@ -10,14 +10,14 @@ import java.util.ArrayList;
 public class WrapperPacket implements Packet {
 	ArrayList<PacketProcessor> processors = new ArrayList<>();
 	Packet wrapped;
-	
+
 	public WrapperPacket(Packet wrapped) {
 		this.wrapped = wrapped;
 		for (PacketProcessor packetProcessor : NetSchenanigans.getStack()) {
 			processors.add(packetProcessor);
 		}
 	}
-	
+
 	public WrapperPacket(FriendlyByteBuf buf) {
 		for (int i = 0; i < buf.readInt(); i++) {
 			String regName = buf.readUtf();
@@ -32,7 +32,7 @@ public class WrapperPacket implements Packet {
 		} catch (Throwable ignored) {
 		}
 	}
-	
+
 	@Override
 	public void write(FriendlyByteBuf pBuffer) {
 		pBuffer.writeInt(processors.size());
@@ -43,9 +43,9 @@ public class WrapperPacket implements Packet {
 		pBuffer.writeUtf(wrapped.getClass().getName());
 		wrapped.write(pBuffer);
 	}
-	
+
 	@Override
 	public void handle(PacketListener pHandler) {
-	
+
 	}
 }

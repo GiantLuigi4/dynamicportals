@@ -1,6 +1,5 @@
 package tfc.dynamicportals.mixin.client.optimization;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
@@ -13,19 +12,24 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tfc.dynamicportals.Renderer;
-import tfc.dynamicportals.Temp;
-import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.async.ReusableThread;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
+	@Unique
+	private static final ReusableThread[] threads = new ReusableThread[4];
+	@Unique
+	private final Object lock = new Object();
 	@Shadow
 	@Final
 	private Minecraft minecraft;
-	
 	@Unique
-	private static final ReusableThread[] threads = new ReusableThread[4];
-	
+	private Matrix4f projection;
+	@Unique
+	private boolean isRendering = false;
+	@Unique
+	private PoseStack stack;
+
 	@Inject(at = @At("TAIL"), method = "<clinit>")
 	private static void postStaticInit(CallbackInfo ci) {
 		for (int i = 0; i < threads.length; i++) {
@@ -34,28 +38,18 @@ public class GameRendererMixin {
 			Renderer.addThread(threads[i]);
 		}
 	}
-	
-	@Unique
-	private final Object lock = new Object();
-	@Unique
-	private Matrix4f projection;
-	
-	@Unique
-	private boolean isRendering = false;
-	@Unique
-	private PoseStack stack;
-	
+
 	@Inject(at = @At("HEAD"), method = "renderLevel")
 	public void preRenderLevel(float f1, long vector3f, PoseStack f2, CallbackInfo ci) {
 		isRendering = true;
 		stack = f2;
 	}
-	
+
 	@Inject(at = @At("HEAD"), method = "renderLevel")
 	public void postRenderLevel(float f1, long vector3f, PoseStack f2, CallbackInfo ci) {
 		isRendering = false;
 	}
-	
+
 	@Inject(at = @At("HEAD"), method = "resetProjectionMatrix")
 	public void preSetProjMat(Matrix4f pMatrix, CallbackInfo ci) {
 		// TODO: get this working
@@ -106,7 +100,7 @@ public class GameRendererMixin {
 //			}
 //		}
 //	}
-	
+
 	@Unique
 	private void scheduleNext(Runnable r) {
 		while (true) {

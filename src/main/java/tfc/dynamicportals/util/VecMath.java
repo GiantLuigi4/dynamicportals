@@ -15,11 +15,11 @@ public class VecMath {
 	}
 
 	public static Vec3 rotate(Vec3 src, Quaternion rotation) {
-		Quaternion point = new Quaternion((float) src.x,(float) src.y,(float) src.z, 0);
+		Quaternion point = new Quaternion((float) src.x, (float) src.y, (float) src.z, 0);
 
 		Quaternion newPoint = rotation.copy();
 
-		//https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
+		// https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
 		// We take the conj before because we're doing an ACTIVE rotation
 		// (point rotated around the plane) not a PASSIVE one (plane rotated around the point)
 		// ACTIVELY ROTATED p' = q^ * p * q (q^ is inverse, since magnitude is 1, conjugate==inverse)
@@ -40,8 +40,10 @@ public class VecMath {
 
 	public static Vec3 old_transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
 		if (motion) {
-			Quaternion selfRotConj = selfRotation.copy(); selfRotConj.conj();
-			Quaternion otherRotConj = otherRotation.copy(); otherRotConj.conj();
+			Quaternion selfRotConj = selfRotation.copy();
+			selfRotConj.conj();
+			Quaternion otherRotConj = otherRotation.copy();
+			otherRotConj.conj();
 			Vec3 pos = src;
 
 			//Luigi, in your previous code you were doing this:
@@ -55,11 +57,11 @@ public class VecMath {
 			//But in theory quaternion multiplication is almost never commutative, so why is it now??
 			//Maybe because the rotation happens around the Y axis?
 
-//			pos = VecMath.rotate(src, otherRotConj);
-//			pos = VecMath.rotate(pos, selfRotation);
-
+			pos = VecMath.rotate(src, otherRotConj);
 			pos = VecMath.rotate(pos, selfRotation);
-			pos = VecMath.rotate(pos, otherRotConj);
+
+//			pos = VecMath.rotate(pos, selfRotation);
+//			pos = VecMath.rotate(pos, otherRotConj);
 
 			pos = VecMath.rotate(pos, new Quaternion(0, 1, 0, 0));
 
@@ -82,8 +84,7 @@ public class VecMath {
 			Vec3 pos = src
 					.yRot(-otherRotVec.y())
 					.yRot(selfRotationVec.y())
-					.yRot((float) Math.PI)
-			;
+					.yRot((float) Math.PI);
 
 			return pos;
 		}

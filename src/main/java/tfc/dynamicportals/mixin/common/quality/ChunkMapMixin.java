@@ -23,41 +23,38 @@ import java.util.ArrayList;
 
 @Mixin(ChunkMap.class)
 public abstract class ChunkMapMixin {
-	@Shadow
-	protected abstract void playerLoadedChunk(ServerPlayer pPlaer, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, LevelChunk pChunk);
-	
-	@Shadow
-	@Nullable
-	protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
-	
+	AbstractPortal[] portals;
 	@Shadow
 	@Final
 	private ServerLevel level;
-	
 	@Shadow
 	@Final
 	private Int2ObjectMap<ChunkMap.TrackedEntity> entityMap;
 	@Shadow
 	private int viewDistance;
-	
-	@Shadow
-	protected abstract void updateChunkTracking(ServerPlayer pPlayer, ChunkPos pChunkPos, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, boolean pWasLoaded, boolean pLoad);
-	
 	@Shadow
 	@Final
 	private PlayerMap playerMap;
 	@Shadow
 	@Final
 	private ChunkMap.DistanceManager distanceManager;
-	
+
+	@Shadow
+	protected abstract void playerLoadedChunk(ServerPlayer pPlaer, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, LevelChunk pChunk);
+
+	@Shadow
+	@Nullable
+	protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
+
+	@Shadow
+	protected abstract void updateChunkTracking(ServerPlayer pPlayer, ChunkPos pChunkPos, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, boolean pWasLoaded, boolean pLoad);
+
 	@Shadow
 	protected abstract boolean skipPlayer(ServerPlayer pPlayer);
-	
+
 	@Shadow
 	protected abstract SectionPos updatePlayerPos(ServerPlayer p_140374_);
-	
-	AbstractPortal[] portals;
-	
+
 	// TODO: is there a way to do this without replacing the entire "move" method?
 	@Inject(at = @At("HEAD"), method = "move", cancellable = true)
 	public void preMove(ServerPlayer pPlayer, CallbackInfo ci) {
@@ -65,7 +62,7 @@ public abstract class ChunkMapMixin {
 			if (chunkmap$trackedentity.entity == pPlayer) chunkmap$trackedentity.updatePlayers(this.level.players());
 			else chunkmap$trackedentity.updatePlayer(pPlayer);
 		}
-		
+
 		SectionPos oldPos = pPlayer.getLastSectionPos();
 		SectionPos newPos = SectionPos.of(pPlayer);
 		long oldAsLong = oldPos.chunk().toLong();
@@ -81,7 +78,7 @@ public abstract class ChunkMapMixin {
 			if (ignorePlayer && !skipPlayer) this.playerMap.unIgnorePlayer(pPlayer);
 			if (oldAsLong != newAsLong) this.playerMap.updatePlayer(oldAsLong, newAsLong, pPlayer);
 		}
-		
+
 		ITrackChunks chunkTracker = (ITrackChunks) pPlayer;
 		ChunkPos center = new ChunkPos(pPlayer.getOnPos());
 		ArrayList<ChunkPos> tracked = new ArrayList<>();
@@ -122,7 +119,7 @@ public abstract class ChunkMapMixin {
 		chunkTracker.trackedChunks().addAll(tracked);
 		ci.cancel();
 	}
-	
+
 	public boolean nonEclidianInRange(ChunkPos pos, ServerPlayer player) {
 		for (AbstractPortal portal : portals) {
 			if (portal.raytraceOffset().distanceTo(player.position()) / 16 < viewDistance) {
