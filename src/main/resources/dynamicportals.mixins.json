@@ -7,8 +7,9 @@
   "mixins": [
     "common.collision.EntityMixin",
     "common.quality.ServerNetworkingMixin",
-//    "common.quality.ChunkMapMixin",
-    "common.quality.ServerPlayerMixin"
+    "common.quality.ChunkMapMixin",
+    "common.quality.ServerPlayerMixin",
+    "common.access.ConnectionMixin"
   ],
   "client": [
     "client.MojangWhy",
@@ -21,8 +22,9 @@
     "client.selection.GameRendererMixin",
     "client.quality.LevelRendererMixin",
     "client.optimization.GameRendererMixin",
-//    "client.quality.ClientChunkCacheMixin",
-    "client.access.ChunkStorageAccessor"
+    "client.quality.ClientChunkCacheMixin",
+    "client.access.ChunkStorageAccessor",
+    "client.hackery.ClientLevelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

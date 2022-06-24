@@ -21,6 +21,8 @@ import tfc.dynamicportals.DynamicPortals;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.VecMath;
 
+import java.util.UUID;
+
 public class BasicPortal extends AbstractPortal {
 	Vector3d position;
 	Vector2d size;
@@ -28,6 +30,10 @@ public class BasicPortal extends AbstractPortal {
 	Vector3f normal;
 	PortalCamera cam;
 	Vec3 compNorm;
+	
+	public BasicPortal(UUID uuid) {
+		super(uuid);
+	}
 	
 	public BasicPortal setPosition(double x, double y, double z) {
 		this.position = new Vector3d(x, y, z);

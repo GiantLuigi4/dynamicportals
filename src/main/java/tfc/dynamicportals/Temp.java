@@ -7,6 +7,7 @@ import tfc.dynamicportals.api.BasicPortal;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.UUID;
 
 public class Temp {
 	private static AbstractPortal[] portals;
@@ -40,7 +41,7 @@ public class Temp {
 			double s = Math.sin(Math.toRadians(rotation));
 			double s1 = Math.sin(Math.toRadians((rotation / 3.) + 180));
 			double c1 = Math.sin(Math.toRadians((rotation / 8.) + 180));
-			BasicPortal other = new BasicPortal()
+			BasicPortal other = new BasicPortal(new UUID(2372, i * 2))
 					.setSize(2, 3)
 					.setPosition(s * -7 - c1 * 10, 5, c * -7 - c1 * 10)
 //					.setPosition(0, 5, -2)
@@ -49,7 +50,7 @@ public class Temp {
 			other.computeNormal();
 			portals.add(other);
 			{
-				BasicPortal portal = new BasicPortal()
+				BasicPortal portal = new BasicPortal(new UUID(2372, i * 2 + 1))
 						.setSize(2, 3)
 						.setPosition(s * 7 + s1 * 10, 5, c * 7 + s1 * 10)
 //						.setPosition(0, 5, 2)
@@ -99,18 +100,18 @@ public class Temp {
 			double s = Math.sin(Math.toRadians(rotation));
 			double s1 = Math.sin(Math.toRadians((rotation / 3.) + 180));
 			double c1 = Math.sin(Math.toRadians((rotation / 8.) + 180));
-			BasicPortal other = new BasicPortal()
+			BasicPortal other = new BasicPortal(new UUID(2372, i * 2))
 					.setSize(2, 3)
-					.setPosition(s * -7 - c1 * 10, 5, c * -7 - c1 * 10)
+					.setPosition(s * -7 - c1 * 100, 5, c * -7 - c1 * 100)
 //					.setPosition(0, 5, -2)
 					.setRotation(Math.toRadians(45), Math.toRadians(0)); //22=>rotation
 //					.setRotation(Math.toRadians(0), 0);
 			other.computeNormal();
 			portals.add(other);
 			{
-				BasicPortal portal = new BasicPortal()
+				BasicPortal portal = new BasicPortal(new UUID(2372, i * 2 + 1))
 						.setSize(2, 3)
-						.setPosition(s * 7 + s1 * 10, 5, c * 7 + s1 * 10)
+						.setPosition(s * 7 + s1 * 100, 5, c * 7 + s1 * 100)
 //						.setPosition(0, 5, 2)
 						.setRotation(Math.toRadians(225), Math.toRadians(0)); //30=>rotation+180
 //						.setRotation(Math.toRadians(180), 0);
