@@ -91,8 +91,8 @@ public abstract class ChunkMapMixin {
 				updateChunkTracking(
 						pPlayer, pos,
 						new MutableObject<>(),
-						chunkTracker.trackedChunks().remove(pos),
-						true
+						chunkTracker.trackedChunks().remove(pos), // remove it so that the next loop doesn't untrack it
+						true // start tracking
 				);
 //				if (success)
 				tracked.add(pos);
@@ -103,12 +103,18 @@ public abstract class ChunkMapMixin {
 		for (ChunkPos trackedChunk : chunkTracker.trackedChunks()) {
 			if (nonEclidianInRange(trackedChunk, pPlayer)) {
 				tracked.add(trackedChunk);
+				updateChunkTracking(
+						pPlayer, trackedChunk,
+						new MutableObject<>(),
+						true, // this will always be true, no point in checking the list
+						true // player should know about the chunk
+				);
 			} else {
 				updateChunkTracking(
 						pPlayer, trackedChunk,
 						new MutableObject<>(),
-						true,
-						false
+						true, // this will always be true, no point in checking the list
+						false // unloading/untracking
 				);
 			}
 		}
