@@ -15,8 +15,9 @@ public class VecMath {
 	}
 
 	public static Vec3 rotate(Vec3 src, Quaternion rotation) {
-		Quaternion point = new Quaternion((float) src.x, (float) src.y, (float) src.z, 1);
+		Quaternion point = new Quaternion(new Vector3f(src), 180, true);
 		Quaternion quat = rotation.copy();
+//		quat.normalize();
 		point.mul(quat);
 		quat.conj();
 		quat.mul(point);
@@ -37,7 +38,7 @@ public class VecMath {
 			Quaternion otherConj = otherRotation.copy();
 			otherConj.conj();
 			pos = VecMath.rotate(pos, otherConj);
-			
+
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);
@@ -46,31 +47,28 @@ public class VecMath {
 		return pos;
 	}
 
-	public static Vec3 start_transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
+	public static Vec3 transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
 		if (motion) {
-			Vec3 pos = src;
-			Quaternion selfRotConj = selfRotation.copy();
-			selfRotConj.conj();
-			Quaternion otherRotConj = otherRotation.copy();
-			otherRotConj.conj();
+			Quaternion selfRot = selfRotation.copy();
+			Quaternion otherRot = otherRotation.copy();
 
-			Vector3f selfRotationVec = selfRotConj.toYXZ();
-			Vector3f otherRotVec = otherRotConj.toYXZ();
+			Vector3f selfRotationVec = selfRot.toYXZ();
+			Vector3f otherRotVec = otherRot.toYXZ();
 
-			//So, if one rotation is 0, rotate by otherConj and then by self
-
-			pos = pos
-//					.yRot(selfRotationVec.y())
-					.yRot(otherRotVec.y())
-					.yRot(-selfRotationVec.y())
+			Vec3 pos = src
+					.yRot(-otherRotVec.y())
+					.yRot(selfRotationVec.y())
+					.yRot((float) Math.PI)
 			;
-			pos = pos.yRot((float) Math.PI); //idk...
-
-
+			pos = pos.xRot(0);
+//			pos = pos
+//					.xRot(selfRotationVec.x())
+//					.xRot(-otherRotVec.x())
+//			;
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);
-		pos = start_transform(pos, selfRotation, otherRotation, isMirror, true, sourceTransformation, destTransformation);
+		pos = transform(pos, selfRotation, otherRotation, isMirror, true, sourceTransformation, destTransformation);
 		pos = pos.add(destTransformation);
 		return pos;
 	}
