@@ -16,6 +16,7 @@ import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.lwjgl.opengl.GL11;
 import tfc.dynamicportals.DynamicPortals;
 import tfc.dynamicportals.util.Quad;
@@ -456,8 +457,16 @@ public class BasicPortal extends AbstractPortal {
 					entity.zo = oPos.z;
 					entity.zOld = oldPos.z;
 					
-					if (graph != null)
-						graph.nudgeRenderer();
+					if (entity.level.isClientSide) {
+						if (FMLEnvironment.dist.isClient()) {
+							// TODO: check if it's an instance of a client world
+							// TODO: shift call out of "common" code
+							if (entity == Minecraft.getInstance().cameraEntity) {
+								if (graph != null)
+									graph.nudgeRenderer();
+							}
+						}
+					}
 					return true;
 				}
 			}

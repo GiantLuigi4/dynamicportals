@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tfc.dynamicportals.TeleportationHandler;
 import tfc.dynamicportals.access.IMaySkipPacket;
@@ -24,10 +25,11 @@ public abstract class EntityMixin implements IMaySkipPacket {
 	@Shadow
 	public abstract Vec3 getPosition(float pPartialTicks);
 
-	@Inject(at = @At("HEAD"), method = "collide", cancellable = true)
-	public void preMove(Vec3 vec31, CallbackInfoReturnable<Vec3> cir) {
-		Vec3 motion = TeleportationHandler.handle((Entity) (Object) this, vec31);
-		if (motion != null) cir.setReturnValue(motion);
+	@ModifyVariable(at = @At("HEAD"), method = "move", index = 2, argsOnly = true)
+	public Vec3 preMove(Vec3 motion) {
+		Vec3 vec = TeleportationHandler.handle((Entity) (Object) this, motion);
+		if (vec != null) return vec;
+		else return motion;
 	}
 
 	@Override

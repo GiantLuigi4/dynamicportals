@@ -9,6 +9,7 @@ import tfc.dynamicportals.api.AbstractPortal;
 
 public class TeleportationHandler {
 	public static Vec3 handle(Entity entity, Vec3 motion) {
+		// TODO: handle pre teleportation collision
 		boolean didMove = false;
 		AbstractPortal[] portals = Temp.getPortals(entity.level);
 		for (AbstractPortal portal : portals) {
@@ -23,8 +24,8 @@ public class TeleportationHandler {
 			}
 		}
 		if (!didMove) return null;
-		// TODO: handle collision
-		return entity.getDeltaMovement().multiply(1, 0, 1);
+//		return entity.getDeltaMovement().multiply(1, 0, 1);
+		return entity.getDeltaMovement();
 	}
 
 	public static void handlePacket(ServerPlayer player, ServerboundMovePlayerPacket i) {
