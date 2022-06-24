@@ -5,7 +5,6 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.server.level.*;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.spongepowered.asm.mixin.Final;
@@ -14,6 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.access.ITrackChunks;
 import tfc.dynamicportals.api.AbstractPortal;
@@ -24,21 +24,18 @@ import java.util.ArrayList;
 @Mixin(ChunkMap.class)
 public abstract class ChunkMapMixin {
 	@Shadow
-	protected abstract void playerLoadedChunk(ServerPlayer pPlaer, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, LevelChunk pChunk);
-	
-	@Shadow
 	@Nullable
 	protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
 	
 	@Shadow
 	@Final
-	private ServerLevel level;
+	ServerLevel level;
 	
 	@Shadow
 	@Final
 	private Int2ObjectMap<ChunkMap.TrackedEntity> entityMap;
 	@Shadow
-	private int viewDistance;
+	int viewDistance;
 	
 	@Shadow
 	protected abstract void updateChunkTracking(ServerPlayer pPlayer, ChunkPos pChunkPos, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, boolean pWasLoaded, boolean pLoad);
@@ -83,19 +80,26 @@ public abstract class ChunkMapMixin {
 		}
 		
 		ITrackChunks chunkTracker = (ITrackChunks) pPlayer;
+		if (!chunkTracker.setDoUpdate(false)) return;
+		
 		ChunkPos center = new ChunkPos(pPlayer.getOnPos());
 		ArrayList<ChunkPos> tracked = new ArrayList<>();
+		boolean anyFailed = false;
 		for (int x = -viewDistance; x <= viewDistance; x++) {
 			for (int z = -viewDistance; z <= viewDistance; z++) {
 				ChunkPos pos = new ChunkPos(center.x + x, center.z + z);
-				updateChunkTracking(
-						pPlayer, pos,
-						new MutableObject<>(),
-						chunkTracker.trackedChunks().remove(pos), // remove it so that the next loop doesn't untrack it
-						true // start tracking
-				);
-//				if (success)
-				tracked.add(pos);
+				ChunkHolder holder = getVisibleChunkIfPresent(pos.toLong());
+				if (holder != null) {
+					if (holder.getTickingChunk() != null) {
+						updateChunkTracking(
+								pPlayer, pos,
+								new MutableObject<>(),
+								chunkTracker.trackedChunks().remove(pos), // remove it so that the next loop doesn't untrack it
+								true // start tracking
+						);
+						tracked.add(pos);
+					} else anyFailed = true;
+				} else anyFailed = true;
 			}
 		}
 		portals = Temp.getPortals(level);
@@ -120,7 +124,21 @@ public abstract class ChunkMapMixin {
 		}
 		chunkTracker.trackedChunks().clear();
 		chunkTracker.trackedChunks().addAll(tracked);
+		
+		if (anyFailed) chunkTracker.setDoUpdate(true);
 		ci.cancel();
+	}
+
+//	boolean success = false;
+//
+//	@Inject(at = @At("HEAD"), method = "playerLoadedChunk")
+//	public void preLoadChunk(ServerPlayer pPlaer, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, LevelChunk pChunk, CallbackInfo ci) {
+//		success = true;
+//	}
+	
+	@Inject(at = @At("HEAD"), method = "updatePlayerPos")
+	public void preUpdatePos(ServerPlayer p_140374_, CallbackInfoReturnable<SectionPos> cir) {
+		((ITrackChunks) p_140374_).setDoUpdate(true);
 	}
 	
 	public boolean nonEclidianInRange(ChunkPos pos, ServerPlayer player) {

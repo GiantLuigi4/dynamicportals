@@ -42,4 +42,14 @@ public class ServerPlayerMixin implements ITrackChunks {
 	public ArrayList<ChunkPos> trackedChunks() {
 		return chunksBeingTracked;
 	}
+	
+	@Unique
+	boolean doUpdate = false;
+	
+	@Override
+	public boolean setDoUpdate(boolean val) {
+		boolean doUpdate = this.doUpdate;
+		this.doUpdate = val;
+		return doUpdate;
+	}
 }

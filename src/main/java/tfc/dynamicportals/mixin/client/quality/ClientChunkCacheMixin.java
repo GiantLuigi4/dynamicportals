@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import tfc.dynamicportals.access.IHaveChunkArray;
 
 import java.util.HashMap;
 import java.util.function.Consumer;
@@ -27,7 +28,7 @@ public abstract class ClientChunkCacheMixin {
 	@Final
 	public ClientLevel level;
 	@Shadow
-	private volatile ClientChunkCache.Storage storage;
+	volatile ClientChunkCache.Storage storage;
 	@Unique
 	HashMap<ChunkPos, LevelChunk> chunks = new HashMap<>();
 	
@@ -45,6 +46,18 @@ public abstract class ClientChunkCacheMixin {
 	
 	@Inject(at = @At("HEAD"), method = "drop", cancellable = true)
 	public void preDropChunk(int pX, int pZ, CallbackInfo ci) {
+//		if (!storage.inRange(pX, pZ)) {
+//			int i = storage.getIndex(pX, pZ);
+//			LevelChunk chunk = storage.getChunk(i);
+//			// deny off loading of chunks
+//			if (chunk != null) {
+//				((IHaveChunkArray) (Object) storage).getChunks().set(i, null);
+//				((IHaveChunkArray) (Object) storage).removeChunk();
+//				chunks.put(new ChunkPos(pX, pZ), chunk);
+//				ci.cancel();
+//			}
+//			return;
+//		}
 		LevelChunk chunk = chunks.remove(new ChunkPos(pX, pZ));
 		if (chunk != null) {
 			net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.world.ChunkEvent.Unload(chunk));
@@ -53,15 +66,19 @@ public abstract class ClientChunkCacheMixin {
 		}
 	}
 	
-	@Inject(at = @At("HEAD"), method = "replaceWithPacketData")
+	@Inject(at = @At("HEAD"), method = "replaceWithPacketData", cancellable = true)
 	public void preReplaceWithPacket(int pX, int pZ, FriendlyByteBuf pBuffer, CompoundTag pTag, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> pConsumer, CallbackInfoReturnable<LevelChunk> cir) {
 		ChunkPos pos = new ChunkPos(pX, pZ);
 		LevelChunk chunk = chunks.getOrDefault(pos, null);
 		boolean wasLoaded = chunk != null;
 		if (!this.storage.inRange(pX, pZ)) chunk = new LevelChunk(this.level, pos);
 		if (chunk == null) return;
+		System.out.println("chunk was outside of bounds, manually tracking it");
 		chunk.replaceWithPacketData(pBuffer, pTag, pConsumer);
 		if (!wasLoaded) chunks.put(pos, chunk);
+		// event and whatnot
+		this.level.onChunkLoaded(pos);
+		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.world.ChunkEvent.Load(chunk));
 		cir.setReturnValue(chunk);
 	}
 	
