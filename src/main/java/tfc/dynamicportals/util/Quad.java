@@ -32,19 +32,17 @@ public class Quad {
 			double dx0 = Math.abs(tx) / x;
 			if (tx < 0)
 				dx0 = 1 - (-dx0);
-			if (dx0 < 0 || dx0 > 1) return false;
+			return !(dx0 < 0) && !(dx0 > 1);
 //			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
 //			return box.contains(point);
-			return true;
 		} else {
 			double tx = box.getCenter().z + (z / 2);
 			double dx0 = Math.abs(tx) / z;
 			if (tx < 0)
 				dx0 = 1 - (-dx0);
-			if (dx0 < 0 || dx0 > 1) return false;
+			return !(dx0 < 0) && !(dx0 > 1);
 //			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
 //			return box.contains(point);
-			return true;
 		}
 	}
 }

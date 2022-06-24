@@ -11,15 +11,18 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 @Mixin(ClientChunkCache.Storage.class)
 public class ChunkStorageAccessor implements IHaveChunkArray {
-	@Shadow @Final private AtomicReferenceArray<LevelChunk> chunks;
-	
-	@Shadow private int chunkCount;
-	
+	@Shadow
+	@Final
+	private AtomicReferenceArray<LevelChunk> chunks;
+
+	@Shadow
+	private int chunkCount;
+
 	@Override
 	public AtomicReferenceArray<LevelChunk> getChunks() {
 		return chunks;
 	}
-	
+
 	@Override
 	public int removeChunk() {
 		return chunkCount--;

@@ -14,12 +14,12 @@ public class RaytraceHelper {
 		Entity entity = minecraft.getCameraEntity();
 		if (entity != null) {
 			if (minecraft.level != null) {
-				double reach = (double) minecraft.gameMode.getPickRange();
+				double reach = minecraft.gameMode.getPickRange();
 				Vec3 start = entity.getEyePosition(pPartialTicks);
 				Vec3 look = entity.getViewVector(1.0F);
 				Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);
 				Vec3 end = start.add(reachVec);
-				
+
 				AbstractPortal[] portals = Temp.getPortals(minecraft.level);
 				for (AbstractPortal portal : portals) {
 					if (!portal.shouldRender(null, start.x, start.y, start.z)) {
@@ -38,8 +38,8 @@ public class RaytraceHelper {
 						Quaternion dstQuat = portal.target.raytraceRotation();
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
-						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
+						interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+						interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 					} else {
 						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 						interpStart = interpStart.add(offset);

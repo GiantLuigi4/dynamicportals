@@ -29,7 +29,7 @@ public abstract class ServerNetworkingMixin {
 	@Shadow
 	private double lastGoodY;
 
-//	@Unique
+	//	@Unique
 //	private boolean doSkip = false;
 //
 //	@Inject(at = @At("TAIL"), method = "teleport(DDDFFLjava/util/Set;Z)V", cancellable = true)
