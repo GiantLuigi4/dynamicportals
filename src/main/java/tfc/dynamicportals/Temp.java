@@ -93,6 +93,7 @@ public class Temp {
 		double rotation = 0;
 		int count = 2;
 		for (int i = 0; i < count; i++) {
+			double portalRotation = (System.currentTimeMillis() / 30.) % 360;
 			rotation += 360 / (count * 2d);
 			double c = Math.cos(Math.toRadians(rotation));
 			double s = Math.sin(Math.toRadians(rotation));
@@ -102,7 +103,7 @@ public class Temp {
 					.setSize(2, 3)
 					.setPosition(s * -7 - c1 * 10, 5, c * -7 - c1 * 10)
 //					.setPosition(0, 5, -2)
-					.setRotation(Math.toRadians((System.currentTimeMillis() / 30.) % 360 + 190), Math.toRadians(0)); //22=>rotation
+					.setRotation(Math.toRadians(portalRotation + 190), Math.toRadians(35)); //22=>rotation
 //					.setRotation(Math.toRadians(0), 0);
 			other.computeNormal();
 			portals.add(other);
@@ -111,7 +112,7 @@ public class Temp {
 						.setSize(2, 3)
 						.setPosition(s * 7 + s1 * 10, 5, c * 7 + s1 * 10)
 //						.setPosition(0, 5, 2)
-						.setRotation(Math.toRadians(-(System.currentTimeMillis() / 30.) % 360), Math.toRadians(0)); //30=>rotation+180
+						.setRotation(Math.toRadians(-portalRotation), Math.toRadians(0)); //30=>rotation+180
 //						.setRotation(Math.toRadians(180), 0);
 				portal.computeNormal();
 				portals.add(portal);
