@@ -133,12 +133,17 @@ public class NetherPortal extends BasicPortal {
 			for (int y = 0; y < size.y; y++) {
 				float a0 = min;
 				float a1 = a0, a2 = a0, a3 = a0;
-//				if (false) {
+				// TODO: config
+				if (true) {
 					a0 = (float) simplexNoise.getValue((x + xOff) / 16f, (y + yOff) / 16f, shaderTime) + add;
 					a1 = (float) simplexNoise.getValue((x + 1 + xOff) / 16f, (y + yOff) / 16f, shaderTime) + add;
 					a2 = (float) simplexNoise.getValue((x + 1 + xOff) / 16f, (y + 1 + yOff) / 16f, shaderTime) + add;
 					a3 = (float) simplexNoise.getValue((x + xOff) / 16f, (y + 1 + yOff) / 16f, shaderTime) + add;
-//				}
+					a0 *= Math.sqrt(add) * 2;
+					a1 *= Math.sqrt(add) * 2;
+					a2 *= Math.sqrt(add) * 2;
+					a3 *= Math.sqrt(add) * 2;
+				}
 				if (a0 < min) a0 = min;
 				if (a0 > 1) a0 = 1;
 				if (a1 < min) a1 = min;
