@@ -42,35 +42,33 @@ public class GlStateManagerMixin {
 
 	// shader injections
 	@Inject(at = @At("HEAD"), method = "glShaderSource")
-	private static void preGlShaderSource(int s, List<String> pointerbuffer, CallbackInfo ci) {
+	private static void preGlShaderSource(int s, List<String> pointerBuffer, CallbackInfo ci) {
 		int type = shaderToTypeMap.get(s);
 
 		StringBuilder str = new StringBuilder();
-		for (String s1 : pointerbuffer) {
+		for (String s1 : pointerBuffer) {
 			str.append(s1).append("\n");
 		}
 		
 		if (str.toString().contains("#dynportals skip_inject")) {
 			String str1 = str.toString().replace("#dynportals skip_inject", "");
-			String[] list = str1.toString().split("\n");
-			pointerbuffer.clear();
+			String[] list = str1.split("\n");
+			pointerBuffer.clear();
 			for (String s1 : list) {
-				pointerbuffer.add(s1 + "\n");
+				pointerBuffer.add(s1 + "\n");
 			}
 		}
-		
-		String[] list = str.toString().split("\n");
+
 		AtomicInteger lCC = new AtomicInteger();
 		boolean inMain = false;
 		boolean hitUniforms = false;
 		boolean hitOuts = false;
 		boolean hitInputs = false;
-		StringBuilder output = new StringBuilder();
-
 		boolean hasTexCoordInput = false;
 		String samplerName = null;
 
-		for (String s1 : list) {
+		StringBuilder output = new StringBuilder();
+		for (String s1 : str.toString().split("\n")) {
 			String srcStr = s1;
 			int len = s1.length();
 			s1 = s1.replace("  ", " ");
@@ -134,9 +132,9 @@ public class GlStateManagerMixin {
 //				ignored.printStackTrace();
 //			}
 //		}
-		pointerbuffer.clear();
+		pointerBuffer.clear();
 		for (String s1 : output.toString().split("\n")) {
-			pointerbuffer.add(s1 + "\n");
+			pointerBuffer.add(s1 + "\n");
 		}
 	}
 
