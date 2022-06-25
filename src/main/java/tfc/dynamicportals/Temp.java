@@ -69,6 +69,9 @@ public class Temp {
 		BasicPortal portal = (BasicPortal) portals[1];
 		portal.setPosition(0.5, 5.00, -5);
 		portal.setSize(2, 3);
+		portal = (BasicPortal) portals[3];
+		portal.setPosition(-7.5, 5, -15);
+		portal.setSize(2, 3);
 		return Temp.portals;
 	}
 }

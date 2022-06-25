@@ -44,7 +44,8 @@ public class NetherPortal extends BasicPortal {
 		stack.translate(0, 0, distance);
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
-		for (int x = (int) -size.x / 2; x < size.x / 2; x++) {
+		stack.translate(-size.x / 2, 0, distance);
+		for (int x = 0; x < size.x; x++) {
 			builder
 					.vertex(mat, x, 0, 0).color(r, g, b, a)
 					.uv(minU, minV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
@@ -76,7 +77,7 @@ public class NetherPortal extends BasicPortal {
 		builder = source.getBuffer(RenderType.translucent());
 		stack.pushPose();
 		// makes z fighting drastically less noticeable
-		stack.translate(-size.x / 2, 0, distance);
+		stack.translate(0, 0, distance);
 		mat = stack.last().pose();
 		for (int y = 0; y < size.y; y++) {
 			builder
