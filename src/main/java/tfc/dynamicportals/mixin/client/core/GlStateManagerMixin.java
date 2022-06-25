@@ -65,6 +65,7 @@ public class GlStateManagerMixin {
 		boolean hitOuts = false;
 		boolean hitInputs = false;
 		boolean hasTexCoordInput = false;
+		boolean hasColorInput = false;
 		String samplerName = null;
 
 		StringBuilder output = new StringBuilder();
@@ -88,6 +89,7 @@ public class GlStateManagerMixin {
 				if (str1.startsWith("Sampler0") || str1.startsWith("DiffuseSampler"))
 					samplerName = str1.substring(0, str1.length() - 1);
 			}
+			if (s1.startsWith("in vec4 vertexColor")) hasColorInput = true;
 			if (!hitUniforms && s1.trim().startsWith("uniform")) {
 				srcStr = injectUniforms(type, srcStr);
 				hitUniforms = true;
@@ -102,12 +104,12 @@ public class GlStateManagerMixin {
 			}
 			if (hitUniforms && hitOuts && hitInputs) {
 				if (inMain) {
-					srcStr = checkLineAndInject(type, srcStr, lCC, hasTexCoordInput && samplerName != null, samplerName);
+					srcStr = checkLineAndInject(type, srcStr, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
 					if (lCC.get() == 0) inMain = false;
 				}
 				if (s1.contains("void main()")) {
 					inMain = true;
-					srcStr = checkLineAndInject(type, srcStr, lCC, hasTexCoordInput && samplerName != null, samplerName);
+					srcStr = checkLineAndInject(type, srcStr, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
 				}
 			}
 			output.append(srcStr).append("\n");
@@ -166,7 +168,7 @@ public class GlStateManagerMixin {
 		return srcStr;
 	}
 
-	private static String checkLineAndInject(int type, String line, AtomicInteger lCC, boolean hasTexCoordInput, String samplerName) {
+	private static String checkLineAndInject(int type, String line, AtomicInteger lCC, boolean hasTexCoordInput, String samplerName, boolean hasColorInput) {
 		String[] split = split(line, "{}");
 		StringBuilder builder = new StringBuilder();
 		for (String str : split) {
@@ -174,7 +176,7 @@ public class GlStateManagerMixin {
 				builder.append(str);
 				if (lCC.get() == 0) {
 					if (type == GL42.GL_FRAGMENT_SHADER) {
-						String injection = ShaderInjections.headInjection(hasTexCoordInput, samplerName);
+						String injection = ShaderInjections.headInjection(hasTexCoordInput, samplerName, hasColorInput);
 						builder.append(injection);
 					}
 				}

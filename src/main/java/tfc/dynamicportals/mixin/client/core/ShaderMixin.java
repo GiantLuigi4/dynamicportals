@@ -89,10 +89,12 @@ public abstract class ShaderMixin {
 			STENCIL_PRESENT.set(Renderer.isStencilPresent() ? 1 : 0);
 			if (Renderer.useScreenspaceTex()) STENCIL_PRESENT.set(2);
 			if (STENCIL_PRESENT instanceof Uniform) ((Uniform) STENCIL_PRESENT).upload();
-			if (Renderer.isStencilPresent()) {
-				ShaderInjections.setupTextures(STENCIL_TEXTURE, STENCIL_DEPTH);
+			if (Renderer.useScreenspaceTex() || Renderer.isStencilPresent()) {
 				FBO_SIZE.set(Renderer.fboWidth(), Renderer.fboHeight());
 				if (FBO_SIZE instanceof Uniform) ((Uniform) FBO_SIZE).upload();
+			}
+			if (Renderer.isStencilPresent()) {
+				ShaderInjections.setupTextures(STENCIL_TEXTURE, STENCIL_DEPTH);
 			}
 		}
 	}

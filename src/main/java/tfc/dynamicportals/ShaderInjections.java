@@ -24,14 +24,18 @@ public class ShaderInjections {
 		// (assumption) gl_FragDepth // plain glsl builtin, representing the depth of the pixel
 		// vertexDistance // ??
 	 */
-	public static String headInjection(boolean hasTexCoord, String samplerName) {
+	public static String headInjection(boolean hasTexCoord, String samplerName, boolean hasColorAttrib) {
 		// TODO: checking of stuff
 		// TODO: this should only really be done for the POSITION_TEX shader
+		String yes1 = "";
+		if (hasColorAttrib) {
+			yes1 = " * vertexColor";
+		}
 		String yes =
 				"\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
 						"\t\tdynamicPortalsColor = texture(" + samplerName + ", dynamicPortalsPos);\n" +
 //						"\t\tfragColor = vec4(dynamicPortalsPos, 0, 1);\n" +
-						"\t\tfragColor = dynamicPortalsColor;\n" +
+						"\t\tfragColor = dynamicPortalsColor" + yes1 + ";\n" +
 						"\t\treturn;\n";
 		if (!hasTexCoord) yes = "";
 		return

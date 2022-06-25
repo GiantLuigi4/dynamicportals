@@ -18,8 +18,6 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.lwjgl.opengl.GL11;
-import tfc.dynamicportals.DynamicPortals;
-import tfc.dynamicportals.access.IMaySkipPacket;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.VecMath;
 
@@ -166,8 +164,14 @@ public class BasicPortal extends AbstractPortal {
 		
 		Matrix3f matrix3f = new Matrix3f();
 		matrix3f.setIdentity();
-		matrix3f.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		matrix3f.mul(new Quaternion((float) -rotation.y, 0, 0, false));
+//		matrix3f.mul(new Quaternion((float) rotation.y, 0, 0, false));
+//		matrix3f.mul(new Quaternion(0, (float) rotation.x, 0, false));
+		{
+			Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
+			Quaternion second = new Quaternion(0, (float) rotation.x, 0, false);
+			second.mul(first);
+			matrix3f.mul(second);
+		}
 //		a.transform(matrix3f);
 		b.transform(matrix3f);
 		c.transform(matrix3f);
@@ -185,31 +189,35 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-
-//		/* debug frustum culling box */
-//		stack.pushPose();
-//		// absolute position
-//		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-//		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-//		stack.translate(-position.x, -position.y, -position.z);
-//
-//		// setup quaternion
-//		Quaternion quaternion = new Quaternion((float) rotation.y, 0, 0, false);
-//		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-//		// transform
-//		Quaternion point = new Quaternion((float) (-size.x / 2), (float) size.y, 0, 1);
-//		Quaternion quat = quaternion.copy();
-//		point.mul(quat);
-//		quat.conj();
-//		quat.mul(point);
-//		double max = Math.max(Math.abs(quat.i()), Math.abs(quat.k()));
-//		AABB box = new AABB(
-//				position.x - max, position.y - quat.j(), position.z - max,
-//				position.x + max, position.y + quat.j(), position.z + max
-//		);
-//		// draw
-//		LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
-//		stack.popPose();
+		
+		/* debug frustum culling box */
+		stack.pushPose();
+		// absolute position
+		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+		
+		consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
+		consumer.vertex(stack.last().pose(), normal.x(), normal.y(), normal.z()).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
+		
+		stack.translate(-position.x, -position.y, -position.z);
+		
+		// setup quaternion
+		Quaternion quaternion = new Quaternion((float) rotation.y, 0, 0, false);
+		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+		// transform
+		Quaternion point = new Quaternion((float) (-size.x / 2), (float) size.y, 0, 1);
+		Quaternion quat = quaternion.copy();
+		point.mul(quat);
+		quat.conj();
+		quat.mul(point);
+		double max = Math.max(Math.abs(quat.i()), Math.abs(quat.k()));
+		AABB box = new AABB(
+				position.x - max, position.y - quat.j(), position.z - max,
+				position.x + max, position.y + quat.j(), position.z + max
+		);
+		// draw
+		LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
+		stack.popPose();
 		
 		LevelRenderer.renderLineBox(
 				stack, consumer,
