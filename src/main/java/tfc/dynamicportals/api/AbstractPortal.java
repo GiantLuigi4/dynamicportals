@@ -24,19 +24,19 @@ public abstract class AbstractPortal {
 	private final UUID uuid;
 	public AbstractPortal target = this;
 	protected PortalVisibilityGraph graph;
-
+	
 	public AbstractPortal(UUID uuid) {
 		this.uuid = uuid;
 	}
-
+	
 	public void setupVisGraph(LevelRenderer renderer) {
 		graph = new PortalVisibilityGraph(renderer);
 	}
-
+	
 	public PortalVisibilityGraph getGraph() {
 		return graph;
 	}
-
+	
 	/**
 	 * sets the target portal, thus creating a linked pair
 	 * if a portal is linked to itself, it should be a mirror
@@ -46,7 +46,7 @@ public abstract class AbstractPortal {
 	public void setTarget(BasicPortal target) {
 		this.target = target;
 	}
-
+	
 	/**
 	 * Draws the stencil shape
 	 * basically, whatever you draw from here is what the portal's shape is
@@ -58,7 +58,7 @@ public abstract class AbstractPortal {
 	 * @param stack   the pose stack, already transformed based off {@link AbstractPortal#setupMatrix(PoseStack)}
 	 */
 	public abstract void drawStencil(VertexConsumer builder, PoseStack stack);
-
+	
 	/**
 	 * setup the matrix stack for rendering the shape of the portal
 	 * assuming you know matrix math, this should be pretty straight forwards
@@ -68,7 +68,7 @@ public abstract class AbstractPortal {
 	 * @param stack the pose stack to transform
 	 */
 	public abstract void setupMatrix(PoseStack stack);
-
+	
 	/**
 	 * more or less the opposite of setupMatrix
 	 * I'm not sure why, but currently a 180 degree rotation seems to be needed
@@ -77,7 +77,7 @@ public abstract class AbstractPortal {
 	 * @param stack the pose stack to transform
 	 */
 	public abstract void setupAsTarget(PoseStack stack);
-
+	
 	/**
 	 * whether or not the portal should render
 	 * this should take into account backface culling, as well as frustum checking
@@ -89,19 +89,19 @@ public abstract class AbstractPortal {
 	 * @return if the portal should render
 	 */
 	public abstract boolean shouldRender(Frustum frustum, double camX, double camY, double camZ);
-
+	
 	/**
 	 * @return the offset for the raytrace vector
 	 * this should generally be the portal's position
 	 */
 	public abstract Vec3 raytraceOffset();
-
+	
 	/**
 	 * @return the quaternion for rotating the look vector for raytracing
-	 * this should generally be (TODO)
+	 * this should generally be the opposite of the portal's rotation
 	 */
 	public abstract Quaternion raytraceRotation();
-
+	
 	/**
 	 * @return whether or not the raytrace rotation needs to be rotated
 	 * if the portal is rotated to face the opposite direction of the target portal, the look vector does not need rotation
@@ -109,7 +109,7 @@ public abstract class AbstractPortal {
 	public boolean requireTraceRotation() {
 		return true;
 	}
-
+	
 	/**
 	 * raytraces between the start vec and the portal
 	 *
@@ -119,7 +119,7 @@ public abstract class AbstractPortal {
 	 * if it does not hit the portal, it should return 1
 	 */
 	public abstract double trace(Vec3 start, Vec3 end);
-
+	
 	/**
 	 * if the portal has a "frame", this is where you'd draw it
 	 * if you want to know what a "frame" is, go look at the game portal
@@ -129,20 +129,20 @@ public abstract class AbstractPortal {
 	 */
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 	}
-
+	
 	/**
 	 * this is where you'd setup the render state for the portal
 	 * an example of this is switching which face is the back face for a mirror
 	 */
 	public void setupRenderState() {
 	}
-
+	
 	/**
 	 * undo state changes done in {@link #setupRenderState()}
 	 */
 	public void teardownRenderState() {
 	}
-
+	
 	/**
 	 * Sets up the camera for the render info
 	 *
@@ -154,16 +154,39 @@ public abstract class AbstractPortal {
 	 * @return a dummy camera to use for rendering
 	 */
 	public abstract Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera);
-
+	
+	/**
+	 * checks if the entity's bounding box is overlapping the portal
+	 * in the case of {@link BasicPortal}, it checks if the bounding box overlaps the portal's quad
+	 *
+	 * @param box the bounding box
+	 * @return if it overlaps the portal
+	 */
 	public abstract boolean overlaps(AABB box);
-
+	
 	// TODO: see if I can get a default implementation for this
 	public abstract Vec2 adjustLook(Vec2 vector, boolean reverse);
-
+	
+	/**
+	 * used for checking if the entity has crossed through the portal for sake of teleportation
+	 * if the entity is infront before being moved, and not infront after, then it will call {@link #moveEntity(Entity, Vec3, Vec3)}
+	 *
+	 * @param entity   the entity in question
+	 * @param position the entity's position
+	 * @return if the entity is currently infront of the portal with the given position vector
+	 */
 	public boolean isInfront(Entity entity, Vec3 position) {
 		return true;
 	}
-
+	
+	/**
+	 * here is where you handle teleporting an entity
+	 *
+	 * @param entity   the entity to teleport
+	 * @param position the entity's position before teleporting
+	 * @param motion   the entity's current motion vector
+	 * @return whether or not the entity was moved
+	 */
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		return false;
 	}
@@ -182,7 +205,38 @@ public abstract class AbstractPortal {
 					.createCompositeState(false)
 	);
 	
+	/**
+	 * the render type for the stencil
+	 * this is used if you want to, for example, use a texture for the multiplicative overlay
+	 *
+	 * @return the stencil render type
+	 */
 	public RenderType getRenderType() {
 		return STENCIL_DRAW;
+	}
+	
+	/**
+	 * I am not responsible for any problems caused by overriding this
+	 *
+	 * the return value of this should match {@link #blitShader()}'s vertex format
+	 *
+	 * @return the vertex format for the blit pass
+	 */
+	public VertexFormat blitFormat() {
+		return blitShader().getVertexFormat();
+	}
+	
+	
+	/**
+	 * I am not responsible for any problems caused by overriding this
+	 * this allows you to use a custom shader on the portal's image
+	 * <p>
+	 * if you need dynamic portal's automatically injected shader code to not be injected,
+	 * include an "#dynportals skip_inject" anywhere in your shader file
+	 *
+	 * @return a shader to use for rendering the portal
+	 */
+	public ShaderInstance blitShader() {
+		return GameRenderer.getPositionTexShader();
 	}
 }

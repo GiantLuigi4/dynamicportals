@@ -8,6 +8,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -114,7 +115,9 @@ public class Renderer {
 		stk.last().normal().load(a.last().normal());
 		// setup transform
 		portal.setupMatrix(stk);
+		stk.mulPose(new Quaternion(0, 180, 0, true));
 		portal.target.setupAsTarget(stk);
+//		if (DynamicPortals.isRotate180Needed()) stk.mulPose(new Quaternion(0, 180, 0, true));
 		portal.setupRenderState();
 		// setup state
 		RenderSystem.enableCull();
@@ -138,13 +141,13 @@ public class Renderer {
 
 		// setup shader
 		screenspaceTex = true;
-		shaderInstance = GameRenderer.getPositionTexShader();
+		shaderInstance = portal.blitShader();
 //		RenderSystem.setShaderTexture(1, stencilTarget.getColorTextureId());
 		shaderInstance.setSampler("Sampler0", portalTarget.getColorTextureId());
 		shaderInstance.setSampler("DiffuseSampler", portalTarget.getColorTextureId());
 		shaderInstance.apply();
 		// more setup
-		BufferBuilder builder = setupTesselator(shaderInstance, DefaultVertexFormat.POSITION_TEX);
+		BufferBuilder builder = setupTesselator(shaderInstance, portal.blitFormat());
 		// draw the portal's stencil
 		portal.drawStencil(builder, stack);
 		// finish draw
@@ -167,6 +170,7 @@ public class Renderer {
 		PoseStack stk = new PoseStack();
 		stk.last().pose().load(mat);
 		portal.setupMatrix(stk);
+		stk.mulPose(new Quaternion(0, 180, 0, true));
 		portal.target.setupAsTarget(stk);
 		// TODO: fix smth here, not sure what?
 		Frustum frustum1 = new Frustum(stk.last().pose(), matr);

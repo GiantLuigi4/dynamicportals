@@ -19,6 +19,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.lwjgl.opengl.GL11;
 import tfc.dynamicportals.DynamicPortals;
+import tfc.dynamicportals.access.IMaySkipPacket;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.VecMath;
 
@@ -247,9 +248,9 @@ public class BasicPortal extends AbstractPortal {
 		// rotate
 		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-		if (isMirror) stack.mulPose(new Quaternion(0, -90, 0, true));
+		if (isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
 		// TODO: I'm not sure where this 180 is coming from
-		if (DynamicPortals.isRotate180Needed()) stack.mulPose(new Quaternion(0, 180, 0, true));
+//		if (DynamicPortals.isRotate180Needed()) stack.mulPose(new Quaternion(0, 180, 0, true));
 		// translate
 //		stack.mulPose(new Quaternion(0, 90, 180, true));
 //		stack.translate(0, -2, 0);

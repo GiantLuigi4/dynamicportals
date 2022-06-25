@@ -68,6 +68,7 @@ public class Temp {
 	public static AbstractPortal[] getPortals(Level level) {
 		BasicPortal portal = (BasicPortal) portals[1];
 		portal.setPosition(0.5, 5.00, -5);
+		portal.setSize(2, 3);
 		return Temp.portals;
 	}
 }

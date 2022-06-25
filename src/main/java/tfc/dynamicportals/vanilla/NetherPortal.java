@@ -11,15 +11,19 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
+import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.BasicPortal;
 
-import java.awt.*;
 import java.util.UUID;
 
 public class NetherPortal extends BasicPortal {
+	SimplexNoise simplexNoise;
+	
 	public NetherPortal(UUID uuid) {
 		super(uuid);
+		simplexNoise = new SimplexNoise(new XoroshiroRandomSource(uuid.getLeastSignificantBits(), uuid.getMostSignificantBits()));
 	}
 	
 	@Override
@@ -34,8 +38,8 @@ public class NetherPortal extends BasicPortal {
 		float minV = texture.getV(0);
 		float maxV = texture.getV(texture.getHeight());
 		VertexConsumer builder = source.getBuffer(RenderType.translucent());
-		double distance = 0.0001 *Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
-		// makes z fighting drastically less noticable
+		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
+		// makes z fighting drastically less noticeable
 		distance = Math.min(distance, 0.1);
 		stack.translate(0, 0, distance);
 		RenderSystem.enableBlend();
@@ -71,7 +75,7 @@ public class NetherPortal extends BasicPortal {
 		
 		builder = source.getBuffer(RenderType.translucent());
 		stack.pushPose();
-		// makes z fighting drastically less noticable
+		// makes z fighting drastically less noticeable
 		stack.translate(-size.x / 2, 0, distance);
 		mat = stack.last().pose();
 		for (int y = 0; y < size.y; y++) {
@@ -101,6 +105,64 @@ public class NetherPortal extends BasicPortal {
 					.vertex(mat, (float) size.x - 0.5f, y + 1, 0).color(r, g, b, 0)
 					.uv((minU + maxU) / 2, maxV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
 		}
+		source.getBuffer(RenderType.LINES);
+		
+		builder = source.getBuffer(RenderType.translucent());
+		
+		stack.translate(0, 0, distance);
+//		float shaderTime = Minecraft.getInstance().level.getGameTime() + Minecraft.getInstance().getFrameTime();
+		float shaderTime = Minecraft.getInstance().level.getGameTime();
+		shaderTime /= 128;
+		// amount to add to all pixels
+		// on smaller portals, larger numbers look bad, and on larger portals, the inverse is true
+		float add = (float) (size.x + size.y) / (40 * 4);
+		if (add > 0.25f) add = 0.25f;
+		// compute this outside of the loop to reduce redundant computations
+		double xOff = shaderTime / 32 + Math.cos(shaderTime);
+		double yOff = shaderTime / 32 + Math.sin(shaderTime);
+		float min = (float) Math.cos(shaderTime * 3) / 4;
+		// fade out the constant overlay as the player gets further
+		float trueMin = (float) (0.1 - (distance * 10));
+		// if the pulse is less than the constant overlay, set the pulse to the constant
+		if (min < trueMin) min = trueMin;
+		// if the value is less than 0.05, it's essentially completely not noticeable
+		// therefore, set it to 0 this way the quads don't get rendered
+		if (min < 0.05) min = 0;
+		for (int x = 0; x < size.x; x++) {
+			for (int y = 0; y < size.y; y++) {
+				float a0 = min;
+				float a1 = a0, a2 = a0, a3 = a0;
+//				if (false) {
+					a0 = (float) simplexNoise.getValue((x + xOff) / 16f, (y + yOff) / 16f, shaderTime) + add;
+					a1 = (float) simplexNoise.getValue((x + 1 + xOff) / 16f, (y + yOff) / 16f, shaderTime) + add;
+					a2 = (float) simplexNoise.getValue((x + 1 + xOff) / 16f, (y + 1 + yOff) / 16f, shaderTime) + add;
+					a3 = (float) simplexNoise.getValue((x + xOff) / 16f, (y + 1 + yOff) / 16f, shaderTime) + add;
+//				}
+				if (a0 < min) a0 = min;
+				if (a0 > 1) a0 = 1;
+				if (a1 < min) a1 = min;
+				if (a1 > 1) a1 = 1;
+				if (a2 < min) a2 = min;
+				if (a2 > 1) a2 = 1;
+				if (a3 < min) a3 = min;
+				if (a3 > 1) a3 = 1;
+				
+				if (a0 == 0 && a1 == 0 && a2 == 0 && a3 == 0) continue;
+				
+				builder
+						.vertex(mat, x, y, 0).color(r, g, b, a0)
+						.uv(minU, minV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
+				builder
+						.vertex(mat, x + 1, y, 0).color(r, g, b, a1)
+						.uv(maxU, minV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
+				builder
+						.vertex(mat, x + 1, y + 1, 0).color(r, g, b, a2)
+						.uv(maxU, maxV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
+				builder
+						.vertex(mat, x, y + 1, 0).color(r, g, b, a3)
+						.uv(minU, maxV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
+			}
+		}
 		stack.popPose();
 	}
 	
@@ -120,14 +182,19 @@ public class NetherPortal extends BasicPortal {
 		r = (r + 1) / 2;
 		b = (b + 1) / 2;
 		float minU = 0, maxU = 0, minV = 0, maxV = 0;
-		for (int x = (int) -(size.x / 2); x < size.x / 2; x++) {
-			for (int y = 0; y < size.y; y++) {
-				builder.vertex(mat, x, y, 0).color(r, g, b, a).uv(minU, minV).endVertex();
-				builder.vertex(mat, x + 1, y, 0).color(r, g, b, a).uv(maxU, minV).endVertex();
-				builder.vertex(mat, x + 1, y + 1, 0).color(r, g, b, a).uv(maxU, maxV).endVertex();
-				builder.vertex(mat, x, y + 1, 0).color(r, g, b, a).uv(minU, maxV).endVertex();
-			}
-		}
+		builder.vertex(mat, (float) -size.x / 2, 0, 0).color(r, g, b, a).uv(minU, minV).endVertex();
+		builder.vertex(mat, (float) size.x / 2, 0, 0).color(r, g, b, a).uv(maxU, minV).endVertex();
+		builder.vertex(mat, (float) size.x / 2, (float) size.y, 0).color(r, g, b, a).uv(maxU, maxV).endVertex();
+		builder.vertex(mat, (float) -size.x / 2, (float) size.y, 0).color(r, g, b, a).uv(minU, maxV).endVertex();
+
+//		for (int x = (int) -(size.x / 2); x < size.x / 2; x++) {
+//			for (int y = 0; y < size.y; y++) {
+//				builder.vertex(mat, x, y, 0).color(r, g, b, a).uv(minU, minV).endVertex();
+//				builder.vertex(mat, x + 1, y, 0).color(r, g, b, a).uv(maxU, minV).endVertex();
+//				builder.vertex(mat, x + 1, y + 1, 0).color(r, g, b, a).uv(maxU, maxV).endVertex();
+//				builder.vertex(mat, x, y + 1, 0).color(r, g, b, a).uv(minU, maxV).endVertex();
+//			}
+//		}
 //		new Color(118, 0, 250);
 	}
 	

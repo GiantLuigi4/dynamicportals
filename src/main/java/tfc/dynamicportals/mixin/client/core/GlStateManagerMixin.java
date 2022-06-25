@@ -49,6 +49,16 @@ public class GlStateManagerMixin {
 		for (String s1 : pointerbuffer) {
 			str.append(s1).append("\n");
 		}
+		
+		if (str.toString().contains("#dynportals skip_inject")) {
+			String str1 = str.toString().replace("#dynportals skip_inject", "");
+			String[] list = str1.toString().split("\n");
+			pointerbuffer.clear();
+			for (String s1 : list) {
+				pointerbuffer.add(s1 + "\n");
+			}
+		}
+		
 		String[] list = str.toString().split("\n");
 		AtomicInteger lCC = new AtomicInteger();
 		boolean inMain = false;

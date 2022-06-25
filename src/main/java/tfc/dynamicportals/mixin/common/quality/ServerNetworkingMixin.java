@@ -1,5 +1,6 @@
 package tfc.dynamicportals.mixin.common.quality;
 
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -16,6 +18,7 @@ import tfc.dynamicportals.TeleportationHandler;
 import tfc.dynamicportals.access.IMaySkipPacket;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerNetworkingMixin {
@@ -28,16 +31,23 @@ public abstract class ServerNetworkingMixin {
 	private double lastGoodX;
 	@Shadow
 	private double lastGoodY;
-
-	//	@Unique
-//	private boolean doSkip = false;
-//
-//	@Inject(at = @At("TAIL"), method = "teleport(DDDFFLjava/util/Set;Z)V", cancellable = true)
-//	public void postTeleport(double p_143618_, double p_143619_, double p_143620_, float p_143621_, float p_143622_, Set<ClientboundPlayerPositionPacket.RelativeArgument> p_143623_, boolean p_143624_, CallbackInfo ci) {
-//		if (doSkip) {
-//			awaitingPositionFromClient = null;
-//		}
-//	}
+	
+	@Unique
+	private boolean doSkip = false;
+	
+	@Inject(at = @At("HEAD"), method = "teleport(DDDFFLjava/util/Set;Z)V", cancellable = true)
+	public void postTeleport(double p_143618_, double p_143619_, double p_143620_, float p_143621_, float p_143622_, Set<ClientboundPlayerPositionPacket.RelativeArgument> p_143623_, boolean p_143624_, CallbackInfo ci) {
+		if (doSkip) {
+			this.lastGoodX = p_143618_;
+			this.lastGoodY = p_143619_;
+			this.lastGoodZ = p_143620_;
+			if (this.player.isChangingDimension()) {
+				this.player.hasChangedDimension();
+			}
+			ci.cancel();
+		}
+	}
+	
 	@Shadow
 	private double lastGoodZ;
 	@Shadow
@@ -49,15 +59,15 @@ public abstract class ServerNetworkingMixin {
 	private Vec3 awaitingPositionFromClient;
 	@Shadow
 	private int awaitingTeleport;
-
+	
 	@Shadow
 	public abstract void teleport(double pX, double pY, double pZ, float pYaw, float pPitch);
-
+	
 	@Inject(at = @At("HEAD"), method = "handleMovePlayer", cancellable = true)
 	public void preMove(ServerboundMovePlayerPacket packet, CallbackInfo ci) {
 		TeleportationHandler.handlePacket(player, packet);
 		if (((IMaySkipPacket) player).skip()) {
-//			doSkip = true;
+			doSkip = true;
 			lastGoodX = player.position().x;
 			lastGoodY = player.position().y;
 			lastGoodZ = player.position().z;
@@ -68,7 +78,7 @@ public abstract class ServerNetworkingMixin {
 			player.absMoveTo(lastGoodX, lastGoodY, lastGoodZ);
 			player.noPhysics = noPhys;
 			teleport(lastGoodX, lastGoodY, lastGoodZ, packet.getXRot(0), packet.getYRot(0));
-//			doSkip = false;
+			doSkip = false;
 			++this.receivedMovePacketCount;
 			int i = this.receivedMovePacketCount - this.knownMovePacketCount;
 			if (i > 5) {
