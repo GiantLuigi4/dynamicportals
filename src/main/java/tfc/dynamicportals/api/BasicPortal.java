@@ -26,7 +26,7 @@ import java.util.UUID;
 public class BasicPortal extends AbstractPortal {
 	protected Vector3d position;
 	protected Vector2d size;
-	protected Vector2d rotation;
+	protected Vec3 rotation;
 	protected Vector3f normal;
 	protected PortalCamera cam;
 	protected Vec3 compNorm;
@@ -79,8 +79,8 @@ public class BasicPortal extends AbstractPortal {
 		return this;
 	}
 	
-	public BasicPortal setRotation(double x, double y) {
-		this.rotation = new Vector2d(x, y);
+	public BasicPortal setRotation(double x, double y, double z) {
+		this.rotation = new Vec3(x, y, z);
 		if (position != null) {
 			Vector3f oldNorm = normal;
 			computeNormal();
@@ -90,7 +90,7 @@ public class BasicPortal extends AbstractPortal {
 		return this;
 	}
 	
-	public BasicPortal setRotation(Vector2d rotation) {
+	public BasicPortal setRotation(Vec3 rotation) {
 		this.rotation = rotation;
 		if (position != null && rotation != null) {
 			Vector3f oldNorm = normal;
@@ -144,8 +144,12 @@ public class BasicPortal extends AbstractPortal {
 		Quaternion quat;
 		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
 		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
-		quat = second;
-		quat.mul(first);
+		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
+		quat = third;
+		second.mul(first);
+		quat.mul(second);
+//		quat.mul(second);
+//		quat.mul(first);
 //		quat = new Quaternion(0,0,0,false);
 		return quat;
 //		return Quaternion.fromXYZ((float) -rotation.y, (float) -rotation.x, 0);
@@ -191,40 +195,72 @@ public class BasicPortal extends AbstractPortal {
 		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 		
 		/* debug frustum culling box */
-		stack.pushPose();
 		// absolute position
+		stack.pushPose();
+		stack.translate(0, (float) size.y / 2, 0);
 		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 		
 		consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
 		consumer.vertex(stack.last().pose(), normal.x(), normal.y(), normal.z()).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
 		
+		stack.popPose();
+		stack.pushPose();
+		
+		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+		
 		stack.translate(-position.x, -position.y, -position.z);
 		
 		// setup quaternion
-		Quaternion quaternion = new Quaternion((float) rotation.y, 0, 0, false);
+		Quaternion quaternion = new Quaternion(0, 0, 0, false);
+		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
 		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
 		// transform
-		Quaternion point = new Quaternion((float) (-size.x / 2), (float) size.y, 0, 1);
-		Quaternion quat = quaternion.copy();
-		point.mul(quat);
-		quat.conj();
-		quat.mul(point);
-		double max = Math.max(Math.abs(quat.i()), Math.abs(quat.k()));
+		Quaternion[] quats = new Quaternion[]{
+				new Quaternion((float) (size.x / 2), (float) size.y, 0, 1),
+				new Quaternion((float) -(size.x / 2), (float) size.y, 0, 1),
+				new Quaternion((float) -(size.x / 2), 0, 0, 1),
+				new Quaternion((float) (size.x / 2), 0, 0, 1),
+		};
+		
+		double nx = Double.POSITIVE_INFINITY;
+		double ny = Double.POSITIVE_INFINITY;
+		double nz = Double.POSITIVE_INFINITY;
+		
+		double px = Double.NEGATIVE_INFINITY;
+		double py = Double.NEGATIVE_INFINITY;
+		double pz = Double.NEGATIVE_INFINITY;
+		for (Quaternion point : quats) {
+			Quaternion quat = quaternion.copy();
+			point.mul(quat);
+			quat.conj();
+			quat.mul(point);
+			nx = Math.min(nx, quat.i());
+			ny = Math.min(ny, quat.j());
+			nz = Math.min(nz, quat.k());
+			
+			px = Math.max(px, quat.i());
+			py = Math.max(py, quat.j());
+			pz = Math.max(pz, quat.k());
+		}
 		AABB box = new AABB(
-				position.x - max, position.y - quat.j(), position.z - max,
-				position.x + max, position.y + quat.j(), position.z + max
+				position.x + nx, position.y + ny, position.z + nz,
+				position.x + px, position.y + py, position.z + pz
 		);
 		// draw
 		LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
 		stack.popPose();
 		
-		LevelRenderer.renderLineBox(
-				stack, consumer,
-				-size.x / 2, 0, 0,
-				size.x / 2, size.y, 0,
-				1, 1, 1, 1
-		);
+//		LevelRenderer.renderLineBox(
+//				stack, consumer,
+//				-size.x / 2, 0, 0,
+//				size.x / 2, size.y, 0,
+//				1, 1, 1, 1
+//		);
 	}
 	
 	@Override
@@ -245,17 +281,19 @@ public class BasicPortal extends AbstractPortal {
 		// rotate
 		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
+		stack.mulPose(new Quaternion(0, 0, (float) -rotation.z, false));
 	}
 	
 	@Override
 	public void setupAsTarget(PoseStack stack) {
 		boolean isMirror = target == this;
 		Vector3d position = this.position;
-		Vector2d rotation = this.rotation;
+		Vec3 rotation = this.rotation;
 		// TODO: figure out vertical rotation
 		// rotate
 		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 		if (isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
 		// TODO: I'm not sure where this 180 is coming from
 //		if (DynamicPortals.isRotate180Needed()) stack.mulPose(new Quaternion(0, 180, 0, true));
@@ -282,7 +320,7 @@ public class BasicPortal extends AbstractPortal {
 			quat.mul(point);
 			double max = Math.max(Math.abs(quat.i()), Math.abs(quat.k()));
 			AABB box = new AABB(
-					position.x - max, position.y - quat.j(), position.z - max,
+					position.x - max, position.y, position.z - max,
 					position.x + max, position.y + quat.j(), position.z + max
 			);
 			return frustum.isVisible(box);
@@ -368,9 +406,8 @@ public class BasicPortal extends AbstractPortal {
 	public boolean isInfront(Entity entity, Vec3 position) {
 		Vector3f oldNorm = normal;
 		normal = new Vector3f((float) compNorm.x, (float) compNorm.y, (float) compNorm.z);
-		boolean result =
-				shouldRender(null, position.x, position.y, position.z) ||
-						shouldRender(null, position.x, entity.getEyePosition(Minecraft.getInstance().getFrameTime()).y, position.z);
+		// TODO: get this to work with rotated portals
+		boolean result = shouldRender(null, position.x, position.y + entity.getEyeHeight(), position.z);
 		normal = oldNorm;
 		return result;
 	}

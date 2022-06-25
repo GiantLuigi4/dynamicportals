@@ -59,7 +59,7 @@ public class VecMath {
 			Quaternion selfRot = selfRotation.copy();
 			selfRot.mul(otherRotConj);
 			Vec3 pos = VecMath.rotate(src, selfRot);
-			System.out.println(src + "; " + selfRot.toYXZDegrees() + "; " + pos);
+//			System.out.println(src + "; " + selfRot.toYXZDegrees() + "; " + pos);
 //			Vec3 pos = VecMath.rotate(src, otherRotConj);
 //			pos = VecMath.rotate(pos, selfRotation);
 
