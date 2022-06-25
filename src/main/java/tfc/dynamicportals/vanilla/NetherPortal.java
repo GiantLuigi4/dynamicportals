@@ -30,22 +30,23 @@ public class NetherPortal extends BasicPortal {
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		float r = 1, b = r, g = b, a = g;
 		Matrix4f mat = stack.last().pose();
-		// TODO: use a custom vertex builder which automatically fills in missing elements
-//		TextureAtlasSprite texture = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(new ResourceLocation("block/nether_portal"));
 		TextureAtlasSprite texture = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(new ResourceLocation("block/nether_portal"));
+		// get texture size
 		float minU = texture.getU(0);
 		float maxU = texture.getU(texture.getWidth());
 		float minV = texture.getV(0);
 		float maxV = texture.getV(texture.getHeight());
+		// get ready to draw
 		VertexConsumer builder = source.getBuffer(RenderType.translucent());
+		// compute an offset between each layer so that z fighting isn't noticeable
 		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
 		// makes z fighting drastically less noticeable
 		distance = Math.min(distance, 0.1);
-		stack.translate(0, 0, distance);
-		RenderSystem.enableBlend();
-		RenderSystem.defaultBlendFunc();
+		// offset
 		stack.translate(-size.x / 2, 0, distance);
+		// horizontal border
 		for (int x = 0; x < size.x; x++) {
+			// bottom
 			builder
 					.vertex(mat, x, 0, 0).color(r, g, b, a)
 					.uv(minU, minV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
@@ -59,6 +60,7 @@ public class NetherPortal extends BasicPortal {
 					.vertex(mat, x, 0.5f, 0).color(r, g, b, 0)
 					.uv(minU, (minV + maxV) / 2).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
 			
+			// top
 			builder
 					.vertex(mat, x, (float) size.y - 0.5f, 0).color(r, g, b, 0)
 					.uv(minU, (minV + maxV) / 2).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
@@ -72,6 +74,7 @@ public class NetherPortal extends BasicPortal {
 					.vertex(mat, x, (float) size.y, 0).color(r, g, b, a)
 					.uv(minU, maxV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
 		}
+		// force draw
 		source.getBuffer(RenderType.LINES);
 		
 		builder = source.getBuffer(RenderType.translucent());
@@ -79,7 +82,9 @@ public class NetherPortal extends BasicPortal {
 		// makes z fighting drastically less noticeable
 		stack.translate(0, 0, distance);
 		mat = stack.last().pose();
+		// vertical border
 		for (int y = 0; y < size.y; y++) {
+			// left
 			builder
 					.vertex(mat, 0, y, 0).color(r, g, b, a)
 					.uv(minU, minV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
@@ -93,6 +98,7 @@ public class NetherPortal extends BasicPortal {
 					.vertex(mat, 0, y + 1, 0).color(r, g, b, a)
 					.uv(minU, maxV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
 			
+			// right
 			builder
 					.vertex(mat, (float) size.x - 0.5f, y, 0).color(r, g, b, 0)
 					.uv((minU + maxU) / 2, minV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
@@ -106,12 +112,12 @@ public class NetherPortal extends BasicPortal {
 					.vertex(mat, (float) size.x - 0.5f, y + 1, 0).color(r, g, b, 0)
 					.uv((minU + maxU) / 2, maxV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
 		}
+		// force draw
 		source.getBuffer(RenderType.LINES);
 		
 		builder = source.getBuffer(RenderType.translucent());
-		
+		// offset to reduce z fighting
 		stack.translate(0, 0, distance);
-//		float shaderTime = Minecraft.getInstance().level.getGameTime() + Minecraft.getInstance().getFrameTime();
 		float shaderTime = Minecraft.getInstance().level.getGameTime();
 		shaderTime /= 128;
 		// amount to add to all pixels
@@ -127,7 +133,7 @@ public class NetherPortal extends BasicPortal {
 		// if the pulse is less than the constant overlay, set the pulse to the constant
 		if (min < trueMin) min = trueMin;
 		// if the value is less than 0.05, it's essentially completely not noticeable
-		// therefore, set it to 0 this way the quads don't get rendered
+		// therefore, set it to 0 this way the quads don't get rendered if they're basically invisible
 		if (min < 0.05) min = 0;
 		for (int x = 0; x < size.x; x++) {
 			for (int y = 0; y < size.y; y++) {
@@ -135,15 +141,18 @@ public class NetherPortal extends BasicPortal {
 				float a1 = a0, a2 = a0, a3 = a0;
 				// TODO: config
 				if (true) {
+					// animate transparency
 					a0 = (float) simplexNoise.getValue((x + xOff) / 16f, (y + yOff) / 16f, shaderTime) + add;
 					a1 = (float) simplexNoise.getValue((x + 1 + xOff) / 16f, (y + yOff) / 16f, shaderTime) + add;
 					a2 = (float) simplexNoise.getValue((x + 1 + xOff) / 16f, (y + 1 + yOff) / 16f, shaderTime) + add;
 					a3 = (float) simplexNoise.getValue((x + xOff) / 16f, (y + 1 + yOff) / 16f, shaderTime) + add;
+					// scale based off size
 					a0 *= Math.sqrt(add) * 2;
 					a1 *= Math.sqrt(add) * 2;
 					a2 *= Math.sqrt(add) * 2;
 					a3 *= Math.sqrt(add) * 2;
 				}
+				// clamping
 				if (a0 < min) a0 = min;
 				if (a0 > 1) a0 = 1;
 				if (a1 < min) a1 = min;
@@ -153,6 +162,7 @@ public class NetherPortal extends BasicPortal {
 				if (a3 < min) a3 = min;
 				if (a3 > 1) a3 = 1;
 				
+				// no reason to render it if it's invisible
 				if (a0 == 0 && a1 == 0 && a2 == 0 && a3 == 0) continue;
 				
 				builder
