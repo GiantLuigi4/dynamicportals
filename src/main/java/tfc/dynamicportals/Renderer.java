@@ -133,7 +133,7 @@ public class Renderer {
 		Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.getGraph().getChunks();
 		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 		
-		{
+		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
 			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 			Entity entity = Minecraft.getInstance().cameraEntity;
 			double reach = Minecraft.getInstance().gameMode.getPickRange();

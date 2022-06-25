@@ -145,9 +145,10 @@ public class BasicPortal extends AbstractPortal {
 		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
 		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
 		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
-		quat = third;
-		second.mul(first);
-		quat.mul(second);
+		quat = second;
+//		first.mul(second);
+		quat.mul(first);
+		quat.mul(third);
 //		quat.mul(second);
 //		quat.mul(first);
 //		quat = new Quaternion(0,0,0,false);
@@ -207,53 +208,55 @@ public class BasicPortal extends AbstractPortal {
 //
 //		stack.popPose();
 		/* debug frustum culling box */
-		stack.pushPose();
-		
-		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-		stack.translate(-position.x, -position.y, -position.z);
-		
-		// setup quaternion
-		Quaternion quaternion = new Quaternion(0, 0, 0, false);
-		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
-		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
-		// transform
-		Quaternion[] quats = new Quaternion[]{
-				new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
-				new Quaternion((float) -(size.x / 2), (float) size.y, 0, 0),
-				new Quaternion((float) -(size.x / 2), 0, 0, 0),
-				new Quaternion((float) (size.x / 2), 0, 0, 0),
-		};
-		
-		double nx = Double.POSITIVE_INFINITY;
-		double ny = Double.POSITIVE_INFINITY;
-		double nz = Double.POSITIVE_INFINITY;
-		
-		double px = Double.NEGATIVE_INFINITY;
-		double py = Double.NEGATIVE_INFINITY;
-		double pz = Double.NEGATIVE_INFINITY;
-		for (Quaternion point : quats) {
-			Quaternion quat = quaternion.copy();
-			point.mul(quat);
-			quat.conj();
-			quat.mul(point);
-			nx = Math.min(nx, quat.i());
-			ny = Math.min(ny, quat.j());
-			nz = Math.min(nz, quat.k());
+		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
+			stack.pushPose();
 			
-			px = Math.max(px, quat.i());
-			py = Math.max(py, quat.j());
-			pz = Math.max(pz, quat.k());
+			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+			stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+			stack.translate(-position.x, -position.y, -position.z);
+			
+			// setup quaternion
+			Quaternion quaternion = new Quaternion(0, 0, 0, false);
+			quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
+			quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+			quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
+			// transform
+			Quaternion[] quats = new Quaternion[]{
+					new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
+					new Quaternion((float) -(size.x / 2), (float) size.y, 0, 0),
+					new Quaternion((float) -(size.x / 2), 0, 0, 0),
+					new Quaternion((float) (size.x / 2), 0, 0, 0),
+			};
+			
+			double nx = Double.POSITIVE_INFINITY;
+			double ny = Double.POSITIVE_INFINITY;
+			double nz = Double.POSITIVE_INFINITY;
+			
+			double px = Double.NEGATIVE_INFINITY;
+			double py = Double.NEGATIVE_INFINITY;
+			double pz = Double.NEGATIVE_INFINITY;
+			for (Quaternion point : quats) {
+				Quaternion quat = quaternion.copy();
+				point.mul(quat);
+				quat.conj();
+				quat.mul(point);
+				nx = Math.min(nx, quat.i());
+				ny = Math.min(ny, quat.j());
+				nz = Math.min(nz, quat.k());
+				
+				px = Math.max(px, quat.i());
+				py = Math.max(py, quat.j());
+				pz = Math.max(pz, quat.k());
+			}
+			AABB box = new AABB(
+					position.x + nx, position.y + ny, position.z + nz,
+					position.x + px, position.y + py, position.z + pz
+			);
+			// draw
+			LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
+			stack.popPose();
 		}
-		AABB box = new AABB(
-				position.x + nx, position.y + ny, position.z + nz,
-				position.x + px, position.y + py, position.z + pz
-		);
-		// draw
-		LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
-		stack.popPose();
 
 //		LevelRenderer.renderLineBox(
 //				stack, consumer,
