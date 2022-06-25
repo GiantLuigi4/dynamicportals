@@ -195,20 +195,22 @@ public class BasicPortal extends AbstractPortal {
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 		
-		/* normal vec debug */
-//		// absolute position
-//		stack.pushPose();
-//		stack.translate(0, (float) size.y / 2, 0);
-//		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-//		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-//		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-//
-//		consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
-//		consumer.vertex(stack.last().pose(), normal.x(), normal.y(), normal.z()).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
-//
-//		stack.popPose();
-		/* debug frustum culling box */
 		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
+			if (Minecraft.getInstance().options.renderDebug) {
+				/* normal vec debug */
+				// absolute position
+				stack.pushPose();
+				stack.translate(0, (float) size.y / 2, 0);
+				stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+				stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+				stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+				
+				consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), normal.x(), normal.y(), normal.z()).color(0f, 0, 1, 1).normal(0, 0, 0).endVertex();
+				stack.popPose();
+			}
+			
+			/* debug frustum culling box */
 			stack.pushPose();
 			
 			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
@@ -348,6 +350,7 @@ public class BasicPortal extends AbstractPortal {
 	public double trace(Vec3 start, Vec3 end) {
 		// setup a matrix stack
 		PoseStack stack = new PoseStack();
+		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 		stack.translate(-position.x, -position.y, -position.z);

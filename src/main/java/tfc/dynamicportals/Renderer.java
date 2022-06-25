@@ -90,6 +90,49 @@ public class Renderer {
 		PoseStack stack = new PoseStack();
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
+		Vec3 istart = null;
+		Vec3 ireach = null;
+		Vec3 iend = null;
+		
+		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
+			Entity entity = Minecraft.getInstance().cameraEntity;
+			double reach = Minecraft.getInstance().gameMode.getPickRange();
+			Vec3 start = entity.getEyePosition(Minecraft.getInstance().getFrameTime());
+			Vec3 look = entity.getViewVector(1.0F);
+			Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);
+			Vec3 end = start.add(reachVec);
+			
+			double dist = portal.trace(start, end);
+			
+			if (dist != 1) {
+				Vec3 interpStart = VecMath.lerp(dist, start, end);
+				Vec3 interpReach = VecMath.lerp(1 - dist, Vec3.ZERO, reachVec);
+				
+				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+				LevelRenderer.renderLineBox(
+						stack, consumer,
+						interpStart.x - 0.01, interpStart.y - 0.01, interpStart.z - 0.01,
+						interpStart.x + 0.01, interpStart.y + 0.01, interpStart.z + 0.01,
+						1, 1, 1, 1
+				);
+				forceDraw(source);
+				
+				if (portal.requireTraceRotation()) {
+					Quaternion srcQuat = portal.raytraceRotation();
+					Quaternion dstQuat = portal.target.raytraceRotation();
+					Vec3 srcOff = portal.raytraceOffset();
+					Vec3 dstOff = portal.target.raytraceOffset();
+					interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+					interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
+				} else {
+					Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
+					interpStart = interpStart.add(offset);
+				}
+				istart = interpStart;
+				ireach = interpReach;
+				iend = istart.add(ireach);
+			}
+		}
 		
 		// TODO: move this off the main thread
 		updatePortal(portal, a.last().pose(), RenderSystem.getProjectionMatrix());
@@ -134,38 +177,19 @@ public class Renderer {
 		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 		
 		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
-			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-			Entity entity = Minecraft.getInstance().cameraEntity;
-			double reach = Minecraft.getInstance().gameMode.getPickRange();
-			Vec3 start = entity.getEyePosition(Minecraft.getInstance().getFrameTime());
-			Vec3 look = entity.getViewVector(1.0F);
-			Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);
-			Vec3 end = start.add(reachVec);
-			
-			double dist = portal.trace(start, end);
-			
-			if (dist != 1) {
-				Vec3 interpStart = VecMath.lerp(dist, start, end);
-				Vec3 interpReach = VecMath.lerp(1 - dist, Vec3.ZERO, reachVec);
-				if (portal.requireTraceRotation()) {
-					Quaternion srcQuat = portal.raytraceRotation();
-					Quaternion dstQuat = portal.target.raytraceRotation();
-					Vec3 srcOff = portal.raytraceOffset();
-					Vec3 dstOff = portal.target.raytraceOffset();
-					interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-					interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
-				} else {
-					Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
-					interpStart = interpStart.add(offset);
-				}
-				Vec3 istart = interpStart;
-				Vec3 ireach = interpReach;
-				Vec3 iend = istart.add(ireach);
-				
+			if (istart != null) {
+				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 				consumer.vertex(matr, (float) istart.x, (float) istart.y, (float) istart.z).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
 				consumer.vertex(matr, (float) iend.x, (float) iend.y, (float) iend.z).color(0f, 0, 1, 1).normal(0, 0, 0).endVertex();
+				
+//				LevelRenderer.renderLineBox(
+//						stack, consumer,
+//						istart.x - 0.01, istart.y - 0.01, istart.z - 0.01,
+//						istart.x + 0.01, istart.y + 0.01, istart.z + 0.01,
+//						1, 1, 1, 1
+//				);
+				forceDraw(source);
 			}
-			forceDraw(source);
 		}
 		
 		Minecraft.getInstance().levelRenderer.renderChunksInFrustum = chunkInfoList;
