@@ -246,7 +246,7 @@ public class BasicPortal extends AbstractPortal {
 		Vector2d rotation = this.rotation;
 		// TODO: figure out vertical rotation
 		// rotate
-		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
+		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 		if (isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
 		// TODO: I'm not sure where this 180 is coming from

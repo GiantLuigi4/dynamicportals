@@ -42,8 +42,6 @@ public class VecMath {
 		if (motion) {
 			Quaternion selfRotConj = selfRotation.copy();
 			selfRotConj.conj();
-			Quaternion otherRotConj = otherRotation.copy();
-			otherRotConj.conj();
 
 			//Luigi, in your previous code you were doing this:
 			//  rotate by selfConj, rotate by 180, rotate by self, rotate by self, rotate by other
@@ -56,10 +54,12 @@ public class VecMath {
 			//But in theory quaternion multiplication is almost never commutative, so why is it now??
 			//Maybe because the rotation happens around the Y axis?
 
-			Quaternion q1 = otherRotation.copy(); q1.conj();
-			Quaternion q2 = selfRotation.copy();
-			q2.mul(q1);
-			Vec3 pos = VecMath.rotate(src, q2);
+
+			Quaternion otherRotConj = otherRotation.copy(); otherRotConj.conj();
+			Quaternion selfRot = selfRotation.copy();
+			selfRot.mul(otherRotConj);
+			Vec3 pos = VecMath.rotate(src, selfRot);
+			System.out.println(src + "; " + selfRot.toYXZDegrees() + "; " + pos);
 //			Vec3 pos = VecMath.rotate(src, otherRotConj);
 //			pos = VecMath.rotate(pos, selfRotation);
 
@@ -67,7 +67,6 @@ public class VecMath {
 //			pos = VecMath.rotate(pos, otherRotConj);
 
 			pos = VecMath.rotate(pos, new Quaternion(0, 1, 0, 0));
-
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);
@@ -96,6 +95,4 @@ public class VecMath {
 		pos = pos.add(destTransformation);
 		return pos;
 	}
-
-
 }
