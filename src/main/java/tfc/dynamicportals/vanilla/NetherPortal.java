@@ -129,7 +129,7 @@ public class NetherPortal extends BasicPortal {
 		double yOff = shaderTime / 32 + Math.sin(shaderTime);
 		float min = (float) Math.cos(shaderTime * 3) / 4;
 		// fade out the constant overlay as the player gets further
-		float trueMin = (float) (0.1 - (distance * 10));
+		float trueMin = (float) (0.2 - (distance * 20));
 		// if the pulse is less than the constant overlay, set the pulse to the constant
 		if (min < trueMin) min = trueMin;
 		// if the value is less than 0.05, it's essentially completely not noticeable
