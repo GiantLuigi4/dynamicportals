@@ -194,24 +194,24 @@ public class BasicPortal extends AbstractPortal {
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 		
+		/* normal vec debug */
+//		// absolute position
+//		stack.pushPose();
+//		stack.translate(0, (float) size.y / 2, 0);
+//		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+//		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+//		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+//
+//		consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
+//		consumer.vertex(stack.last().pose(), normal.x(), normal.y(), normal.z()).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
+//
+//		stack.popPose();
 		/* debug frustum culling box */
-		// absolute position
-		stack.pushPose();
-		stack.translate(0, (float) size.y / 2, 0);
-		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-		
-		consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
-		consumer.vertex(stack.last().pose(), normal.x(), normal.y(), normal.z()).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
-		
-		stack.popPose();
 		stack.pushPose();
 		
+		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-		
 		stack.translate(-position.x, -position.y, -position.z);
 		
 		// setup quaternion
@@ -221,10 +221,10 @@ public class BasicPortal extends AbstractPortal {
 		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
 		// transform
 		Quaternion[] quats = new Quaternion[]{
-				new Quaternion((float) (size.x / 2), (float) size.y, 0, 1),
-				new Quaternion((float) -(size.x / 2), (float) size.y, 0, 1),
-				new Quaternion((float) -(size.x / 2), 0, 0, 1),
-				new Quaternion((float) (size.x / 2), 0, 0, 1),
+				new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
+				new Quaternion((float) -(size.x / 2), (float) size.y, 0, 0),
+				new Quaternion((float) -(size.x / 2), 0, 0, 0),
+				new Quaternion((float) (size.x / 2), 0, 0, 0),
 		};
 		
 		double nx = Double.POSITIVE_INFINITY;
@@ -254,7 +254,7 @@ public class BasicPortal extends AbstractPortal {
 		// draw
 		LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
 		stack.popPose();
-		
+
 //		LevelRenderer.renderLineBox(
 //				stack, consumer,
 //				-size.x / 2, 0, 0,

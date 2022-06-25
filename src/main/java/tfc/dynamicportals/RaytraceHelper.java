@@ -32,7 +32,7 @@ public class RaytraceHelper {
 					if (distance > d) continue;
 					Vec3 interpStart = VecMath.lerp(dist, start, end);
 					Vec3 interpReach = VecMath.lerp(1 - dist, Vec3.ZERO, reachVec);
-
+					
 					if (portal.requireTraceRotation()) {
 						Quaternion srcQuat = portal.raytraceRotation();
 						Quaternion dstQuat = portal.target.raytraceRotation();
