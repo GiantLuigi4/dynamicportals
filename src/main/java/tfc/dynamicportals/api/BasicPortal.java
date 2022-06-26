@@ -80,9 +80,9 @@ public class BasicPortal extends AbstractPortal {
 			if (size != null) {
 				// setup quaternion
 				Quaternion quaternion = new Quaternion(0, 0, 0, false);
+				quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
 				quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
 				quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-				quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
 				// transform
 				Quaternion[] quats = new Quaternion[]{
 						new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
@@ -112,8 +112,8 @@ public class BasicPortal extends AbstractPortal {
 					pz = Math.max(pz, quat.k());
 				}
 				box = new AABB(
-						position.x + nx, position.y + ny, position.z + nz,
-						position.x + px, position.y + py, position.z + pz
+						position.x + nx, position.y + ny, position.z - nz,
+						position.x + px, position.y + py, position.z - pz
 				);
 			}
 		}
@@ -165,10 +165,10 @@ public class BasicPortal extends AbstractPortal {
 		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
 //		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
 		Quaternion third = new Quaternion(0, 0, (float) rotation.z, false);
-		quat = second;
+		quat = first;
 //		first.mul(second);
+		quat.mul(second);
 		quat.mul(third);
-		quat.mul(first);
 		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
 
 //		quat.mul(second);
@@ -184,11 +184,12 @@ public class BasicPortal extends AbstractPortal {
 		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
 		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
 		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
-		quat = second;
-		quat.mul(first);
+		quat = first;
+//		first.mul(second);
+		quat.mul(second);
 		quat.mul(third);
 		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
-
+		
 		return quat;
 	}
 	
