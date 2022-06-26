@@ -70,7 +70,6 @@ public class Temp {
 		BasicPortal portal = (BasicPortal) portals[1];
 		portal.setPosition(0.5, 5.00, -5);
 		portal.setSize(2, 3);
-		portal.target = portal;
 //		portal.setRotation(Math.toRadians(90), Math.toRadians(0), 0);
 //		portal.computeNormal();
 		portal = (BasicPortal) portals[3];
