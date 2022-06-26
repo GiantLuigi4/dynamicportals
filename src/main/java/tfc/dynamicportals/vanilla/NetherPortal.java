@@ -1,6 +1,5 @@
 package tfc.dynamicportals.vanilla;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -19,6 +18,19 @@ import tfc.dynamicportals.api.BasicPortal;
 import java.util.UUID;
 
 public class NetherPortal extends BasicPortal {
+	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
+	private static final RenderType STENCIL_DRAW = RenderType.create(
+			"dynamic_portals_nether_portal_stencil",
+			DefaultVertexFormat.POSITION_COLOR_TEX,
+			VertexFormat.Mode.QUADS,
+			256,
+			RenderType.CompositeState.builder()
+					.setShaderState(RENDERTYPE_LEASH_SHADER)
+					.setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, true))
+					.setCullState(RenderType.NO_CULL)
+					.setLightmapState(RenderType.NO_LIGHTMAP)
+					.createCompositeState(false)
+	);
 	SimplexNoise simplexNoise;
 	
 	public NetherPortal(UUID uuid) {
@@ -187,7 +199,7 @@ public class NetherPortal extends BasicPortal {
 		}
 		stack.popPose();
 	}
-	
+
 	@Override
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
 		float r = 1, b = r, g = b, a = g;
@@ -219,20 +231,6 @@ public class NetherPortal extends BasicPortal {
 //		}
 //		new Color(118, 0, 250);
 	}
-	
-	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
-	private static final RenderType STENCIL_DRAW = RenderType.create(
-			"dynamic_portals_nether_portal_stencil",
-			DefaultVertexFormat.POSITION_COLOR_TEX,
-			VertexFormat.Mode.QUADS,
-			256,
-			RenderType.CompositeState.builder()
-					.setShaderState(RENDERTYPE_LEASH_SHADER)
-					.setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, true))
-					.setCullState(RenderType.NO_CULL)
-					.setLightmapState(RenderType.NO_LIGHTMAP)
-					.createCompositeState(false)
-	);
 	
 	@Override
 	public RenderType getRenderType() {

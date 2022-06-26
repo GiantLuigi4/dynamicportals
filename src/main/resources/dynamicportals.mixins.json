@@ -5,26 +5,26 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "dynamicportals.refmap.json",
   "mixins": [
+    "common.access.ConnectionMixin",
     "common.collision.EntityMixin",
-    "common.quality.ServerNetworkingMixin",
     "common.quality.ChunkMapMixin",
-    "common.quality.ServerPlayerMixin",
-    "common.access.ConnectionMixin"
+    "common.quality.ServerNetworkingMixin",
+    "common.quality.ServerPlayerMixin"
   ],
   "client": [
     "client.MojangWhy",
+    "client.access.ChunkStorageAccessor",
     "client.core.GlStateManagerMixin",
     "client.core.ShaderMixin",
     "client.core.WindowMixin",
+    "client.hackery.ClientLevelMixin",
     "client.hackery.RenderSystemMixin",
     "client.hackery.RenderTargetMixin",
-    "client.quality.ClientNetworkingMixin",
-    "client.selection.GameRendererMixin",
-    "client.quality.LevelRendererMixin",
     "client.optimization.GameRendererMixin",
     "client.quality.ClientChunkCacheMixin",
-    "client.access.ChunkStorageAccessor",
-    "client.hackery.ClientLevelMixin"
+    "client.quality.ClientNetworkingMixin",
+    "client.quality.LevelRendererMixin",
+    "client.selection.GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
