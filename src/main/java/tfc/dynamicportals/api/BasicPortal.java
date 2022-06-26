@@ -167,6 +167,8 @@ public class BasicPortal extends AbstractPortal {
 //		first.mul(second);
 		quat.mul(first);
 		quat.mul(third);
+		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
+
 //		quat.mul(second);
 //		quat.mul(first);
 //		quat = new Quaternion(0,0,0,false);
@@ -286,7 +288,7 @@ public class BasicPortal extends AbstractPortal {
 		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-		if (isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
+//		if (isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
 		// TODO: I'm not sure where this 180 is coming from
 //		if (DynamicPortals.isRotate180Needed()) stack.mulPose(new Quaternion(0, 180, 0, true));
 		// translate
