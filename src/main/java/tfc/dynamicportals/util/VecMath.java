@@ -37,6 +37,9 @@ public class VecMath {
 			otherRotConj.conj();
 			
 			Vec3 pos = VecMath.rotate(src, selfRotConj);
+			if (isMirror) {
+				pos = pos.multiply(1, 1, -1);
+			}
 			pos = VecMath.rotate(pos, otherRotation);
 			pos = VecMath.rotate(pos, new Quaternion(0, 1, 0, 0));
 			return pos;
