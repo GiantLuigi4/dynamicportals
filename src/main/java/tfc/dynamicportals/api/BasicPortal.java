@@ -176,9 +176,18 @@ public class BasicPortal extends AbstractPortal {
 		return new Quaternion(-(float)rotation.z, -(float)rotation.x, -(float)rotation.y, false);
 	}
 	
-	//dumb
+	@Override
 	public Quaternion oppositeRaytraceRotation() {
-		return new Quaternion(-(float)rotation.y, -(float)rotation.x, -(float)rotation.z, false);
+		Quaternion quat;
+		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
+		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
+		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
+		quat = second;
+		quat.mul(first);
+		quat.mul(third);
+		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
+
+		return quat;
 	}
 	
 	protected Vec3 _computeNormal() {
@@ -238,6 +247,20 @@ public class BasicPortal extends AbstractPortal {
 				consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
 				consumer.vertex(stack.last().pose(), (float) normal.x(), (float) normal.y(), (float) normal.z()).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
 				stack.popPose();
+			} else {
+				if (Minecraft.getInstance().options.renderDebug && compNorm != null) {
+					/* normal vec debug */
+					// absolute position
+					stack.pushPose();
+					stack.translate(0, (float) size.y / 2, 0);
+					stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+					stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+					
+					consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
+					consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
+					stack.popPose();
+				}
 			}
 			
 			/* debug frustum culling box */
@@ -445,7 +468,7 @@ public class BasicPortal extends AbstractPortal {
 //			}
 			if (overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
 				Quaternion srcQuat = raytraceRotation();
-				Quaternion dstQuat = target.raytraceRotation();
+				Quaternion dstQuat = target.oppositeRaytraceRotation();
 				Vec3 srcOff = raytraceOffset();
 				Vec3 dstOff = target.raytraceOffset();
 				

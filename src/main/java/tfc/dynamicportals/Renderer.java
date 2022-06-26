@@ -110,7 +110,7 @@ public class Renderer {
 				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 				if (portal.requireTraceRotation()) {
 					Quaternion srcQuat = portal.raytraceRotation();
-					Quaternion dstQuat = portal.target.raytraceRotation();
+					Quaternion dstQuat = portal.target.oppositeRaytraceRotation();
 					Vec3 srcOff = portal.raytraceOffset();
 					Vec3 dstOff = portal.target.raytraceOffset();
 					
