@@ -15,7 +15,7 @@ public class GameRendererMixin {
 	@Shadow
 	@Final
 	private Minecraft minecraft;
-
+	
 	@Inject(at = @At("TAIL"), method = "pick")
 	public void postPick(float pPartialTicks, CallbackInfo ci) {
 		RaytraceHelper.trace(minecraft, pPartialTicks);

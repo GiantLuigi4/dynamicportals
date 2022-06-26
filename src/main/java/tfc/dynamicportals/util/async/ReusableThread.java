@@ -6,7 +6,7 @@ public class ReusableThread {
 	private Thread td = null;
 	private boolean isRunning = false;
 	private boolean isStopping = false;
-
+	
 	public ReusableThread(Runnable action) {
 		this.action = action;
 		td = new Thread(() -> {
@@ -35,17 +35,17 @@ public class ReusableThread {
 		td.setDaemon(true);
 		td.setName("Reusable-Thread-" + td.getId());
 	}
-
+	
 	public boolean isRunning() {
 		return isRunning;
 	}
-
+	
 	public void setAction(Runnable action) {
 		synchronized (lock) {
 			this.action = action;
 		}
 	}
-
+	
 	public void start() {
 		await();
 		isRunning = true;
@@ -53,7 +53,7 @@ public class ReusableThread {
 			// force the thread out of it's sleep loop
 		else td.interrupt();
 	}
-
+	
 	public void await() {
 		while (isRunning) {
 			try {
@@ -62,7 +62,7 @@ public class ReusableThread {
 			}
 		}
 	}
-
+	
 	public void forceKill() {
 		try {
 			isStopping = true;
@@ -71,7 +71,7 @@ public class ReusableThread {
 		} catch (Throwable ignored) {
 		}
 	}
-
+	
 	public void kill() {
 		try {
 			await();
@@ -82,11 +82,11 @@ public class ReusableThread {
 			err.printStackTrace();
 		}
 	}
-
+	
 	public boolean isInUse() {
 		return isRunning;
 	}
-
+	
 	public boolean isCurrentThread() {
 		return this.td == Thread.currentThread();
 	}

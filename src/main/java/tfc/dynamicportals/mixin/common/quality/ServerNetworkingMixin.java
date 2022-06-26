@@ -34,7 +34,18 @@ public abstract class ServerNetworkingMixin {
 	
 	@Unique
 	private boolean doSkip = false;
-	
+	@Shadow
+	private double lastGoodZ;
+	@Shadow
+	private int receivedMovePacketCount;
+	@Shadow
+	private int knownMovePacketCount;
+	@Shadow
+	@Nullable
+	private Vec3 awaitingPositionFromClient;
+	@Shadow
+	private int awaitingTeleport;
+
 	@Inject(at = @At("HEAD"), method = "teleport(DDDFFLjava/util/Set;Z)V", cancellable = true)
 	public void postTeleport(double p_143618_, double p_143619_, double p_143620_, float p_143621_, float p_143622_, Set<ClientboundPlayerPositionPacket.RelativeArgument> p_143623_, boolean p_143624_, CallbackInfo ci) {
 		if (doSkip) {
@@ -47,18 +58,6 @@ public abstract class ServerNetworkingMixin {
 			ci.cancel();
 		}
 	}
-	
-	@Shadow
-	private double lastGoodZ;
-	@Shadow
-	private int receivedMovePacketCount;
-	@Shadow
-	private int knownMovePacketCount;
-	@Shadow
-	@Nullable
-	private Vec3 awaitingPositionFromClient;
-	@Shadow
-	private int awaitingTeleport;
 	
 	@Shadow
 	public abstract void teleport(double pX, double pY, double pZ, float pYaw, float pPitch);

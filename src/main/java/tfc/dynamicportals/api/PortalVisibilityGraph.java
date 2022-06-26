@@ -10,13 +10,13 @@ import java.util.concurrent.BlockingQueue;
 
 public class PortalVisibilityGraph {
 	private final ObjectArrayList<LevelRenderer.RenderChunkInfo> renderChunksInFrustum = new ObjectArrayList<>(16);
-	private Frustum frustum;
 	private final LevelRenderer renderer;
-
+	private Frustum frustum;
+	
 	public PortalVisibilityGraph(LevelRenderer renderer) {
 		this.renderer = renderer;
 	}
-
+	
 	// TODO: improve this
 	public void update() {
 		renderChunksInFrustum.clear();
@@ -38,19 +38,19 @@ public class PortalVisibilityGraph {
 //			}
 //		});
 	}
-
+	
 	public ObjectArrayList<LevelRenderer.RenderChunkInfo> getChunks() {
 		return renderChunksInFrustum;
 	}
-
+	
 	public Frustum getFrustum() {
 		return frustum;
 	}
-
+	
 	public void setFrustum(Frustum frustum) {
 		this.frustum = frustum;
 	}
-
+	
 	public void addAll(BlockingQueue<ChunkRenderDispatcher.RenderChunk> recentlyCompiledChunks) {
 		// TODO: get this working properly
 ////		AsyncIterator.forEach(recentlyCompiledChunks, (chunk) -> {

@@ -12,10 +12,10 @@ import tfc.dynamicportals.Renderer;
 public class WindowMixin {
 	@Shadow
 	private int framebufferWidth;
-
+	
 	@Shadow
 	private int framebufferHeight;
-
+	
 	// when the vanilla frame buffer resizes, all dyn portals fbos must resize as well
 	@Inject(at = @At("TAIL"), method = "onFramebufferResize")
 	public void refreshFramebufferSize(CallbackInfo ci) {

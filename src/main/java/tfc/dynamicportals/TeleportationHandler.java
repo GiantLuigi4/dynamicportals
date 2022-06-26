@@ -27,7 +27,7 @@ public class TeleportationHandler {
 //		return entity.getDeltaMovement().multiply(1, 0, 1);
 		return entity.getDeltaMovement();
 	}
-
+	
 	public static void handlePacket(ServerPlayer player, ServerboundMovePlayerPacket i) {
 		double x = i.getX(player.getX());
 		double y = i.getY(player.getY());

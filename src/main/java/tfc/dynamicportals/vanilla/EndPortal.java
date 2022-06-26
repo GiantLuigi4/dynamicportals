@@ -27,14 +27,46 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class EndPortal extends BasicPortal {
+	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
+	private static final AtomicReference<RenderTarget> targ = new AtomicReference<>();
+	private static final RenderStateShard.EmptyTextureStateShard FBOTexture = new RenderStateShard.EmptyTextureStateShard(() -> {
+		RenderSystem.enableTexture();
+		RenderSystem.setShaderTexture(0, targ.get().getColorTextureId());
+	}, () -> {
+	});
+	private static final RenderType STENCIL_DRAW = RenderType.create(
+			"dynamic_portals_stencil",
+			DefaultVertexFormat.POSITION_COLOR_TEX,
+			VertexFormat.Mode.QUADS,
+			256,
+			RenderType.CompositeState.builder()
+					.setShaderState(RENDERTYPE_LEASH_SHADER)
+					.setTextureState(FBOTexture)
+					.setCullState(RenderType.NO_CULL)
+					.setTransparencyState(RenderType.TRANSLUCENT_TRANSPARENCY)
+					.setLightmapState(RenderType.NO_LIGHTMAP)
+					.createCompositeState(false)
+	);
 	SimplexNoise simplexNoise;
 	
 	public EndPortal(UUID uuid) {
 		super(uuid);
 		simplexNoise = new SimplexNoise(new XoroshiroRandomSource(uuid.getLeastSignificantBits(), uuid.getMostSignificantBits()));
 	}
-	
-	private static final AtomicReference<RenderTarget> targ = new AtomicReference<>();
+
+//	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
+//	private static final RenderType STENCIL_DRAW = RenderType.create(
+//			"dynamic_portals_nether_portal_stencil",
+//			DefaultVertexFormat.POSITION_COLOR_TEX,
+//			VertexFormat.Mode.QUADS,
+//			256,
+//			RenderType.CompositeState.builder()
+//					.setShaderState(RENDERTYPE_LEASH_SHADER)
+//					.setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, true))
+//					.setCullState(RenderType.NO_CULL)
+//					.setLightmapState(RenderType.NO_LIGHTMAP)
+//					.createCompositeState(false)
+//	);
 	
 	@Override
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
@@ -63,10 +95,10 @@ public class EndPortal extends BasicPortal {
 		GLUtils.switchFBO(bound);
 		boolean isSS = Renderer.setupScreenspaceTex();
 		Matrix4f mat = stack.last().pose();
-		consumer.vertex(mat, (float) -size.x / 2, 0, 0).color(1f, 1, 1, 1f / 8).uv(0,0).endVertex();
-		consumer.vertex(mat, (float) size.x / 2, 0, 0).color(1f, 1, 1, 1f / 8).uv(0,0).endVertex();
-		consumer.vertex(mat, (float) size.x / 2, (float) size.y, 0).color(1f, 1, 1, 1f / 8).uv(0,0).endVertex();
-		consumer.vertex(mat, (float) -size.x / 2, (float) size.y, 0).color(1f, 1, 1, 1f / 8).uv(0,0).endVertex();
+		consumer.vertex(mat, (float) -size.x / 2, 0, 0).color(1f, 1, 1, 1f / 8).uv(0, 0).endVertex();
+		consumer.vertex(mat, (float) size.x / 2, 0, 0).color(1f, 1, 1, 1f / 8).uv(0, 0).endVertex();
+		consumer.vertex(mat, (float) size.x / 2, (float) size.y, 0).color(1f, 1, 1, 1f / 8).uv(0, 0).endVertex();
+		consumer.vertex(mat, (float) -size.x / 2, (float) size.y, 0).color(1f, 1, 1, 1f / 8).uv(0, 0).endVertex();
 		consumer = source.getBuffer(RenderType.endPortal());
 		
 		consumer = source.getBuffer(STENCIL_DRAW);
@@ -107,7 +139,7 @@ public class EndPortal extends BasicPortal {
 		pConsumer.vertex(pPose, pX1, pY1, pZ2).endVertex();
 		pConsumer.vertex(pPose, pX0, pY1, pZ3).endVertex();
 	}
-	
+
 	@Override
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
 		float r = 1, b = r, g = b, a = g;
@@ -137,41 +169,6 @@ public class EndPortal extends BasicPortal {
 //		}
 //		new Color(118, 0, 250);
 	}
-
-//	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
-//	private static final RenderType STENCIL_DRAW = RenderType.create(
-//			"dynamic_portals_nether_portal_stencil",
-//			DefaultVertexFormat.POSITION_COLOR_TEX,
-//			VertexFormat.Mode.QUADS,
-//			256,
-//			RenderType.CompositeState.builder()
-//					.setShaderState(RENDERTYPE_LEASH_SHADER)
-//					.setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, true))
-//					.setCullState(RenderType.NO_CULL)
-//					.setLightmapState(RenderType.NO_LIGHTMAP)
-//					.createCompositeState(false)
-//	);
-	
-	private static final RenderStateShard.EmptyTextureStateShard FBOTexture = new RenderStateShard.EmptyTextureStateShard(() -> {
-		RenderSystem.enableTexture();
-		RenderSystem.setShaderTexture(0, targ.get().getColorTextureId());
-	}, () -> {
-	});
-	
-	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
-	private static final RenderType STENCIL_DRAW = RenderType.create(
-			"dynamic_portals_stencil",
-			DefaultVertexFormat.POSITION_COLOR_TEX,
-			VertexFormat.Mode.QUADS,
-			256,
-			RenderType.CompositeState.builder()
-					.setShaderState(RENDERTYPE_LEASH_SHADER)
-					.setTextureState(FBOTexture)
-					.setCullState(RenderType.NO_CULL)
-					.setTransparencyState(RenderType.TRANSLUCENT_TRANSPARENCY)
-					.setLightmapState(RenderType.NO_LIGHTMAP)
-					.createCompositeState(false)
-	);
 	
 	@Override
 	public RenderType getRenderType() {

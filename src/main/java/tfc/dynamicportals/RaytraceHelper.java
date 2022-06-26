@@ -19,7 +19,7 @@ public class RaytraceHelper {
 				Vec3 look = entity.getViewVector(1.0F);
 				Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);
 				Vec3 end = start.add(reachVec);
-
+				
 				AbstractPortal[] portals = Temp.getPortals(minecraft.level);
 				for (AbstractPortal portal : portals) {
 					if (!portal.shouldRender(null, start.x, start.y, start.z)) {
@@ -35,7 +35,7 @@ public class RaytraceHelper {
 					
 					if (portal.requireTraceRotation()) {
 						Quaternion srcQuat = portal.raytraceRotation();
-						Quaternion dstQuat = portal.target.raytraceRotation();
+						Quaternion dstQuat = portal.target.oppositeRaytraceRotation();
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
 						interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);

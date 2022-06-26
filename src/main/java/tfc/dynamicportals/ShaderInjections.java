@@ -16,7 +16,7 @@ public class ShaderInjections {
 				       "\t}\n" +
 				       "\t/* end Dynamic Portals injection */\n";
 	}
-
+	
 	// about iris/oculus/OF
 	/*
 		// gl_FragData[0] // seems to be the color component of the pixel
@@ -71,7 +71,7 @@ public class ShaderInjections {
 						"\t}\n" +
 						"\t/* end Dynamic Portals injection */";
 	}
-
+	
 	public static String tailInjection() {
 		String str =
 				"\n\t/* Dynamic Portals injection */\n" +
@@ -83,7 +83,7 @@ public class ShaderInjections {
 						"\t/* end Dynamic Portals injection */\n";
 		return str;
 	}
-
+	
 	public static void setupTextures(AbstractUniform STENCIL_TEXTURE, AbstractUniform STENCIL_DEPTH) {
 		RenderSystem.activeTexture(GL13.GL_TEXTURE10);
 		RenderSystem.enableTexture();

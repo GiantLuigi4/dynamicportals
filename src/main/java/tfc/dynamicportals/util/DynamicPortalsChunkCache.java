@@ -16,11 +16,11 @@ import java.util.function.Consumer;
 // TODO: attempt better compatibility, maybe?
 public class DynamicPortalsChunkCache extends ClientChunkCache {
 	HashMap<ChunkPos, LevelChunk> chunks = new HashMap<>();
-
+	
 	public DynamicPortalsChunkCache(ClientLevel pLevel, int pViewDistance) {
 		super(pLevel, pViewDistance);
 	}
-
+	
 	@Nullable
 	@Override
 	public LevelChunk getChunk(int pChunkX, int pChunkZ, ChunkStatus pRequiredStatus, boolean pLoad) {
@@ -28,7 +28,7 @@ public class DynamicPortalsChunkCache extends ClientChunkCache {
 		if (chunk != null) return chunk;
 		return emptyChunk;
 	}
-
+	
 	@Nullable
 	@Override
 	public LevelChunk getChunk(int pChunkX, int pChunkZ, boolean pLoad) {
@@ -36,7 +36,7 @@ public class DynamicPortalsChunkCache extends ClientChunkCache {
 		if (chunk != null) return chunk;
 		return emptyChunk;
 	}
-
+	
 	@Override
 	public void drop(int pX, int pZ) {
 		LevelChunk chunk = chunks.remove(new ChunkPos(pX, pZ));
@@ -45,7 +45,7 @@ public class DynamicPortalsChunkCache extends ClientChunkCache {
 			this.level.unload(chunk);
 		}
 	}
-
+	
 	@Nullable
 	@Override
 	public LevelChunk replaceWithPacketData(int pX, int pZ, FriendlyByteBuf pBuffer, CompoundTag pTag, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> pConsumer) {
@@ -57,25 +57,25 @@ public class DynamicPortalsChunkCache extends ClientChunkCache {
 			chunks.put(chunkpos, chunk);
 		}
 		chunk.replaceWithPacketData(pBuffer, pTag, pConsumer);
-
+		
 		this.level.onChunkLoaded(chunkpos);
 		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.world.ChunkEvent.Load(chunk));
 		return chunk;
 	}
-
+	
 	@Override
 	public int getLoadedChunksCount() {
 		return chunks.size();
 	}
-
+	
 	@Override
 	public void updateViewRadius(int pViewDistance) {
 	}
-
+	
 	@Override
 	public void updateViewCenter(int pX, int pZ) {
 	}
-
+	
 	@Override
 	public boolean hasChunk(int pChunkX, int pChunkZ) {
 		return chunks.containsKey(new ChunkPos(pChunkX, pChunkZ));

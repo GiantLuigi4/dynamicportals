@@ -19,7 +19,7 @@ public class ClientNetworkingMixin {
 	@Shadow
 	@Final
 	private Connection connection;
-
+	
 	@Inject(at = @At("HEAD"), method = "handleMovePlayer", cancellable = true)
 	public void preTeleport(ClientboundPlayerPositionPacket pPacket, CallbackInfo ci) {
 		Entity e = Minecraft.getInstance().player;
@@ -29,10 +29,10 @@ public class ClientNetworkingMixin {
 				double y = pPacket.getY();
 				double z = pPacket.getZ();
 //				e.absMoveTo(x, y, z, e.getYRot(), e.getXRot());
-
+				
 				this.connection.send(new ServerboundAcceptTeleportationPacket(pPacket.getId()));
 //				this.connection.send(new ServerboundMovePlayerPacket.PosRot(e.getX(), e.getY(), e.getZ(), e.getYRot(), e.getXRot(), false));
-
+				
 				ci.cancel();
 			}
 		}

@@ -47,10 +47,10 @@ public abstract class ShaderMixin {
 	private AbstractUniform STENCIL_DEPTH;
 	@Unique
 	private AbstractUniform FBO_SIZE;
-
+	
 	@Shadow
 	public abstract AbstractUniform safeGetUniform(String pName);
-
+	
 	// make sure all dyn portals uniforms are found
 	@Inject(at = @At("HEAD"), method = "markDirty")
 	public void preMarkDirty(CallbackInfo ci) {
@@ -68,7 +68,7 @@ public abstract class ShaderMixin {
 			}
 		}
 	}
-
+	
 	// finds the uniforms
 	@Unique
 	private void getUniform(String name, String typeStr, int count) {
@@ -81,7 +81,7 @@ public abstract class ShaderMixin {
 			uniformMap.put(name, uniform);
 		}
 	}
-
+	
 	// sets up dyn portals uniforms
 	@Inject(at = @At(value = "TAIL"), method = "apply")
 	public void preApply(CallbackInfo ci) {

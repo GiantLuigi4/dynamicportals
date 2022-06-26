@@ -6,6 +6,6 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public interface IHaveChunkArray {
 	AtomicReferenceArray<LevelChunk> getChunks();
-
+	
 	int removeChunk();
 }

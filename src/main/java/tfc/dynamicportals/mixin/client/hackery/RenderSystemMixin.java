@@ -19,7 +19,7 @@ public class RenderSystemMixin {
 			}
 		}
 	}
-
+	
 	@Inject(at = @At("HEAD"), method = "clearColor")
 	private static void setClearColor(float pRed, float pGreen, float pBlue, float pAlpha, CallbackInfo ci) {
 		GLUtils.setClearColor(pRed, pGreen, pBlue, pAlpha);

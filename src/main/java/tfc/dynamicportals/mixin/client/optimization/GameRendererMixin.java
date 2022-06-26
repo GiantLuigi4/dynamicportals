@@ -29,7 +29,7 @@ public class GameRendererMixin {
 	private boolean isRendering = false;
 	@Unique
 	private PoseStack stack;
-
+	
 	@Inject(at = @At("TAIL"), method = "<clinit>")
 	private static void postStaticInit(CallbackInfo ci) {
 		for (int i = 0; i < threads.length; i++) {
@@ -38,18 +38,18 @@ public class GameRendererMixin {
 			Renderer.addThread(threads[i]);
 		}
 	}
-
+	
 	@Inject(at = @At("HEAD"), method = "renderLevel")
 	public void preRenderLevel(float f1, long vector3f, PoseStack f2, CallbackInfo ci) {
 		isRendering = true;
 		stack = f2;
 	}
-
+	
 	@Inject(at = @At("HEAD"), method = "renderLevel")
 	public void postRenderLevel(float f1, long vector3f, PoseStack f2, CallbackInfo ci) {
 		isRendering = false;
 	}
-
+	
 	@Inject(at = @At("HEAD"), method = "resetProjectionMatrix")
 	public void preSetProjMat(Matrix4f pMatrix, CallbackInfo ci) {
 		// TODO: get this working
@@ -100,7 +100,7 @@ public class GameRendererMixin {
 //			}
 //		}
 //	}
-
+	
 	@Unique
 	private void scheduleNext(Runnable r) {
 		while (true) {

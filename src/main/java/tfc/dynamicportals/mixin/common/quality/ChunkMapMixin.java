@@ -24,36 +24,33 @@ import java.util.ArrayList;
 @Mixin(ChunkMap.class)
 public abstract class ChunkMapMixin {
 	@Shadow
-	@Nullable
-	protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
-	
-	@Shadow
 	@Final
 	ServerLevel level;
-	
+	@Shadow
+	int viewDistance;
+	AbstractPortal[] portals;
 	@Shadow
 	@Final
 	private Int2ObjectMap<ChunkMap.TrackedEntity> entityMap;
-	@Shadow
-	int viewDistance;
-	
-	@Shadow
-	protected abstract void updateChunkTracking(ServerPlayer pPlayer, ChunkPos pChunkPos, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, boolean pWasLoaded, boolean pLoad);
-	
 	@Shadow
 	@Final
 	private PlayerMap playerMap;
 	@Shadow
 	@Final
 	private ChunkMap.DistanceManager distanceManager;
+
+	@Shadow
+	@Nullable
+	protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
+	
+	@Shadow
+	protected abstract void updateChunkTracking(ServerPlayer pPlayer, ChunkPos pChunkPos, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, boolean pWasLoaded, boolean pLoad);
 	
 	@Shadow
 	protected abstract boolean skipPlayer(ServerPlayer pPlayer);
 	
 	@Shadow
 	protected abstract SectionPos updatePlayerPos(ServerPlayer p_140374_);
-	
-	AbstractPortal[] portals;
 	
 	// TODO: is there a way to do this without replacing the entire "move" method?
 	@Inject(at = @At("HEAD"), method = "move", cancellable = true)
