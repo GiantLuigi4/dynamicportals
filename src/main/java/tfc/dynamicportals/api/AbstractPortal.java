@@ -103,6 +103,13 @@ public abstract class AbstractPortal {
 	public abstract Quaternion raytraceRotation();
 	
 	/**
+	 * @return the opposite of {@link #raytraceRotation()}
+	 */
+	// TODO: default implementation for this
+	// y,-x,z->-y,-x,-z
+	public abstract Quaternion oppositeRaytraceRotation();
+	
+	/**
 	 * @return whether or not the raytrace rotation needs to be rotated
 	 * if the portal is rotated to face the opposite direction of the target portal, the look vector does not need rotation
 	 */
@@ -217,7 +224,7 @@ public abstract class AbstractPortal {
 	
 	/**
 	 * I am not responsible for any problems caused by overriding this
-	 *
+	 * <p>
 	 * the return value of this should match {@link #blitShader()}'s vertex format
 	 *
 	 * @return the vertex format for the blit pass
