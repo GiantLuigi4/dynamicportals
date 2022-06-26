@@ -33,6 +33,7 @@ public class BasicPortal extends AbstractPortal {
 	
 	public BasicPortal(UUID uuid) {
 		super(uuid);
+		setRotation(0, 0, 0);
 	}
 	
 	public BasicPortal setPosition(double x, double y, double z) {
@@ -159,19 +160,25 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion raytraceRotation() {
-		Quaternion quat;
-		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
-		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
-		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
-		quat = second;
-//		first.mul(second);
-		quat.mul(first);
-		quat.mul(third);
-//		quat.mul(second);
+//		Quaternion quat;
+//		Quaternion first = new Quaternion((float) -rotation.z, 0, 0, false);
+//		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
+//		Quaternion third = new Quaternion(0, 0, (float) -rotation.y, false);
+//		quat = second;
+////		first.mul(second);
 //		quat.mul(first);
-//		quat = new Quaternion(0,0,0,false);
-		return quat;
+//		quat.mul(third);
+////		quat.mul(second);
+////		quat.mul(first);
+////		quat = new Quaternion(0,0,0,false);
+//		return quat;
 //		return Quaternion.fromXYZ((float) -rotation.y, (float) -rotation.x, 0);
+		return new Quaternion(-(float)rotation.z, -(float)rotation.x, -(float)rotation.y, false);
+	}
+	
+	//dumb
+	public Quaternion oppositeRaytraceRotation() {
+		return new Quaternion(-(float)rotation.y, -(float)rotation.x, -(float)rotation.z, false);
 	}
 	
 	protected Vec3 _computeNormal() {
@@ -446,6 +453,7 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 				Vec3 pos = position;
 				if (target != this) {
+					// Why do you check if this!= target....if it's already true...
 					oldPos = VecMath.old_transform(oldPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
 					oPos = VecMath.old_transform(oPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
 					pos = VecMath.old_transform(pos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
@@ -468,6 +476,7 @@ public class BasicPortal extends AbstractPortal {
 				
 				motion = VecMath.old_transform(motion, srcQuat, dstQuat, false, true, Vec3.ZERO, Vec3.ZERO);
 				entity.setDeltaMovement(motion);
+				//I guess here you need to check smth since this if statement is useless...
 				if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
 				else entity.absMoveTo(pos.x, pos.y, pos.z);
 				entity.setDeltaMovement(motion);

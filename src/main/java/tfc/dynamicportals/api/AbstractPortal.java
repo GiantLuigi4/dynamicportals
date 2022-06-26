@@ -21,6 +21,19 @@ import java.util.UUID;
  * {@link BasicPortal} for some examples
  */
 public abstract class AbstractPortal {
+	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
+	private static final RenderType STENCIL_DRAW = RenderType.create(
+			"dynamic_portals_stencil",
+			DefaultVertexFormat.POSITION_COLOR,
+			VertexFormat.Mode.QUADS,
+			256,
+			RenderType.CompositeState.builder()
+					.setShaderState(RENDERTYPE_LEASH_SHADER)
+					.setTextureState(RenderType.NO_TEXTURE)
+					.setCullState(RenderType.NO_CULL)
+					.setLightmapState(RenderType.NO_LIGHTMAP)
+					.createCompositeState(false)
+	);
 	private final UUID uuid;
 	public AbstractPortal target = this;
 	protected PortalVisibilityGraph graph;
@@ -103,6 +116,12 @@ public abstract class AbstractPortal {
 	public abstract Quaternion raytraceRotation();
 	
 	/**
+	 * @return the quaternion for rotating the look vector for raytracing when this is target for something else
+	 * this should generally be the opposite of the portal's rotation
+	 */
+	public abstract Quaternion oppositeRaytraceRotation();
+	
+	/**
 	 * @return whether or not the raytrace rotation needs to be rotated
 	 * if the portal is rotated to face the opposite direction of the target portal, the look vector does not need rotation
 	 */
@@ -178,7 +197,7 @@ public abstract class AbstractPortal {
 	public boolean isInfront(Entity entity, Vec3 position) {
 		return true;
 	}
-	
+
 	/**
 	 * here is where you handle teleporting an entity
 	 *
@@ -190,20 +209,6 @@ public abstract class AbstractPortal {
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		return false;
 	}
-	
-	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
-	private static final RenderType STENCIL_DRAW = RenderType.create(
-			"dynamic_portals_stencil",
-			DefaultVertexFormat.POSITION_COLOR,
-			VertexFormat.Mode.QUADS,
-			256,
-			RenderType.CompositeState.builder()
-					.setShaderState(RENDERTYPE_LEASH_SHADER)
-					.setTextureState(RenderType.NO_TEXTURE)
-					.setCullState(RenderType.NO_CULL)
-					.setLightmapState(RenderType.NO_LIGHTMAP)
-					.createCompositeState(false)
-	);
 	
 	/**
 	 * the render type for the stencil
@@ -217,7 +222,7 @@ public abstract class AbstractPortal {
 	
 	/**
 	 * I am not responsible for any problems caused by overriding this
-	 *
+	 * <p>
 	 * the return value of this should match {@link #blitShader()}'s vertex format
 	 *
 	 * @return the vertex format for the blit pass

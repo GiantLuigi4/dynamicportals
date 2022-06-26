@@ -107,21 +107,21 @@ public class Renderer {
 			if (dist != 1) {
 				Vec3 interpStart = VecMath.lerp(dist, start, end);
 				Vec3 interpReach = VecMath.lerp(1 - dist, Vec3.ZERO, reachVec);
-				
 				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-				LevelRenderer.renderLineBox(
-						stack, consumer,
-						interpStart.x - 0.01, interpStart.y - 0.01, interpStart.z - 0.01,
-						interpStart.x + 0.01, interpStart.y + 0.01, interpStart.z + 0.01,
-						1, 1, 1, 1
-				);
-				forceDraw(source);
-				
 				if (portal.requireTraceRotation()) {
 					Quaternion srcQuat = portal.raytraceRotation();
 					Quaternion dstQuat = portal.target.raytraceRotation();
 					Vec3 srcOff = portal.raytraceOffset();
 					Vec3 dstOff = portal.target.raytraceOffset();
+					
+					Vec3 drawnInterpStart = interpStart.subtract(srcOff);
+					LevelRenderer.renderLineBox(
+							stack, consumer,
+							drawnInterpStart.x - 0.01, drawnInterpStart.y - 0.01, drawnInterpStart.z - 0.01,
+							drawnInterpStart.x + 0.01, drawnInterpStart.y + 0.01, drawnInterpStart.z + 0.01,
+							1, 1, 1, 1
+					);
+					
 					interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
 					interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 				} else {
@@ -131,6 +131,16 @@ public class Renderer {
 				istart = interpStart;
 				ireach = interpReach;
 				iend = istart.add(ireach);
+				double size = 0.1;
+				
+				LevelRenderer.renderLineBox(
+						stack, consumer,
+						istart.x, istart.y, istart.z,
+						istart.x + size, istart.y + size, istart.z + size,
+						1, 1, 1, 1
+				);
+				
+				forceDraw(source);
 			}
 		}
 		
@@ -181,7 +191,7 @@ public class Renderer {
 				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 				consumer.vertex(matr, (float) istart.x, (float) istart.y, (float) istart.z).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
 				consumer.vertex(matr, (float) iend.x, (float) iend.y, (float) iend.z).color(0f, 0, 1, 1).normal(0, 0, 0).endVertex();
-				
+
 //				LevelRenderer.renderLineBox(
 //						stack, consumer,
 //						istart.x - 0.01, istart.y - 0.01, istart.z - 0.01,
@@ -247,10 +257,10 @@ public class Renderer {
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
 			portal.getGraph().update();
 		} else if (
-				(int) orx != (int) rx || (int) ory != (int) ry ||
-						(int) oldPos.x != (int) camVec.x ||
-						(int) oldPos.y != (int) camVec.y ||
-						(int) oldPos.z != (int) camVec.z
+				       (int) orx != (int) rx || (int) ory != (int) ry ||
+						       (int) oldPos.x != (int) camVec.x ||
+						       (int) oldPos.y != (int) camVec.y ||
+						       (int) oldPos.z != (int) camVec.z
 		) {
 			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
