@@ -14,7 +14,7 @@ public class TeleportationHandler {
 		AbstractPortal[] portals = Temp.getPortals(entity.level);
 		for (AbstractPortal portal : portals) {
 			Vec3 pos = entity.position();
-			if (portal.shouldRender(null, pos.x, pos.y, pos.z)) {
+			if (portal.shouldRender(null, pos.x, pos.y + entity.getEyeHeight(), pos.z)) {
 				if (portal.moveEntity(entity, entity.getPosition(0), motion)) {
 					((IMaySkipPacket) entity).setSkipTeleportPacket();
 					didMove = true;
