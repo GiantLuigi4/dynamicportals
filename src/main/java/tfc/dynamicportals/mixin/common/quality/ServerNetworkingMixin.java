@@ -45,7 +45,7 @@ public abstract class ServerNetworkingMixin {
 	private Vec3 awaitingPositionFromClient;
 	@Shadow
 	private int awaitingTeleport;
-
+	
 	@Inject(at = @At("HEAD"), method = "teleport(DDDFFLjava/util/Set;Z)V", cancellable = true)
 	public void postTeleport(double p_143618_, double p_143619_, double p_143620_, float p_143621_, float p_143622_, Set<ClientboundPlayerPositionPacket.RelativeArgument> p_143623_, boolean p_143624_, CallbackInfo ci) {
 		if (doSkip) {

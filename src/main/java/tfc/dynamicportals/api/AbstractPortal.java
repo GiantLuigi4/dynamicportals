@@ -195,10 +195,10 @@ public abstract class AbstractPortal {
 	 * @param position the entity's position
 	 * @return if the entity is currently infront of the portal with the given position vector
 	 */
-	public boolean isInfront(Entity entity, Vec3 position) {
+	public boolean isInFront(Entity entity, Vec3 position) {
 		return true;
 	}
-
+	
 	/**
 	 * here is where you handle teleporting an entity
 	 *

@@ -38,7 +38,7 @@ public abstract class ChunkMapMixin {
 	@Shadow
 	@Final
 	private ChunkMap.DistanceManager distanceManager;
-
+	
 	@Shadow
 	@Nullable
 	protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);

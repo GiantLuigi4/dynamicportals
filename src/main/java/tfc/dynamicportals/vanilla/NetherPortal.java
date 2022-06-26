@@ -54,7 +54,7 @@ public class NetherPortal extends BasicPortal {
 		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
 		// makes z fighting drastically less noticeable
 		distance = Math.min(distance, 0.1);
-		if (!isInfront(Minecraft.getInstance().cameraEntity, Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {
+		if (!isInFront(Minecraft.getInstance().cameraEntity, Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {
 			stack.scale(-1, 1, -1);
 		}
 		// get ready to draw
@@ -199,7 +199,7 @@ public class NetherPortal extends BasicPortal {
 		}
 		stack.popPose();
 	}
-
+	
 	@Override
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
 		float r = 1, b = r, g = b, a = g;

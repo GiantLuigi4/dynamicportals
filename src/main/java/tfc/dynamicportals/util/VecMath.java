@@ -1,7 +1,6 @@
 package tfc.dynamicportals.util;
 
 import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 

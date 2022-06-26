@@ -81,7 +81,7 @@ public class EndPortal extends BasicPortal {
 		
 		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
 		distance = Math.min(distance, 0.1);
-		if (!isInfront(Minecraft.getInstance().cameraEntity, Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {
+		if (!isInFront(Minecraft.getInstance().cameraEntity, Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {
 			stack.scale(-1, 1, -1);
 			stack.translate(0, 0, distance);
 		}
@@ -139,7 +139,7 @@ public class EndPortal extends BasicPortal {
 		pConsumer.vertex(pPose, pX1, pY1, pZ2).endVertex();
 		pConsumer.vertex(pPose, pX0, pY1, pZ3).endVertex();
 	}
-
+	
 	@Override
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
 		float r = 1, b = r, g = b, a = g;

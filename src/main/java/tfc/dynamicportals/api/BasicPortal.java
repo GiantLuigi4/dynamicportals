@@ -30,6 +30,7 @@ public class BasicPortal extends AbstractPortal {
 	protected Vec3 normal;
 	protected PortalCamera cam;
 	protected Vec3 compNorm;
+	AABB box = null;
 	
 	public BasicPortal(UUID uuid) {
 		super(uuid);
@@ -70,8 +71,6 @@ public class BasicPortal extends AbstractPortal {
 		recomputePortal();
 		return this;
 	}
-	
-	AABB box = null;
 	
 	protected void recomputePortal() {
 		if (position != null && rotation != null) {
@@ -270,7 +269,7 @@ public class BasicPortal extends AbstractPortal {
 			stack.pushPose();
 			
 			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+			stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
 			stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 			stack.translate(-position.x, -position.y, -position.z);
 			
@@ -415,12 +414,12 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	@Override
-	public boolean isInfront(Entity entity, Vec3 position) {
+	public boolean isInFront(Entity entity, Vec3 position) {
 		// TODO: get this to work with rotated portals
-		return _isInfront(position.x, position.y + entity.getEyeHeight(), position.z);
+		return _isInFront(position.x, position.y + entity.getEyeHeight(), position.z);
 	}
 	
-	protected boolean _isInfront(double camX, double camY, double camZ) {
+	protected boolean _isInFront(double camX, double camY, double camZ) {
 		return compNorm == null || compNorm.dot(new Vec3((camX - position.x), (camY - position.y), (camZ - position.z))) > 0;
 	}
 	
@@ -462,9 +461,9 @@ public class BasicPortal extends AbstractPortal {
 	// TODO: for some reason, backface teleportation is busted
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
-		boolean wasInfront = isInfront(entity, position);
-		boolean isInfront = isInfront(entity, position.add(motion));
-		if (wasInfront != isInfront) {
+		boolean wasInFront = isInFront(entity, position);
+		boolean isInFront = isInFront(entity, position.add(motion));
+		if (wasInFront != isInFront) {
 //			double angle = rotation.x * 180 / Math.PI;
 //			if (angle % 90 == 0) {
 //				// TODO: this calculation can be drastically more reliable
