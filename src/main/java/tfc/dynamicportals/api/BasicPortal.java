@@ -273,6 +273,34 @@ public class BasicPortal extends AbstractPortal {
 //			stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
 //			stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 			stack.mulPose(raytraceRotation());
+			
+			if (Minecraft.getInstance().options.renderDebug) {
+				Quad qd = makeQuad();
+				consumer.vertex(stack.last().pose(), (float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				
+				consumer.vertex(stack.last().pose(), (float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				
+				consumer.vertex(stack.last().pose(), (float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				
+				consumer.vertex(stack.last().pose(), (float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				
+				AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
+				Vec3 center = box.getCenter();
+				center = center.subtract(position.x, position.y, position.z);
+				Vec3 nearest = qd.getNearest(center);
+				if (nearest != null) {
+					LevelRenderer.renderLineBox(stack, consumer,
+							nearest.x - 0.01, nearest.y - 0.01, nearest.z - 0.01,
+							nearest.x + 0.01, nearest.y + 0.01, nearest.z + 0.01,
+							0, 0, 1, 1
+					);
+				}
+			}
+			
 			stack.translate(-position.x, -position.y, -position.z);
 			
 			// draw
@@ -429,8 +457,7 @@ public class BasicPortal extends AbstractPortal {
 		return compNorm == null || compNorm.dot(new Vec3((camX - position.x), (camY - position.y), (camZ - position.z))) > 0;
 	}
 	
-	@Override
-	public boolean overlaps(AABB box) {
+	protected Quad makeQuad() {
 		Quaternion rotation = raytraceRotation();
 		Vec3 vec0 = new Vec3(-size.x / 2, 0, 0);
 		vec0 = VecMath.rotate(vec0, rotation);
@@ -441,6 +468,12 @@ public class BasicPortal extends AbstractPortal {
 		Vec3 vec3 = new Vec3(-size.x / 2, size.y, 0);
 		vec3 = VecMath.rotate(vec3, rotation);
 		Quad plane = new Quad(vec0, vec1, vec2, vec3);
+		return plane;
+	}
+	
+	@Override
+	public boolean overlaps(AABB box) {
+		Quad plane = makeQuad();
 //		Vec3 sizeVec = new Vec3(size.x / 2, 0, 0);
 //		sizeVec = VecMath.rotate(sizeVec, rotation);
 //		return plane.overlaps(box.move(-position.x + sizeVec.x, -position.y, -position.z + sizeVec.z));
