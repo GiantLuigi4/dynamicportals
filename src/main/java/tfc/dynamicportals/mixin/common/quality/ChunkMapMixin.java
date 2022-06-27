@@ -1,6 +1,7 @@
 package tfc.dynamicportals.mixin.common.quality;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.server.level.*;
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -80,46 +82,35 @@ public abstract class ChunkMapMixin {
 		ITrackChunks chunkTracker = (ITrackChunks) pPlayer;
 		if (!chunkTracker.setDoUpdate(false)) return;
 		
-		ChunkPos center = new ChunkPos(pPlayer.getOnPos());
 		ArrayList<ChunkPos> tracked = new ArrayList<>();
 		boolean anyFailed = false;
-		for (int x = -viewDistance; x <= viewDistance; x++) {
-			for (int z = -viewDistance; z <= viewDistance; z++) {
-				ChunkPos pos = new ChunkPos(center.x + x, center.z + z);
-//				ChunkHolder holder = getVisibleChunkIfPresent(pos.toLong());
-//				if (holder != null) {
-//					if (holder.getTickingChunk() != null) {
-				updateChunkTracking(
-						pPlayer, pos,
-						new MutableObject<>(),
-						chunkTracker.trackedChunks().remove(pos), // remove it so that the next loop doesn't untrack it
-						true // start tracking
-				);
-				tracked.add(pos);
-				if (!success) anyFailed = true;
-//					} else anyFailed = true;
-//				} else anyFailed = true;
+		anyFailed = forAllInRange(pPlayer.position(), pPlayer, chunkTracker, tracked) || anyFailed;
+		
+		portals = Temp.getPortals(level);
+		for (AbstractPortal portal : portals) {
+			if (isInRange(pPlayer, portal)) {
+				anyFailed = forAllInRange(portal.target.raytraceOffset(), pPlayer, chunkTracker, tracked) || anyFailed;
 			}
 		}
-		portals = Temp.getPortals(level);
-		chunkTracker.trackedChunks().removeAll(tracked);
+
+//		chunkTracker.trackedChunks().removeAll(tracked);
 		for (ChunkPos trackedChunk : chunkTracker.trackedChunks()) {
-			if (nonEclidianInRange(trackedChunk, pPlayer)) {
-				tracked.add(trackedChunk);
-				updateChunkTracking(
-						pPlayer, trackedChunk,
-						new MutableObject<>(),
-						true, // this will always be true, no point in checking the list
-						true // player should know about the chunk
-				);
-			} else {
-				updateChunkTracking(
-						pPlayer, trackedChunk,
-						new MutableObject<>(),
-						true, // this will always be true, no point in checking the list
-						false // unloading/untracking
-				);
-			}
+//			if (nonEclidianInRange(trackedChunk, pPlayer)) {
+//				tracked.add(trackedChunk);
+//				updateChunkTracking(
+//						pPlayer, trackedChunk,
+//						new MutableObject<>(),
+//						true, // this will always be true, no point in checking the list
+//						true // player should know about the chunk
+//				);
+//			} else {
+			updateChunkTracking(
+					pPlayer, trackedChunk,
+					new MutableObject<>(),
+					true, // this will always be true, no point in checking the list
+					false // unloading/untracking
+			);
+//			}
 		}
 		chunkTracker.trackedChunks().clear();
 		chunkTracker.trackedChunks().addAll(tracked);
@@ -127,19 +118,62 @@ public abstract class ChunkMapMixin {
 		if (anyFailed) chunkTracker.setDoUpdate(true);
 		ci.cancel();
 	}
-
-//	boolean success = false;
-//
-//	@Inject(at = @At("HEAD"), method = "playerLoadedChunk")
-//	public void preLoadChunk(ServerPlayer pPlaer, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, LevelChunk pChunk, CallbackInfo ci) {
-//		success = true;
-//	}
 	
 	@Inject(at = @At("HEAD"), method = "updatePlayerPos")
 	public void preUpdatePos(ServerPlayer p_140374_, CallbackInfoReturnable<SectionPos> cir) {
 		((ITrackChunks) p_140374_).setDoUpdate(true);
 	}
 	
+	@Unique
+	public boolean forAllInRange(Vec3 origin, ServerPlayer pPlayer, ITrackChunks chunkTracker, ArrayList<ChunkPos> tracked) {
+		boolean anyFailed = false;
+		
+		ChunkPos playerChunk = pPlayer.chunkPosition();
+		Vec3 pChunkPos = new Vec3(playerChunk.x, 0, playerChunk.z);
+		
+		ChunkPos center = new ChunkPos(new BlockPos(origin.x, origin.y, origin.z));
+		
+		for (int x = -viewDistance; x <= viewDistance; x++) {
+			for (int z = -viewDistance; z <= viewDistance; z++) {
+				ChunkPos pos = new ChunkPos(center.x + x, center.z + z);
+				if (tracked.contains(pos)) continue;
+				
+//				Vec3 chunkPos = new Vec3(pos.x, 0, pos.z);
+//
+//				// TODO: this distance check breaks everything
+//				if (chunkPos.distanceToSqr(pChunkPos) < viewDistance) {
+				boolean wasLoaded;
+				updateChunkTracking(
+						pPlayer, pos,
+						new MutableObject<>(),
+						wasLoaded = chunkTracker.trackedChunks().remove(pos), // remove it so that the next loop doesn't untrack it
+						true // start tracking
+				);
+				
+				if (!wasLoaded && !success) {
+					anyFailed = true;
+				} else {
+					tracked.add(pos);
+				}
+//				}
+			}
+		}
+		
+		return anyFailed;
+	}
+	
+	@Unique
+	public boolean isInRange(ServerPlayer pPlayer, AbstractPortal poptato /* idk */) {
+		ChunkPos playerChunk = pPlayer.chunkPosition();
+		Vec3 pChunkPos = new Vec3(playerChunk.x, 0, playerChunk.z);
+		
+		Vec3 portalPos = poptato.raytraceOffset();
+		ChunkPos asChunkPos = new ChunkPos(new BlockPos(portalPos));
+		
+		return new Vec3(asChunkPos.x, 0, asChunkPos.z).distanceToSqr(pChunkPos) < viewDistance;
+	}
+	
+	@Unique
 	public boolean nonEclidianInRange(ChunkPos pos, ServerPlayer player) {
 		for (AbstractPortal portal : portals) {
 			if (portal.raytraceOffset().distanceTo(player.position()) / 16 < viewDistance) {
@@ -164,26 +198,4 @@ public abstract class ChunkMapMixin {
 	public void preUpdateTracking(ServerPlayer pPlayer, ChunkPos pChunkPos, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, boolean pWasLoaded, boolean pLoad, CallbackInfo ci) {
 		success = false;
 	}
-//	// TODO: can this be done better?
-//		if (pPlayer.level == this.level) {
-//			net.minecraftforge.event.ForgeEventFactory.fireChunkWatch(pWasLoaded, pLoad, pPlayer, pChunkPos, level);
-//			if (pLoad && !pWasLoaded) {
-//				ChunkHolder chunkholder = this.getVisibleChunkIfPresent(pChunkPos.toLong());
-//				if (chunkholder != null) {
-//					LevelChunk levelchunk = chunkholder.getTickingChunk();
-//					if (levelchunk != null) {
-//						this.playerLoadedChunk(pPlayer, pPacketCache, levelchunk);
-//						DebugPackets.sendPoiPacketsForChunk(this.level, pChunkPos);
-//						success = true;
-//					}
-//				}
-//			}
-//
-//			if (!pLoad && pWasLoaded) {
-//				pPlayer.untrackChunk(pChunkPos);
-//			}
-//		}
-//
-//		ci.cancel();
-//	}
 }

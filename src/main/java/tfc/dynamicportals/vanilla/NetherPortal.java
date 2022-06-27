@@ -18,19 +18,19 @@ import tfc.dynamicportals.api.BasicPortal;
 import java.util.UUID;
 
 public class NetherPortal extends BasicPortal {
-	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
-	private static final RenderType STENCIL_DRAW = RenderType.create(
-			"dynamic_portals_nether_portal_stencil",
-			DefaultVertexFormat.POSITION_COLOR_TEX,
-			VertexFormat.Mode.QUADS,
-			256,
-			RenderType.CompositeState.builder()
-					.setShaderState(RENDERTYPE_LEASH_SHADER)
-					.setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, true))
-					.setCullState(RenderType.NO_CULL)
-					.setLightmapState(RenderType.NO_LIGHTMAP)
-					.createCompositeState(false)
-	);
+//	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
+//	private static final RenderType STENCIL_DRAW = RenderType.create(
+//			"dynamic_portals_nether_portal_stencil",
+//			DefaultVertexFormat.POSITION_COLOR_TEX,
+//			VertexFormat.Mode.QUADS,
+//			256,
+//			RenderType.CompositeState.builder()
+//					.setShaderState(RENDERTYPE_LEASH_SHADER)
+//					.setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, true))
+//					.setCullState(RenderType.NO_CULL)
+//					.setLightmapState(RenderType.NO_LIGHTMAP)
+//					.createCompositeState(false)
+//	);
 	SimplexNoise simplexNoise;
 	
 	public NetherPortal(UUID uuid) {
@@ -54,7 +54,7 @@ public class NetherPortal extends BasicPortal {
 		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
 		// makes z fighting drastically less noticeable
 		distance = Math.min(distance, 0.1);
-		if (!isInFront(Minecraft.getInstance().cameraEntity, Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {
+		if (!isInFront(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {
 			stack.scale(-1, 1, -1);
 		}
 		// get ready to draw

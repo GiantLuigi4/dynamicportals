@@ -13,6 +13,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.DynamicPortals;
+import tfc.dynamicportals.util.RenderTypes;
 
 import java.util.UUID;
 
@@ -21,19 +22,6 @@ import java.util.UUID;
  * {@link BasicPortal} for some examples
  */
 public abstract class AbstractPortal {
-	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
-	private static final RenderType STENCIL_DRAW = RenderType.create(
-			"dynamic_portals_stencil",
-			DefaultVertexFormat.POSITION_COLOR,
-			VertexFormat.Mode.QUADS,
-			256,
-			RenderType.CompositeState.builder()
-					.setShaderState(RENDERTYPE_LEASH_SHADER)
-					.setTextureState(RenderType.NO_TEXTURE)
-					.setCullState(RenderType.NO_CULL)
-					.setLightmapState(RenderType.NO_LIGHTMAP)
-					.createCompositeState(false)
-	);
 	private final UUID uuid;
 	public AbstractPortal target = this;
 	protected PortalVisibilityGraph graph;
@@ -85,7 +73,6 @@ public abstract class AbstractPortal {
 	/**
 	 * more or less the opposite of setupMatrix
 	 * I'm not sure why, but currently a 180 degree rotation seems to be needed
-	 * {@link DynamicPortals#isRotate180Needed()} will return false if that 180 degree rotation is not needed
 	 *
 	 * @param stack the pose stack to transform
 	 */
@@ -218,7 +205,7 @@ public abstract class AbstractPortal {
 	 * @return the stencil render type
 	 */
 	public RenderType getRenderType() {
-		return STENCIL_DRAW;
+		return RenderTypes.STENCIL_DRAW;
 	}
 	
 	/**

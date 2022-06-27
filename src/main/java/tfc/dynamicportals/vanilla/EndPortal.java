@@ -22,36 +22,14 @@ import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.Renderer;
 import tfc.dynamicportals.api.BasicPortal;
+import tfc.dynamicportals.util.RenderTypes;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class EndPortal extends BasicPortal {
-	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
-	private static final AtomicReference<RenderTarget> targ = new AtomicReference<>();
-	private static final RenderStateShard.EmptyTextureStateShard FBOTexture = new RenderStateShard.EmptyTextureStateShard(() -> {
-		RenderSystem.enableTexture();
-		RenderSystem.setShaderTexture(0, targ.get().getColorTextureId());
-	}, () -> {
-	});
-	private static final RenderType STENCIL_DRAW = RenderType.create(
-			"dynamic_portals_stencil",
-			DefaultVertexFormat.POSITION_COLOR_TEX,
-			VertexFormat.Mode.QUADS,
-			256,
-			RenderType.CompositeState.builder()
-					.setShaderState(RENDERTYPE_LEASH_SHADER)
-					.setTextureState(FBOTexture)
-					.setCullState(RenderType.NO_CULL)
-					.setTransparencyState(RenderType.TRANSLUCENT_TRANSPARENCY)
-					.setLightmapState(RenderType.NO_LIGHTMAP)
-					.createCompositeState(false)
-	);
-	SimplexNoise simplexNoise;
-	
 	public EndPortal(UUID uuid) {
 		super(uuid);
-		simplexNoise = new SimplexNoise(new XoroshiroRandomSource(uuid.getLeastSignificantBits(), uuid.getMostSignificantBits()));
 	}
 
 //	public static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
@@ -71,17 +49,13 @@ public class EndPortal extends BasicPortal {
 	@Override
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		super.drawFrame(source, stack);
-		if (targ.get() == null) {
-			targ.set(new TextureTarget(1, 1, false, Minecraft.ON_OSX));
-		}
-		RenderTarget targ = EndPortal.targ.get();
-		if (Renderer.fboWidth() != targ.width || Renderer.fboHeight() != targ.height) {
-			targ.resize((int) Renderer.fboWidth(), (int) Renderer.fboHeight(), Minecraft.ON_OSX);
-		}
+		
+		RenderTypes.update();
+		RenderTarget targ = RenderTypes.targ.get();
 		
 		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
 		distance = Math.min(distance, 0.1);
-		if (!isInFront(Minecraft.getInstance().cameraEntity, Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {
+		if (!isInFront(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {
 			stack.scale(-1, 1, -1);
 			stack.translate(0, 0, distance);
 		}
@@ -91,7 +65,7 @@ public class EndPortal extends BasicPortal {
 		targ.clear(Minecraft.ON_OSX);
 		GLUtils.switchFBO(targ);
 		renderFace(stack.last().pose(), consumer, -(float) size.x / 2, (float) size.x / 2, 0, (float) size.y, 0, 0, 0, 0);
-		consumer = source.getBuffer(STENCIL_DRAW);
+		consumer = source.getBuffer(RenderTypes.END_PORTAL_FRAME);
 		GLUtils.switchFBO(bound);
 		boolean isSS = Renderer.setupScreenspaceTex();
 		Matrix4f mat = stack.last().pose();
@@ -101,7 +75,7 @@ public class EndPortal extends BasicPortal {
 		consumer.vertex(mat, (float) -size.x / 2, (float) size.y, 0).color(1f, 1, 1, 1f / 8).uv(0, 0).endVertex();
 		consumer = source.getBuffer(RenderType.endPortal());
 		
-		consumer = source.getBuffer(STENCIL_DRAW);
+		consumer = source.getBuffer(RenderTypes.END_PORTAL_FRAME);
 		stack.translate(0, 0, distance);
 		mat = stack.last().pose();
 		consumer.vertex(mat, (float) -size.x / 2, 0, 0).color(1f, 1, 1, 1).uv(0, 0).endVertex();
@@ -115,7 +89,7 @@ public class EndPortal extends BasicPortal {
 		consumer.vertex(mat, (float) size.x / 2 - 0.5f, (float) size.y, 0).color(1f, 1, 1, 0).uv(0, 0).endVertex();
 		consumer = source.getBuffer(RenderType.endPortal());
 		
-		consumer = source.getBuffer(STENCIL_DRAW);
+		consumer = source.getBuffer(RenderTypes.END_PORTAL_FRAME);
 		stack.translate(0, 0, distance);
 		mat = stack.last().pose();
 		// top and bottom

@@ -260,15 +260,15 @@ public class BasicPortal extends AbstractPortal {
 					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 					stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 					
-					consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
-					consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
+					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
+					consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
 					stack.popPose();
 				}
 			}
 			
 			/* debug frustum culling box */
 			stack.pushPose();
-			
+
 //			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 //			stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
 //			stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
@@ -419,6 +419,10 @@ public class BasicPortal extends AbstractPortal {
 	public boolean isInFront(Entity entity, Vec3 position) {
 		// TODO: get this to work with rotated portals
 		return _isInFront(position.x, position.y + entity.getEyeHeight(), position.z);
+	}
+	
+	public boolean isInFront(Vec3 cam) {
+		return _isInFront(cam.x, cam.y, cam.z);
 	}
 	
 	protected boolean _isInFront(double camX, double camY, double camZ) {
