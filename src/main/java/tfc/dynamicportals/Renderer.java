@@ -17,11 +17,14 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
+import sun.misc.Unsafe;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.VecMath;
+import tfc.dynamicportals.util.async.AsyncDispatcher;
 import tfc.dynamicportals.util.async.ReusableThread;
 
 import java.util.ArrayList;
+import java.util.concurrent.locks.LockSupport;
 
 public class Renderer {
 	private static final RenderTarget stencilTarget = new TextureTarget(
@@ -143,9 +146,9 @@ public class Renderer {
 				forceDraw(source);
 			}
 		}
-		
-		// TODO: move this off the main thread
-		updatePortal(portal, a.last().pose(), RenderSystem.getProjectionMatrix());
+
+//		// TODO: move this off the main thread
+//		updatePortal(portal, a.last().pose(), RenderSystem.getProjectionMatrix());
 		
 		// setup matrix
 		portal.setupMatrix(stack);
@@ -257,10 +260,10 @@ public class Renderer {
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
 			portal.getGraph().update();
 		} else if (
-				       (int) orx != (int) rx || (int) ory != (int) ry ||
-						       (int) oldPos.x != (int) camVec.x ||
-						       (int) oldPos.y != (int) camVec.y ||
-						       (int) oldPos.z != (int) camVec.z
+				(int) orx != (int) rx || (int) ory != (int) ry ||
+						(int) oldPos.x != (int) camVec.x ||
+						(int) oldPos.y != (int) camVec.y ||
+						(int) oldPos.z != (int) camVec.z
 		) {
 			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
@@ -330,6 +333,19 @@ public class Renderer {
 		AbstractPortal[] portals = Temp.getPortals(Minecraft.getInstance().level);
 		
 		frustum.prepare(camX, camY, camZ);
+		Matrix4f matr = RenderSystem.getProjectionMatrix();
+		boolean useAsync = portals.length > 30;
+		for (AbstractPortal portal : portals) {
+			if (useAsync) {
+				AsyncDispatcher.dispatch(() -> {
+					updatePortal(portal, event.getPoseStack().last().pose(), matr);
+				});
+			} else {
+				updatePortal(portal, event.getPoseStack().last().pose(), matr);
+			}
+		}
+		AsyncDispatcher.await();
+		
 		for (AbstractPortal portal1 : portals) {
 			if (portal1.shouldRender(frustum, camX, camY, camZ)) {
 				renderPortal(stack, type, buffers, portal1, state, frustum);

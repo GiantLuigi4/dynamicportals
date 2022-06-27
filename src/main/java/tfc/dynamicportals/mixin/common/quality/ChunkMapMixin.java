@@ -5,6 +5,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.server.level.*;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.spongepowered.asm.mixin.Final;
@@ -85,18 +86,19 @@ public abstract class ChunkMapMixin {
 		for (int x = -viewDistance; x <= viewDistance; x++) {
 			for (int z = -viewDistance; z <= viewDistance; z++) {
 				ChunkPos pos = new ChunkPos(center.x + x, center.z + z);
-				ChunkHolder holder = getVisibleChunkIfPresent(pos.toLong());
-				if (holder != null) {
-					if (holder.getTickingChunk() != null) {
-						updateChunkTracking(
-								pPlayer, pos,
-								new MutableObject<>(),
-								chunkTracker.trackedChunks().remove(pos), // remove it so that the next loop doesn't untrack it
-								true // start tracking
-						);
-						tracked.add(pos);
-					} else anyFailed = true;
-				} else anyFailed = true;
+//				ChunkHolder holder = getVisibleChunkIfPresent(pos.toLong());
+//				if (holder != null) {
+//					if (holder.getTickingChunk() != null) {
+				updateChunkTracking(
+						pPlayer, pos,
+						new MutableObject<>(),
+						chunkTracker.trackedChunks().remove(pos), // remove it so that the next loop doesn't untrack it
+						true // start tracking
+				);
+				tracked.add(pos);
+				if (!success) anyFailed = true;
+//					} else anyFailed = true;
+//				} else anyFailed = true;
 			}
 		}
 		portals = Temp.getPortals(level);
@@ -150,13 +152,19 @@ public abstract class ChunkMapMixin {
 		}
 		return false;
 	}
-
-//	boolean success = false;
-//
+	
+	@Inject(at = @At("HEAD"), method = "playerLoadedChunk")
+	public void preLoadChunk(ServerPlayer pPlaer, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, LevelChunk pChunk, CallbackInfo ci) {
+		success = true;
+	}
+	
+	boolean success = false;
+	
+	@Inject(at = @At("HEAD"), method = "updateChunkTracking", cancellable = true)
+	public void preUpdateTracking(ServerPlayer pPlayer, ChunkPos pChunkPos, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, boolean pWasLoaded, boolean pLoad, CallbackInfo ci) {
+		success = false;
+	}
 //	// TODO: can this be done better?
-//	@Inject(at = @At("HEAD"), method = "updateChunkTracking", cancellable = true)
-//	public void preUpdateTracking(ServerPlayer pPlayer, ChunkPos pChunkPos, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, boolean pWasLoaded, boolean pLoad, CallbackInfo ci) {
-//		success = false;
 //		if (pPlayer.level == this.level) {
 //			net.minecraftforge.event.ForgeEventFactory.fireChunkWatch(pWasLoaded, pLoad, pPlayer, pChunkPos, level);
 //			if (pLoad && !pWasLoaded) {

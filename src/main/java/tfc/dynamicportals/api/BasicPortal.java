@@ -82,6 +82,7 @@ public class BasicPortal extends AbstractPortal {
 				quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
 				quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
 				quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+				quaternion.mul(new Quaternion(0, 180, 0, true));
 				// transform
 				Quaternion[] quats = new Quaternion[]{
 						new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
@@ -268,9 +269,10 @@ public class BasicPortal extends AbstractPortal {
 			/* debug frustum culling box */
 			stack.pushPose();
 			
-			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-			stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
-			stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+//			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+//			stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
+//			stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+			stack.mulPose(raytraceRotation());
 			stack.translate(-position.x, -position.y, -position.z);
 			
 			// draw
@@ -458,7 +460,7 @@ public class BasicPortal extends AbstractPortal {
 		return new Vec2(vector.x, clamp(vector.y + (float) Math.toDegrees(rotation.x)));
 	}
 	
-	// TODO: for some reason, backface teleportation is busted
+	// TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		boolean wasInFront = isInFront(entity, position);

@@ -69,16 +69,18 @@ public class Temp {
 	public static AbstractPortal[] getPortals(Level level) {
 		double time = (System.currentTimeMillis() / 30.) % 360;
 		BasicPortal portal = (BasicPortal) portals[1];
-		portal.setPosition(-8.5, 5.00, 2);
-		portal.setSize(2, 3);
-//		portal.setRotation(Math.toRadians(90), Math.toRadians(0), 0);
+		portal.setPosition(-23.5, 3, 0);
+		portal.setSize(3, 3);
+		portal.setRotation(Math.toRadians(0), Math.toRadians(-90), 0);
 //		portal.computeNormal();
 		portal = (BasicPortal) portals[3];
 		portal.setPosition(-7.5, 5, -15);
 		portal.setSize(2, 3);
 		portal = (BasicPortal) portals[0];
-		portal.setRotation(Math.toRadians(time), Math.toRadians(time), Math.toRadians(0)); //(System.currentTimeMillis() / 30.) % 360)
-		portal.setPosition(-8.5, 5, 8);
+//		portal.setRotation(Math.toRadians(time), Math.toRadians(time), Math.toRadians(0)); //(System.currentTimeMillis() / 30.) % 360)
+		portal.setRotation(0, Math.toRadians(90), 0);
+		portal.setPosition(-5.5, 4.75, 1);
+		portal.setSize(3, 3);
 //		portal.computeNormal();
 		return Temp.portals;
 	}
