@@ -78,11 +78,12 @@ public class BasicPortal extends AbstractPortal {
 			
 			if (size != null) {
 				// setup quaternion
-				Quaternion quaternion = new Quaternion(0, 0, 0, false);
-				quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
+				// THIS WORKS SOMEHOW
+				Quaternion quaternion = Quaternion.ONE.copy();
 				quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
 				quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
 				quaternion.mul(new Quaternion(0, 180, 0, true));
+				quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
 				// transform
 				Quaternion[] quats = new Quaternion[]{
 						new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
@@ -159,16 +160,19 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion raytraceRotation() {
-		Quaternion quat;
-//		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
-		Quaternion first = new Quaternion((float) rotation.y, 0, 0, false);
-		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
-//		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
-		Quaternion third = new Quaternion(0, 0, (float) rotation.z, false);
-		quat = first;
-//		first.mul(second);
-		quat.mul(second);
-		quat.mul(third);
+		Quaternion quat = Quaternion.ONE.copy();
+		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
+		quat.mul(new Quaternion(0, (float) -rotation.x, 0, false));
+		quat.mul(new Quaternion(0, 180, 0, true));
+		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
+//		Quaternion quat;
+//		Quaternion first = new Quaternion((float) rotation.y, 0, 0, false);
+//		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
+//		Quaternion third = new Quaternion(0, 0, (float) rotation.z, false);
+//		quat = first;
+////		first.mul(second);
+//		quat.mul(second);
+//		quat.mul(third);
 		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
 
 //		quat.mul(second);
@@ -180,14 +184,21 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion oppositeRaytraceRotation() {
-		Quaternion quat;
-		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
-		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
-		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
-		quat = first;
-//		first.mul(second);
-		quat.mul(second);
-		quat.mul(third);
+		
+		Quaternion quat = Quaternion.ONE.copy();
+		quat.mul(new Quaternion((float) -rotation.y, 0, 0, false));
+		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
+		Quaternion q = new Quaternion(0, 180, 0, true); q.conj();
+		quat.mul(q);
+		quat.mul(new Quaternion(0, 0, (float) -rotation.z, false));
+//		Quaternion quat;
+//		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
+//		Quaternion second = new Quaternion(0, (float) rotation.x, 0, false);
+//		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
+//		quat = first;
+////		first.mul(second);
+//		quat.mul(second);
+//		quat.mul(third);
 		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
 		
 		return quat;
@@ -304,8 +315,8 @@ public class BasicPortal extends AbstractPortal {
 			stack.translate(-position.x, -position.y, -position.z);
 			
 			// draw
-			if (box != null)
-				LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
+//			if (box != null)
+//				LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
 			stack.popPose();
 		}
 

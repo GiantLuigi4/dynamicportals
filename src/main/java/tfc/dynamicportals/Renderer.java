@@ -24,6 +24,7 @@ import tfc.dynamicportals.util.async.AsyncDispatcher;
 import tfc.dynamicportals.util.async.ReusableThread;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.locks.LockSupport;
 
 public class Renderer {
@@ -36,6 +37,8 @@ public class Renderer {
 			true, Minecraft.ON_OSX
 	);
 	private static final ArrayList<ReusableThread> threads = new ArrayList<>();
+	private static final ArrayList<Vec3> positions = new ArrayList<>();
+	private static final Random rand = new Random();
 	private static boolean isStencilPresent = false;
 	private static boolean screenspaceTex = false;
 	private static int recursion = 0;
@@ -136,11 +139,25 @@ public class Renderer {
 				iend = istart.add(ireach);
 				double size = 0.1;
 				
+				if (positions.size() < 100 && rand.nextInt(100) % 20 == 0)
+					positions.add(istart);
+//				if (positions.size() >= 100) {
+//					positions.clear();
+//				}
+				for (Vec3 v : positions) {
+					LevelRenderer.renderLineBox(
+							stack, consumer,
+							v.x - size, v.y - size, v.z - size,
+							v.x + size, v.y + size, v.z + size,
+							1, 1, 1, 1
+					);
+				}
+
 				LevelRenderer.renderLineBox(
 						stack, consumer,
 						istart.x, istart.y, istart.z,
 						istart.x + size, istart.y + size, istart.z + size,
-						1, 1, 1, 1
+						1, 0, 1, 1
 				);
 				
 				forceDraw(source);

@@ -28,23 +28,23 @@ public class VecMath {
 		return Mth.fastInvSqrt(q.r() * q.r() + q.i() * q.i() + q.j() * q.j() + q.k() * q.k());
 	}
 	
-	public static Vec3 old_transform(Vec3 src, Quaternion selfRotation, Quaternion otherRotation, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
+	public static Vec3 old_transform(Vec3 src, Quaternion selfRot, Quaternion otherRot, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
 		if (motion) {
-			Quaternion selfRotConj = selfRotation.copy();
+			Quaternion selfRotConj = selfRot.copy();
 			selfRotConj.conj();
-			Quaternion otherRotConj = otherRotation.copy();
+			Quaternion otherRotConj = otherRot.copy();
 			otherRotConj.conj();
 			
-			Vec3 pos = VecMath.rotate(src, selfRotConj);
+			Vec3 pos = VecMath.rotate(src, selfRot);
 			if (isMirror) {
 				pos = pos.multiply(1, 1, -1);
 			}
-			pos = VecMath.rotate(pos, otherRotation);
-			pos = VecMath.rotate(pos, new Quaternion(0, 1, 0, 0));
+			pos = VecMath.rotate(pos, otherRotConj);
+//			pos = VecMath.rotate(pos, new Quaternion(0, 1, 0, 0));
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);
-		pos = old_transform(pos, selfRotation, otherRotation, isMirror, true, sourceTransformation, destTransformation);
+		pos = old_transform(pos, selfRot, otherRot, isMirror, true, sourceTransformation, destTransformation);
 		pos = pos.add(destTransformation);
 		return pos;
 	}
