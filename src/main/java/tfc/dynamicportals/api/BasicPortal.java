@@ -242,7 +242,7 @@ public class BasicPortal extends AbstractPortal {
 					stack.translate(0, (float) size.y / 2, 0);
 					stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-					stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+					stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 					
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
 					consumer.vertex(stack.last().pose(), (float) normal.x(), (float) normal.y(), (float) normal.z()).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
@@ -255,7 +255,7 @@ public class BasicPortal extends AbstractPortal {
 						stack.translate(0, (float) size.y / 2, 0);
 						stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 						stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-						stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+						stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 						
 						consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
 						consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
@@ -272,7 +272,7 @@ public class BasicPortal extends AbstractPortal {
 					
 					stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-					stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+					stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 					
 					Quaternion quaternion = raytraceRotation();
 					// lorenzo wanted this
@@ -290,7 +290,9 @@ public class BasicPortal extends AbstractPortal {
 //			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 //			stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
 //			stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-			stack.mulPose(raytraceRotation());
+			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 			
 			if (Minecraft.getInstance().options.renderDebug) {
 				Quad qd = makeQuad();
