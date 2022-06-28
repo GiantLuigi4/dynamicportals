@@ -249,20 +249,8 @@ public class BasicPortal extends AbstractPortal {
 		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 		
 		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
-			if (Minecraft.getInstance().options.renderDebug && normal != null) {
-				/* normal vec debug */
-				// absolute position
-				stack.pushPose();
-				stack.translate(0, (float) size.y / 2, 0);
-				stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-				stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-				stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-				
-				consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
-				consumer.vertex(stack.last().pose(), (float) normal.x(), (float) normal.y(), (float) normal.z()).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
-				stack.popPose();
-			} else {
-				if (Minecraft.getInstance().options.renderDebug && compNorm != null) {
+			if (Minecraft.getInstance().options.renderDebug) {
+				if (normal != null) {
 					/* normal vec debug */
 					// absolute position
 					stack.pushPose();
@@ -271,8 +259,42 @@ public class BasicPortal extends AbstractPortal {
 					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 					stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 					
-					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
-					consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
+					consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
+					consumer.vertex(stack.last().pose(), (float) normal.x(), (float) normal.y(), (float) normal.z()).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
+					stack.popPose();
+				} else {
+					if (compNorm != null) {
+						/* normal vec debug */
+						// absolute position
+						stack.pushPose();
+						stack.translate(0, (float) size.y / 2, 0);
+						stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+						stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+						stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+						
+						consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
+						consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
+						
+						stack.popPose();
+					}
+				}
+				
+				Vec3 norm = compNorm;
+				if (norm == null) norm = normal;
+				if (norm != null) {
+					stack.pushPose();
+					stack.translate(0, (float) size.y / 2, 1);
+					
+					stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+					stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+					
+					Quaternion quaternion = raytraceRotation();
+					// lorenzo wanted this
+					Vec3 vec = VecMath.rotate(new Vec3(1, 0, 0), quaternion);
+					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
+					consumer.vertex(stack.last().pose(), (float) vec.x, (float) vec.y, (float) vec.z).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
+					
 					stack.popPose();
 				}
 			}
@@ -315,8 +337,8 @@ public class BasicPortal extends AbstractPortal {
 			stack.translate(-position.x, -position.y, -position.z);
 			
 			// draw
-//			if (box != null)
-//				LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
+			if (box != null)
+				LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
 			stack.popPose();
 		}
 

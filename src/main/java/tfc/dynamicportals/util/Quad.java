@@ -57,7 +57,57 @@ public class Quad {
 		return getNearest(box.getCenter()) != null;
 	}
 	
+	double absMax(double d0, double d1) {
+		if (Math.abs(d0) > Math.abs(d1)) return d0;
+		return d1;
+	}
+	
+	boolean absGreatest(double v0, double v1, double v2) {
+		v0 = Math.abs(v0);
+		if (v0 > Math.abs(v1) && v0 > Math.abs(v2)) return true;
+		return false;
+	}
+	
 	public Vec3 getNearest(Vec3 center) {
+		double dx_ = absMax(pt0.x - pt1.x, pt3.x - pt2.x);
+		double dy_ = absMax(pt3.y - pt0.y, pt2.y - pt1.y);
+		double dz_ = absMax(pt1.z - pt0.z, pt2.z - pt3.z);
+		
+		if (absGreatest(dz_, dx_, dy_)) {
+			return null;
+		} else if (absGreatest(dx_, dy_, dz_)) {
+			// TODO: check all of this
+			double dx0 = center.x / (pt0.x - pt1.x);
+			dx0 += 0.5;
+			if (dx0 < 0 || dx0 > 1) return null;
+			Vec3 interpTop = VecMath.lerp(dx0, pt1, pt0);
+			
+			dx0 = center.x / (pt3.x - pt2.x);
+			dx0 += 0.5;
+			if (dx0 < 0 || dx0 > 1) return null;
+			Vec3 interpBottom = VecMath.lerp(dx0, pt2, pt3);
+			
+			double y = interpTop.y - interpBottom.y;
+			double z = interpTop.z - interpBottom.z;
+			if (Math.abs(y) > Math.abs(z)) {
+				// TODO: check
+				double tx = center.y + y;
+				double dz0 = Math.abs(tx) / y;
+				if (tx < 0) dz0 = -dz0;
+				dz0 = 1 - dz0;
+				if (0 > dz0 || dz0 > 1) return null;
+				Vec3 point = VecMath.lerp(dz0, interpTop, interpBottom);
+				return point;
+			} else {
+				double tx = center.z + z;
+				double dz0 = Math.abs(tx) / z;
+				if (tx < 0) dz0 = -dz0;
+				dz0 = 1 - dz0;
+				if (0 > dz0 || dz0 > 1) return null;
+				Vec3 point = VecMath.lerp(dz0, interpTop, interpBottom);
+				return point;
+			}
+		}
 		// TODO: deal with quads that have no height
 		double dy0 = center.y / (pt3.y - pt0.y);
 		if (dy0 < 0 || dy0 > 1) return null;
