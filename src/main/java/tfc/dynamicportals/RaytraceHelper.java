@@ -35,18 +35,18 @@ public class RaytraceHelper {
 					
 					if (portal.requireTraceRotation()) {
 						Quaternion srcQuat = portal.raytraceRotation();
-						Quaternion dstQuat = portal.target.oppositeRaytraceRotation();
+						Quaternion dstQuat = portal.target.raytraceRotation();
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
-//						interpStart = VecMath.rotate(interpStart.subtract(srcOff), portal.getWeirdQuat()).add(srcOff);
 						interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+						interpStart = VecMath.rotate(interpStart.subtract(dstOff), portal.target.getWeirdQuat()).add(dstOff);
 						interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
+						interpReach = VecMath.rotate(interpReach, portal.target.getWeirdQuat());
 					} else {
 						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 						interpStart = interpStart.add(offset);
 					}
 					Vec3 istart = interpStart;
-//					Vec3 ireach = VecMath.rotate(interpReach, portal.getWeirdQuat());
 					Vec3 ireach = interpReach;
 					Vec3 iend = istart.add(ireach);
 
@@ -90,37 +90,4 @@ public class RaytraceHelper {
 			}
 		}
 	}
-// Unused
-//	/**
-//	 * Rotates a vector by a quaternion
-//	 *
-//	 * @param V The vector to be rotated
-//	 * @param Q The quaternion to rotate by
-//	 * @return The rotated vector
-//	 */
-//	public static Vec3 rotateQuat(Vec3 V, Quaternion Q) {
-//		Quaternion q = new Quaternion((float) V.x, (float) V.y, (float) V.z, 0.0f);
-//		Quaternion Q2 = Q.copy();
-//		q.mul(Q2);
-//		Q2.conj();
-//		Q2.mul(q);
-//		return new Vec3(Q2.i(), Q2.j(), Q2.k());
-//	}
-//
-//	/**
-//	 * Rotates a vector by the inverse of a quaternion
-//	 *
-//	 * @param V The vector to be rotated
-//	 * @param Q The quaternion to rotate by
-//	 * @return The rotated vector
-//	 */
-//	public static Vec3 rotateQuatReverse(Vec3 V, Quaternion Q) {
-//		Quaternion q = new Quaternion((float) V.x, (float) V.y, (float) V.z, 0.0f);
-//		Quaternion Q2 = Q.copy();
-//		Q2.conj();
-//		q.mul(Q2);
-//		Q2.conj();
-//		Q2.mul(q);
-//		return new Vec3(Q2.i(), Q2.j(), Q2.k());
-//	}
 }

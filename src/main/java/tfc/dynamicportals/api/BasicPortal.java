@@ -143,12 +143,11 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion getWeirdQuat() {
-		BasicPortal target = (BasicPortal) this.target;
 		Quaternion weird = Quaternion.ONE.copy();
 		if (this.rotation.x == 0) {
 			if (this.rotation.y == 0) {
-				weird.mul(new Quaternion(0, (float) Math.PI, 0, false));
-				//weird.mul(new Quaternion(0, 0,(float) -target.rotation.z, false));
+				//I need a 180 rotation around vertical axis of the portal
+				weird = new Vector3f(new Vec3(0, 1, 0).zRot((float) rotation.z)).rotationDegrees(180);
 			}
 		}
 		return weird;
@@ -157,22 +156,9 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public Quaternion raytraceRotation() {
 		Quaternion quat = Quaternion.ONE.copy();
-		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
-		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
-		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
-		
-		return quat;
-	}
-	
-	@Override
-	public Quaternion oppositeRaytraceRotation() {
-		Quaternion quat = Quaternion.ONE.copy();
-//		quat.mul(new Quaternion(1, 0, 0, 0));
-		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
-		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
-//		quat.mul(new Quaternion(1, 0, 0, 0));
+		quat.mul(new Quaternion(0, (float) -rotation.x, 0, false));
+		quat.mul(new Quaternion((float) -rotation.y, 0, 0, false));
+		quat.mul(new Quaternion(0, 0, (float) -rotation.z, false));
 		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
 		
 		return quat;
@@ -281,7 +267,7 @@ public class BasicPortal extends AbstractPortal {
 				}
 				
 				Quaternion srcQuat = raytraceRotation();
-				Quaternion dstQuat = target.oppositeRaytraceRotation();
+				Quaternion dstQuat = target.raytraceRotation();
 				Vec3 srcOff = raytraceOffset();
 				Vec3 dstOff = target.raytraceOffset();
 				Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
@@ -511,7 +497,7 @@ public class BasicPortal extends AbstractPortal {
 //			}
 			if (overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
 				Quaternion srcQuat = raytraceRotation();
-				Quaternion dstQuat = target.oppositeRaytraceRotation();
+				Quaternion dstQuat = target.raytraceRotation();
 				Vec3 srcOff = raytraceOffset();
 				Vec3 dstOff = target.raytraceOffset();
 				

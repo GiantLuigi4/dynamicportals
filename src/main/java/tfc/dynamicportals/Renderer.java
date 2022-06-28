@@ -115,19 +115,19 @@ public class Renderer {
 				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 				if (portal.requireTraceRotation()) {
 					Quaternion srcQuat = portal.raytraceRotation();
-					Quaternion dstQuat = portal.target.oppositeRaytraceRotation();
+					Quaternion dstQuat = portal.target.raytraceRotation();
 					Vec3 srcOff = portal.raytraceOffset();
 					Vec3 dstOff = portal.target.raytraceOffset();
-//					interpStart = interpStart.subtract(srcOff).add(srcOff);
 					interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+					interpStart = VecMath.rotate(interpStart.subtract(dstOff), portal.target.getWeirdQuat()).add(dstOff);
 					interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
+					interpReach = VecMath.rotate(interpReach, portal.target.getWeirdQuat());
 				} else {
 					Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 					interpStart = interpStart.add(offset);
 				}
 				istart = interpStart;
 				ireach = interpReach;
-//				ireach = VecMath.rotate(interpReach, portal.getWeirdQuat());
 				iend = istart.add(ireach);
 				double size = 0.01;
 				positions.clear();
@@ -167,7 +167,7 @@ public class Renderer {
 				forceDraw(source);
 			}
 		}
-
+		
 		// setup matrix
 		portal.setupMatrix(stack);
 		

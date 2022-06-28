@@ -103,12 +103,6 @@ public abstract class AbstractPortal {
 	public abstract Quaternion getWeirdQuat();
 	
 	/**
-	 * @return the opposite of {@link #raytraceRotation()}
-	 */
-	// TODO: it's the same as raytraceRotation
-	public abstract Quaternion oppositeRaytraceRotation();
-	
-	/**
 	 * @return whether or not the raytrace rotation needs to be rotated
 	 * if the portal is rotated to face the opposite direction of the target portal, the look vector does not need rotation
 	 */
