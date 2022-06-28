@@ -3,10 +3,7 @@ package tfc.dynamicportals.api;
 import com.jozufozu.flywheel.repack.joml.Vector2d;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3d;
-import com.mojang.math.Vector4f;
+import com.mojang.math.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -80,22 +77,46 @@ public class BasicPortal extends AbstractPortal {
 			compNorm = _computeNormal();
 			
 			if (size != null) {
-				// setup quaternion
-				// THIS WORKS SOMEHOW
-				Quaternion quaternion = Quaternion.ONE.copy();
-				quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-				quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
-				quaternion.mul(new Quaternion(1, 0, 0, 0));
+//				// setup quaternion
+//				// THIS WORKS SOMEHOW
+//				Quaternion quaternion = Quaternion.ONE.copy();
+//				quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+//				quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
+//				quaternion.mul(new Quaternion(0, 0, 1, 0));
 //				quaternion.mul(new Quaternion(0, 180, 0, true));
-				quaternion.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-				// transform
-				Quaternion[] quats = new Quaternion[]{
-						new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
-						new Quaternion((float) -(size.x / 2), (float) size.y, 0, 0),
-						new Quaternion((float) -(size.x / 2), 0, 0, 0),
-						new Quaternion((float) (size.x / 2), 0, 0, 0),
+//				quaternion.mul(new Quaternion((float) -rotation.y, 0, 0, false));
+//				// transform
+//				Quaternion[] quats = new Quaternion[]{
+//						new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
+//						new Quaternion((float) -(size.x / 2), (float) size.y, 0, 0),
+//						new Quaternion((float) -(size.x / 2), 0, 0, 0),
+//						new Quaternion((float) (size.x / 2), 0, 0, 0),
+//				};
+//
+//				double nx = Double.POSITIVE_INFINITY;
+//				double ny = Double.POSITIVE_INFINITY;
+//				double nz = Double.POSITIVE_INFINITY;
+//
+//				double px = Double.NEGATIVE_INFINITY;
+//				double py = Double.NEGATIVE_INFINITY;
+//				double pz = Double.NEGATIVE_INFINITY;
+//				for (Quaternion point : quats) {
+//					Quaternion quat = quaternion.copy();
+//					point.mul(quat);
+//					quat.conj();
+//					quat.mul(point);
+//					nx = Math.min(nx, quat.i());
+//					ny = Math.min(ny, quat.j());
+//					nz = Math.min(nz, quat.k());
+//
+//					px = Math.max(px, quat.i());
+//					py = Math.max(py, quat.j());
+//					pz = Math.max(pz, quat.k());
+//				}
+				Quad qd = makeQuad();
+				Vec3[] vecs = new Vec3[]{
+						qd.pt0, qd.pt1, qd.pt2, qd.pt3
 				};
-				
 				double nx = Double.POSITIVE_INFINITY;
 				double ny = Double.POSITIVE_INFINITY;
 				double nz = Double.POSITIVE_INFINITY;
@@ -103,22 +124,18 @@ public class BasicPortal extends AbstractPortal {
 				double px = Double.NEGATIVE_INFINITY;
 				double py = Double.NEGATIVE_INFINITY;
 				double pz = Double.NEGATIVE_INFINITY;
-				for (Quaternion point : quats) {
-					Quaternion quat = quaternion.copy();
-					point.mul(quat);
-					quat.conj();
-					quat.mul(point);
-					nx = Math.min(nx, quat.i());
-					ny = Math.min(ny, quat.j());
-					nz = Math.min(nz, quat.k());
+				for (Vec3 vec : vecs) {
+					nx = Math.min(vec.x, nx);
+					ny = Math.min(vec.y, ny);
+					nz = Math.min(vec.z, nz);
 					
-					px = Math.max(px, quat.i());
-					py = Math.max(py, quat.j());
-					pz = Math.max(pz, quat.k());
+					px = Math.max(vec.x, px);
+					py = Math.max(vec.y, py);
+					pz = Math.max(vec.z, pz);
 				}
 				box = new AABB(
-						position.x + nx, position.y + ny, position.z - nz,
-						position.x + px, position.y + py, position.z - pz
+						position.x + nx, position.y + ny, position.z + nz,
+						position.x + px, position.y + py, position.z + pz
 				);
 			}
 		}
@@ -188,14 +205,14 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	protected Vec3 _computeNormal() {
-//		Quaternion quaternion = raytraceRotation();
-		Quaternion quaternion = Quaternion.ONE.copy();
-		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
-		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
-		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		
-		Vec3 vec = VecMath.rotate(new Vec3(0, 0, 1), quaternion);
-		return vec;
+////		Quaternion quaternion = raytraceRotation();
+//		Quaternion quaternion = Quaternion.ONE.copy();
+//		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
+//		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
+//		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+//
+//		Vec3 vec = VecMath.rotate(new Vec3(0, 0, 1), quaternion);
+//		return vec;
 
 //		Vector3f portalPos = new Vector3f((float) position.x, (float) position.y, (float) position.z);
 ////		Vector3f a = portalPos.copy();
@@ -224,15 +241,21 @@ public class BasicPortal extends AbstractPortal {
 //		b.transform(matrix3f);
 //		c.transform(matrix3f);
 //		d.transform(matrix3f);
-//
-//		Vector3f first = b.copy();
-//		first.sub(d);
-//		Vector3f second = c.copy();
-//		second.sub(d);
-//
-//		first.cross(second);
-//		first.normalize();
-//		return new Vec3(first.x(), first.y(), first.z());
+		
+		Quad qd = makeQuad();
+		Vector3f a = new Vector3f((float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z);
+		Vector3f b = new Vector3f((float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z);
+		Vector3f c = new Vector3f((float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z);
+		Vector3f d = new Vector3f((float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z);
+		
+		Vector3f first = b.copy();
+		first.sub(d);
+		Vector3f second = c.copy();
+		second.sub(d);
+		
+		first.cross(second);
+		first.normalize();
+		return new Vec3(first.x(), first.y(), first.z());
 	}
 	
 	public void computeNormal() {
@@ -244,36 +267,27 @@ public class BasicPortal extends AbstractPortal {
 		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 		
 		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
-			if (Minecraft.getInstance().options.renderDebug) {
+			if (Minecraft.getInstance().options.renderDebug) {                    /* normal vec debug */
+				// absolute position
+				stack.pushPose();
+				stack.translate(0, (float) size.y / 2, 0);
+				stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+				stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+				stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+				
+				// draw
 				if (normal != null) {
-					/* normal vec debug */
-					// absolute position
-					stack.pushPose();
-					stack.translate(0, (float) size.y / 2, 0);
-					stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-					stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
-					
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
 					consumer.vertex(stack.last().pose(), (float) normal.x(), (float) normal.y(), (float) normal.z()).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
-					stack.popPose();
-				} else {
-					if (compNorm != null) {
-						/* normal vec debug */
-						// absolute position
-						stack.pushPose();
-						stack.translate(0, (float) size.y / 2, 0);
-						stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-						stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-						stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
-						
-						consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
-						consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
-						
-						stack.popPose();
-					}
+				} else if (compNorm != null) {
+					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
+					consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
+					
 				}
 				
+				stack.popPose();
+				
+				// left vector
 				Vec3 norm = compNorm;
 				if (norm == null) norm = normal;
 				if (norm != null) {
@@ -298,10 +312,7 @@ public class BasicPortal extends AbstractPortal {
 			
 			/* debug frustum culling box */
 			stack.pushPose();
-
-//			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-//			stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
-//			stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+			
 			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
