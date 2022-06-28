@@ -181,7 +181,15 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion getWeirdQuat() {
-		return raytraceRotation();
+		BasicPortal target = (BasicPortal) this.target;
+		Quaternion weird = Quaternion.ONE.copy();
+		if (this.rotation.x == 0) {
+			if (this.rotation.y == 0) {
+				weird.mul(new Quaternion(0, (float) Math.PI, 0, false));
+				//weird.mul(new Quaternion(0, 0,(float) -target.rotation.z, false));
+			}
+		}
+		return weird;
 	}
 	
 	@Override
