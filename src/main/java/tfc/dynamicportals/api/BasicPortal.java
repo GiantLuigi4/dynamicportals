@@ -83,10 +83,11 @@ public class BasicPortal extends AbstractPortal {
 				// setup quaternion
 				// THIS WORKS SOMEHOW
 				Quaternion quaternion = Quaternion.ONE.copy();
-				quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
 				quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-				quaternion.mul(new Quaternion(0, 180, 0, true));
 				quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
+				quaternion.mul(new Quaternion(1, 0, 0, 0));
+//				quaternion.mul(new Quaternion(0, 180, 0, true));
+				quaternion.mul(new Quaternion((float) -rotation.y, 0, 0, false));
 				// transform
 				Quaternion[] quats = new Quaternion[]{
 						new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
@@ -203,10 +204,15 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	protected Vec3 _computeNormal() {
-		Quaternion quaternion = raytraceRotation();
+//		Quaternion quaternion = raytraceRotation();
+		Quaternion quaternion = Quaternion.ONE.copy();
+		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
+		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
+		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+		
 		Vec3 vec = VecMath.rotate(new Vec3(0, 0, 1), quaternion);
 		return vec;
-		
+
 //		Vector3f portalPos = new Vector3f((float) position.x, (float) position.y, (float) position.z);
 ////		Vector3f a = portalPos.copy();
 ////		a.add((float) -portal.size.x / 2, (float) portal.size.y, 0);
@@ -454,7 +460,7 @@ public class BasicPortal extends AbstractPortal {
 //		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 //		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 //		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-		stack.mulPose(raytraceRotation());
+		stack.mulPose(quadQuat());
 		stack.translate(-position.x, -position.y, -position.z);
 		// copy to vec4
 		Vector4f startVec = new Vector4f((float) start.x, (float) start.y, (float) start.z, 1);
@@ -524,8 +530,16 @@ public class BasicPortal extends AbstractPortal {
 		return compNorm == null || compNorm.dot(new Vec3((camX - position.x), (camY - position.y), (camZ - position.z))) > 0;
 	}
 	
+	Quaternion quadQuat() {
+		Quaternion quaternion = Quaternion.ONE.copy();
+		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
+		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
+		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+		return quaternion;
+	}
+	
 	protected Quad makeQuad() {
-		Quaternion rotation = raytraceRotation();
+		Quaternion rotation = quadQuat();
 		Vec3 vec0 = new Vec3(-size.x / 2, 0, 0);
 		vec0 = VecMath.rotate(vec0, rotation);
 		Vec3 vec1 = new Vec3(size.x / 2, 0, 0);
