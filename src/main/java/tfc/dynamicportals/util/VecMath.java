@@ -36,6 +36,7 @@ public class VecMath {
 				pos = pos.multiply(1, 1, -1);
 			}
 			pos = VecMath.rotate(pos, otherRotConj);
+//			pos = VecMath.rotate(pos, new Quaternion(0, 1, 0, 0));
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);

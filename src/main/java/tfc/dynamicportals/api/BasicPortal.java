@@ -77,46 +77,9 @@ public class BasicPortal extends AbstractPortal {
 			compNorm = _computeNormal();
 			
 			if (size != null) {
-//				// setup quaternion
-//				// THIS WORKS SOMEHOW
-//				Quaternion quaternion = Quaternion.ONE.copy();
-//				quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-//				quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
-//				quaternion.mul(new Quaternion(0, 0, 1, 0));
-//				quaternion.mul(new Quaternion(0, 180, 0, true));
-//				quaternion.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-//				// transform
-//				Quaternion[] quats = new Quaternion[]{
-//						new Quaternion((float) (size.x / 2), (float) size.y, 0, 0),
-//						new Quaternion((float) -(size.x / 2), (float) size.y, 0, 0),
-//						new Quaternion((float) -(size.x / 2), 0, 0, 0),
-//						new Quaternion((float) (size.x / 2), 0, 0, 0),
-//				};
-//
-//				double nx = Double.POSITIVE_INFINITY;
-//				double ny = Double.POSITIVE_INFINITY;
-//				double nz = Double.POSITIVE_INFINITY;
-//
-//				double px = Double.NEGATIVE_INFINITY;
-//				double py = Double.NEGATIVE_INFINITY;
-//				double pz = Double.NEGATIVE_INFINITY;
-//				for (Quaternion point : quats) {
-//					Quaternion quat = quaternion.copy();
-//					point.mul(quat);
-//					quat.conj();
-//					quat.mul(point);
-//					nx = Math.min(nx, quat.i());
-//					ny = Math.min(ny, quat.j());
-//					nz = Math.min(nz, quat.k());
-//
-//					px = Math.max(px, quat.i());
-//					py = Math.max(py, quat.j());
-//					pz = Math.max(pz, quat.k());
-//				}
 				Quad qd = makeQuad();
-				Vec3[] vecs = new Vec3[]{
-						qd.pt0, qd.pt1, qd.pt2, qd.pt3
-				};
+				// easier to iterate over a list
+				Vec3[] vecs = new Vec3[]{qd.pt0, qd.pt1, qd.pt2, qd.pt3};
 				double nx = Double.POSITIVE_INFINITY;
 				double ny = Double.POSITIVE_INFINITY;
 				double nz = Double.POSITIVE_INFINITY;
@@ -146,8 +109,7 @@ public class BasicPortal extends AbstractPortal {
 		return this;
 	}
 	
-	@Override
-	public boolean requireTraceRotation() {
+	public boolean requiresTraceRotation() {
 		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
 		if (target instanceof BasicPortal) {
 			//Rounding because doubles are bad in binary
@@ -186,62 +148,29 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion raytraceRotation() {
-		Quaternion rot = Quaternion.ONE.copy();
-		rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-		rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-		rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
-		if (target == this) rot.mul(new Quaternion(0, 90, 0, true)); //didn't test this mirror thingy
-		return rot;
+		Quaternion quat = Quaternion.ONE.copy();
+		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
+		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
+		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
+		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
+		
+		return quat;
 	}
 	
 	@Override
 	public Quaternion oppositeRaytraceRotation() {
-		Quaternion rot = Quaternion.ONE.copy();
-		rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-		rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-		rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
-		if (target == this) rot.mul(new Quaternion(0, 90, 0, true)); //didn't test this mirror thingy
-		return rot;
+		Quaternion quat = Quaternion.ONE.copy();
+//		quat.mul(new Quaternion(1, 0, 0, 0));
+		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
+		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
+		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
+//		quat.mul(new Quaternion(1, 0, 0, 0));
+		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
+		
+		return quat;
 	}
 	
 	protected Vec3 _computeNormal() {
-////		Quaternion quaternion = raytraceRotation();
-//		Quaternion quaternion = Quaternion.ONE.copy();
-//		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
-//		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
-//		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-//
-//		Vec3 vec = VecMath.rotate(new Vec3(0, 0, 1), quaternion);
-//		return vec;
-
-//		Vector3f portalPos = new Vector3f((float) position.x, (float) position.y, (float) position.z);
-////		Vector3f a = portalPos.copy();
-////		a.add((float) -portal.size.x / 2, (float) portal.size.y, 0);
-//		Vector3f b = portalPos.copy();
-//		b.add((float) size.x / 2, (float) size.y, 0);
-//		Vector3f c = portalPos.copy();
-//		c.add((float) -size.x / 2, 0, 0);
-//		Vector3f d = portalPos.copy();
-//		d.add((float) size.x / 2, 0, 0);
-//
-//		Matrix3f matrix3f = new Matrix3f();
-//		matrix3f.setIdentity();
-////		matrix3f.mul(new Quaternion((float) rotation.y, 0, 0, false));
-////		matrix3f.mul(new Quaternion(0, (float) rotation.x, 0, false));
-//		{
-////			Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
-////			Quaternion second = new Quaternion(0, (float) rotation.x, 0, false);
-////			second.mul(first);
-////			matrix3f.mul(second);
-//			Quaternion quaternion = raytraceRotation();
-//			quaternion.mul(new Quaternion(0, -90, 0, true));
-//			matrix3f.mul(quaternion);
-//		}
-////		a.transform(matrix3f);
-//		b.transform(matrix3f);
-//		c.transform(matrix3f);
-//		d.transform(matrix3f);
-		
 		Quad qd = makeQuad();
 		Vector3f a = new Vector3f((float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z);
 		Vector3f b = new Vector3f((float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z);
@@ -275,19 +204,17 @@ public class BasicPortal extends AbstractPortal {
 				stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 				stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 				
-				// draw
+				// draw normal vector
 				if (normal != null) {
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
 					consumer.vertex(stack.last().pose(), (float) normal.x(), (float) normal.y(), (float) normal.z()).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
 				} else if (compNorm != null) {
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
 					consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
-					
 				}
 				
 				stack.popPose();
 				
-				// left vector
 				Vec3 norm = compNorm;
 				if (norm == null) norm = normal;
 				if (norm != null) {
@@ -298,10 +225,12 @@ public class BasicPortal extends AbstractPortal {
 					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 					stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 					
-					Quaternion quaternion = raytraceRotation();
-					// lorenzo wanted this
+					Quaternion quaternion = quadQuat();
+					// luigi: lorenzo wanted this
 					
 					//WHAT DO YOU MEAN I DON'T EVEN KNOW WHAT THIS IS
+					// luigi: https://cdn.discordapp.com/attachments/988184753255624774/991124702196154419/unknown.png
+					// left vector
 					Vec3 vec = VecMath.rotate(new Vec3(1, 0, 0), quaternion);
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
 					consumer.vertex(stack.last().pose(), (float) vec.x, (float) vec.y, (float) vec.z).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
@@ -375,13 +304,6 @@ public class BasicPortal extends AbstractPortal {
 				LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
 			stack.popPose();
 		}
-
-//		LevelRenderer.renderLineBox(
-//				stack, consumer,
-//				-size.x / 2, 0, 0,
-//				size.x / 2, size.y, 0,
-//				1, 1, 1, 1
-//		);
 	}
 	
 	@Override
@@ -410,17 +332,13 @@ public class BasicPortal extends AbstractPortal {
 		boolean isMirror = target == this;
 		Vector3d position = this.position;
 		Vec3 rotation = this.rotation;
-		// TODO: figure out vertical rotation
 		// rotate
 		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
 		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
-//		if (isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
-		// TODO: I'm not sure where this 180 is coming from
-//		if (DynamicPortals.isRotate180Needed()) stack.mulPose(new Quaternion(0, 180, 0, true));
+		if (isMirror) stack.mulPose(new Quaternion(0, 180, 0, true));
+		// I don't really know why mirrors need this rotation
 		// translate
-//		stack.mulPose(new Quaternion(0, 90, 180, true));
-//		stack.translate(0, -2, 0);
 		stack.translate(-position.x, -position.y, isMirror ? position.z : -position.z);
 		// mirror
 		if (isMirror) stack.scale(1, 1, -1);
