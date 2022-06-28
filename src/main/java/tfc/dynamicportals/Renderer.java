@@ -118,7 +118,6 @@ public class Renderer {
 					Quaternion dstQuat = portal.target.oppositeRaytraceRotation();
 					Vec3 srcOff = portal.raytraceOffset();
 					Vec3 dstOff = portal.target.raytraceOffset();
-					interpStart = VecMath.rotate(interpStart.subtract(srcOff), portal.getWeirdQuat()).add(srcOff);
 					interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
 					interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 				} else {
@@ -126,7 +125,7 @@ public class Renderer {
 					interpStart = interpStart.add(offset);
 				}
 				istart = interpStart;
-				ireach = VecMath.rotate(interpReach, portal.getWeirdQuat());
+				ireach = interpReach;
 				iend = istart.add(ireach);
 				double size = 0.01;
 				positions.clear();
