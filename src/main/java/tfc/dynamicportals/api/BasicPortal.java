@@ -161,83 +161,68 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public Quaternion raytraceRotation() {
 		Quaternion quat = Quaternion.ONE.copy();
+		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
 		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
-		quat.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-		quat.mul(new Quaternion(0, 180, 0, true));
 		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
-//		Quaternion quat;
-//		Quaternion first = new Quaternion((float) rotation.y, 0, 0, false);
-//		Quaternion second = new Quaternion(0, (float) -rotation.x, 0, false);
-//		Quaternion third = new Quaternion(0, 0, (float) rotation.z, false);
-//		quat = first;
-////		first.mul(second);
-//		quat.mul(second);
-//		quat.mul(third);
 		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
-
-//		quat.mul(second);
-//		quat.mul(first);
-//		quat = new Quaternion(0,0,0,false);
+		
 		return quat;
-//		return Quaternion.fromXYZ((float) -rotation.y, (float) -rotation.x, 0);
 	}
 	
 	@Override
 	public Quaternion oppositeRaytraceRotation() {
-		
 		Quaternion quat = Quaternion.ONE.copy();
-		quat.mul(new Quaternion((float) -rotation.y, 0, 0, false));
+//		quat.mul(new Quaternion(1, 0, 0, 0));
 		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		Quaternion q = new Quaternion(0, 180, 0, true); q.conj();
-		quat.mul(q);
-		quat.mul(new Quaternion(0, 0, (float) -rotation.z, false));
-//		Quaternion quat;
-//		Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
-//		Quaternion second = new Quaternion(0, (float) rotation.x, 0, false);
-//		Quaternion third = new Quaternion(0, 0, (float) -rotation.z, false);
-//		quat = first;
-////		first.mul(second);
-//		quat.mul(second);
-//		quat.mul(third);
+		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
+		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
+//		quat.mul(new Quaternion(1, 0, 0, 0));
 		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
 		
 		return quat;
 	}
 	
 	protected Vec3 _computeNormal() {
-		Vector3f portalPos = new Vector3f((float) position.x, (float) position.y, (float) position.z);
-//		Vector3f a = portalPos.copy();
-//		a.add((float) -portal.size.x / 2, (float) portal.size.y, 0);
-		Vector3f b = portalPos.copy();
-		b.add((float) size.x / 2, (float) size.y, 0);
-		Vector3f c = portalPos.copy();
-		c.add((float) -size.x / 2, 0, 0);
-		Vector3f d = portalPos.copy();
-		d.add((float) size.x / 2, 0, 0);
+		Quaternion quaternion = raytraceRotation();
+		Vec3 vec = VecMath.rotate(new Vec3(0, 0, 1), quaternion);
+		return vec;
 		
-		Matrix3f matrix3f = new Matrix3f();
-		matrix3f.setIdentity();
-//		matrix3f.mul(new Quaternion((float) rotation.y, 0, 0, false));
-//		matrix3f.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		{
-			Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
-			Quaternion second = new Quaternion(0, (float) rotation.x, 0, false);
-			second.mul(first);
-			matrix3f.mul(second);
-		}
-//		a.transform(matrix3f);
-		b.transform(matrix3f);
-		c.transform(matrix3f);
-		d.transform(matrix3f);
-		
-		Vector3f first = b.copy();
-		first.sub(d);
-		Vector3f second = c.copy();
-		second.sub(d);
-		
-		first.cross(second);
-		first.normalize();
-		return new Vec3(first.x(), first.y(), first.z());
+//		Vector3f portalPos = new Vector3f((float) position.x, (float) position.y, (float) position.z);
+////		Vector3f a = portalPos.copy();
+////		a.add((float) -portal.size.x / 2, (float) portal.size.y, 0);
+//		Vector3f b = portalPos.copy();
+//		b.add((float) size.x / 2, (float) size.y, 0);
+//		Vector3f c = portalPos.copy();
+//		c.add((float) -size.x / 2, 0, 0);
+//		Vector3f d = portalPos.copy();
+//		d.add((float) size.x / 2, 0, 0);
+//
+//		Matrix3f matrix3f = new Matrix3f();
+//		matrix3f.setIdentity();
+////		matrix3f.mul(new Quaternion((float) rotation.y, 0, 0, false));
+////		matrix3f.mul(new Quaternion(0, (float) rotation.x, 0, false));
+//		{
+////			Quaternion first = new Quaternion((float) -rotation.y, 0, 0, false);
+////			Quaternion second = new Quaternion(0, (float) rotation.x, 0, false);
+////			second.mul(first);
+////			matrix3f.mul(second);
+//			Quaternion quaternion = raytraceRotation();
+//			quaternion.mul(new Quaternion(0, -90, 0, true));
+//			matrix3f.mul(quaternion);
+//		}
+////		a.transform(matrix3f);
+//		b.transform(matrix3f);
+//		c.transform(matrix3f);
+//		d.transform(matrix3f);
+//
+//		Vector3f first = b.copy();
+//		first.sub(d);
+//		Vector3f second = c.copy();
+//		second.sub(d);
+//
+//		first.cross(second);
+//		first.normalize();
+//		return new Vec3(first.x(), first.y(), first.z());
 	}
 	
 	public void computeNormal() {
@@ -332,6 +317,30 @@ public class BasicPortal extends AbstractPortal {
 							0, 0, 1, 1
 					);
 				}
+				
+				Quaternion srcQuat = raytraceRotation();
+				Quaternion dstQuat = target.oppositeRaytraceRotation();
+				Vec3 srcOff = raytraceOffset();
+				Vec3 dstOff = target.raytraceOffset();
+				Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
+				Vec3 srcPos = pos1;
+				pos1 = VecMath.old_transform(pos1, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
+				
+				box = box.move(-srcPos.x, -srcPos.y, -srcPos.z);
+				box = box.move(pos1.x, pos1.y, pos1.z);
+				
+				stack.pushPose();
+				stack.translate(-position.x, -position.y, -position.z);
+				LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
+				center = box.getCenter();
+				Vec3 motion = VecMath.old_transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, false, true, Vec3.ZERO, Vec3.ZERO);
+				
+				stack.translate(center.x, center.y, center.z);
+				consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
+				stack.scale(10, 10, 10);
+				consumer.vertex(stack.last().pose(), (float) motion.x, (float) motion.y, (float) motion.z).color(0, 0, 0, 1).normal(0, 0, 0).endVertex();
+				
+				stack.popPose();
 			}
 			
 			stack.translate(-position.x, -position.y, -position.z);
@@ -366,7 +375,7 @@ public class BasicPortal extends AbstractPortal {
 		// translate
 		stack.translate(position.x, position.y, position.z);
 		// rotate
-		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
 		stack.mulPose(new Quaternion(0, 0, (float) -rotation.z, false));
 	}
@@ -378,9 +387,9 @@ public class BasicPortal extends AbstractPortal {
 		Vec3 rotation = this.rotation;
 		// TODO: figure out vertical rotation
 		// rotate
-		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 //		if (isMirror) stack.mulPose(new Quaternion(0, 90, 0, true));
 		// TODO: I'm not sure where this 180 is coming from
 //		if (DynamicPortals.isRotate180Needed()) stack.mulPose(new Quaternion(0, 180, 0, true));
@@ -418,9 +427,10 @@ public class BasicPortal extends AbstractPortal {
 	public double trace(Vec3 start, Vec3 end) {
 		// setup a matrix stack
 		PoseStack stack = new PoseStack();
-		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+//		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+//		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+//		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+		stack.mulPose(raytraceRotation());
 		stack.translate(-position.x, -position.y, -position.z);
 		// copy to vec4
 		Vector4f startVec = new Vector4f((float) start.x, (float) start.y, (float) start.z, 1);
