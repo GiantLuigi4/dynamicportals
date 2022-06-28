@@ -119,15 +119,6 @@ public class Renderer {
 					Quaternion dstQuat = portal.target.oppositeRaytraceRotation();
 					Vec3 srcOff = portal.raytraceOffset();
 					Vec3 dstOff = portal.target.raytraceOffset();
-					
-					Vec3 drawnInterpStart = interpStart.subtract(srcOff);
-					LevelRenderer.renderLineBox(
-							stack, consumer,
-							drawnInterpStart.x - 0.01, drawnInterpStart.y - 0.01, drawnInterpStart.z - 0.01,
-							drawnInterpStart.x + 0.01, drawnInterpStart.y + 0.01, drawnInterpStart.z + 0.01,
-							1, 1, 1, 1
-					);
-					
 					interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
 					interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 				} else {
@@ -138,16 +129,16 @@ public class Renderer {
 				ireach = interpReach;
 				iend = istart.add(ireach);
 				double size = 0.1;
-				
-				if (positions.size() < 100 && rand.nextInt(100) % 20 == 0)
-					positions.add(istart);
-				if (positions.size() >= 100) {
-					positions.clear();
-				}
+//				positions.clear();
+//				if (positions.size() < 100 && rand.nextInt(100) % 20 == 0)
+//					positions.add(istart);
+//				if (positions.size() >= 100) {
+//					positions.remove(0);
+//				}
 //				for (Vec3 v : positions) {
 //					LevelRenderer.renderLineBox(
 //							stack, consumer,
-//							v.x - size, v.y - size, v.z - size,
+//							v.x, v.y, v.z,
 //							v.x + size, v.y + size, v.z + size,
 //							1, 1, 1, 1
 //					);
@@ -159,7 +150,14 @@ public class Renderer {
 						istart.x + size, istart.y + size, istart.z + size,
 						1, 0, 1, 1
 				);
-				
+//
+//				LevelRenderer.renderLineBox(
+//						stack, consumer,
+//						iend.x, iend.y, iend.z,
+//						iend.x + size, iend.y + size, iend.z + size,
+//						1, 0, 0, 1
+//				);
+//
 				forceDraw(source);
 			}
 		}
