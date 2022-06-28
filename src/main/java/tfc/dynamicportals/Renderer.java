@@ -118,6 +118,7 @@ public class Renderer {
 					Quaternion dstQuat = portal.target.oppositeRaytraceRotation();
 					Vec3 srcOff = portal.raytraceOffset();
 					Vec3 dstOff = portal.target.raytraceOffset();
+//					interpStart = interpStart.subtract(srcOff).add(srcOff);
 					interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
 					interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 				} else {
@@ -126,6 +127,7 @@ public class Renderer {
 				}
 				istart = interpStart;
 				ireach = interpReach;
+//				ireach = VecMath.rotate(interpReach, portal.getWeirdQuat());
 				iend = istart.add(ireach);
 				double size = 0.01;
 				positions.clear();
@@ -166,9 +168,6 @@ public class Renderer {
 			}
 		}
 
-//		// TODO: move this off the main thread
-//		updatePortal(portal, a.last().pose(), RenderSystem.getProjectionMatrix());
-		
 		// setup matrix
 		portal.setupMatrix(stack);
 		
