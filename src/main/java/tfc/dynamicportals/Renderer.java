@@ -141,17 +141,17 @@ public class Renderer {
 				
 				if (positions.size() < 100 && rand.nextInt(100) % 20 == 0)
 					positions.add(istart);
-//				if (positions.size() >= 100) {
-//					positions.clear();
-//				}
-				for (Vec3 v : positions) {
-					LevelRenderer.renderLineBox(
-							stack, consumer,
-							v.x - size, v.y - size, v.z - size,
-							v.x + size, v.y + size, v.z + size,
-							1, 1, 1, 1
-					);
+				if (positions.size() >= 100) {
+					positions.clear();
 				}
+//				for (Vec3 v : positions) {
+//					LevelRenderer.renderLineBox(
+//							stack, consumer,
+//							v.x - size, v.y - size, v.z - size,
+//							v.x + size, v.y + size, v.z + size,
+//							1, 1, 1, 1
+//					);
+//				}
 
 				LevelRenderer.renderLineBox(
 						stack, consumer,

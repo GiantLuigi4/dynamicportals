@@ -161,9 +161,17 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public Quaternion raytraceRotation() {
 		Quaternion quat = Quaternion.ONE.copy();
-		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
-		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
+		if (rotation.x == 0 && rotation.y == 0) {
+			quat.mul(new Quaternion(0, 0, (float) -rotation.z, false));
+		} else if (rotation.x==0 && rotation.z==0) {
+			quat.mul(new Quaternion((float) -rotation.y, 0, 0, false));
+		} else if (rotation.y==0 && rotation.z==0) {
+			quat.mul(new Quaternion(0, (float) -rotation.x, 0, false));
+		} else {
+			quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
+			quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
+			quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
+		}
 		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
 		
 		return quat;
@@ -171,15 +179,15 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion oppositeRaytraceRotation() {
-		Quaternion quat = Quaternion.ONE.copy();
-//		quat.mul(new Quaternion(1, 0, 0, 0));
-		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
-		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
-//		quat.mul(new Quaternion(1, 0, 0, 0));
-		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
+//		Quaternion quat = Quaternion.ONE.copy();
+////		quat.mul(new Quaternion(1, 0, 0, 0));
+//		quat.mul(new Quaternion(0, (float) rotation.x, 0, false));
+//		quat.mul(new Quaternion((float) rotation.y, 0, 0, false));
+//		quat.mul(new Quaternion(0, 0, (float) rotation.z, false));
+////		quat.mul(new Quaternion(1, 0, 0, 0));
+//		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
 		
-		return quat;
+		return this.raytraceRotation();
 	}
 	
 	protected Vec3 _computeNormal() {
@@ -276,6 +284,8 @@ public class BasicPortal extends AbstractPortal {
 					
 					Quaternion quaternion = raytraceRotation();
 					// lorenzo wanted this
+					
+					//WHAT DO YOU MEAN I DON'T EVEN KNOW WHAT THIS IS
 					Vec3 vec = VecMath.rotate(new Vec3(1, 0, 0), quaternion);
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
 					consumer.vertex(stack.last().pose(), (float) vec.x, (float) vec.y, (float) vec.z).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
