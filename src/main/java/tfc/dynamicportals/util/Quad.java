@@ -64,8 +64,7 @@ public class Quad {
 	
 	boolean absGreatest(double v0, double v1, double v2) {
 		v0 = Math.abs(v0);
-		if (v0 > Math.abs(v1) && v0 > Math.abs(v2)) return true;
-		return false;
+		return v0 > Math.abs(v1) && v0 > Math.abs(v2);
 	}
 	
 	public Vec3 getNearest(Vec3 center) {

@@ -1,23 +1,15 @@
 package tfc.dynamicportals.vanilla;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
-import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.Renderer;
@@ -25,7 +17,6 @@ import tfc.dynamicportals.api.BasicPortal;
 import tfc.dynamicportals.util.RenderTypes;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class EndPortal extends BasicPortal {
 	public EndPortal(UUID uuid) {

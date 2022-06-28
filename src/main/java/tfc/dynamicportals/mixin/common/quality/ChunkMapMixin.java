@@ -32,6 +32,7 @@ public abstract class ChunkMapMixin {
 	@Shadow
 	int viewDistance;
 	AbstractPortal[] portals;
+	boolean success = false;
 	@Shadow
 	@Final
 	private Int2ObjectMap<ChunkMap.TrackedEntity> entityMap;
@@ -137,7 +138,7 @@ public abstract class ChunkMapMixin {
 			for (int z = -viewDistance; z <= viewDistance; z++) {
 				ChunkPos pos = new ChunkPos(center.x + x, center.z + z);
 				if (tracked.contains(pos)) continue;
-				
+
 //				Vec3 chunkPos = new Vec3(pos.x, 0, pos.z);
 //
 //				// TODO: this distance check breaks everything
@@ -191,8 +192,6 @@ public abstract class ChunkMapMixin {
 	public void preLoadChunk(ServerPlayer pPlaer, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, LevelChunk pChunk, CallbackInfo ci) {
 		success = true;
 	}
-	
-	boolean success = false;
 	
 	@Inject(at = @At("HEAD"), method = "updateChunkTracking", cancellable = true)
 	public void preUpdateTracking(ServerPlayer pPlayer, ChunkPos pChunkPos, MutableObject<ClientboundLevelChunkWithLightPacket> pPacketCache, boolean pWasLoaded, boolean pLoad, CallbackInfo ci) {

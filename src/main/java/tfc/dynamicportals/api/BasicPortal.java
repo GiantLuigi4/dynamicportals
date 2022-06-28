@@ -163,33 +163,17 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	@Override
-	//NOT FINISHED AT ALL DO NOT TOUCH PLZZDZDZDISJID
+	public Quaternion getWeirdQuat() {
+		return raytraceRotation();
+	}
+	
+	@Override
 	public Quaternion raytraceRotation() {
 		Quaternion rot = Quaternion.ONE.copy();
-		if (rotation.z == 0) {
-			if (rotation.x == 0 && rotation.y != 0) {
-				rot.mul(new Quaternion(0, (float) rotation.y, 0, false));
-			} else if (rotation.x != 0 && rotation.y == 0) {
-				rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-			} else {
-				rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-				rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-			}
-		} else {
-			if (rotation.x == 0 && rotation.y == 0) {
-				rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
-			} else if (rotation.x == 0) {
-				rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-				rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
-			} else if (rotation.y == 0) {
-				rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-				rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
-			} else {
-				rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-				rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-				rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
-			}
-		}
+		rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
+		rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
+		rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
+		if (target == this) rot.mul(new Quaternion(0, 90, 0, true)); //didn't test this mirror thingy
 		return rot;
 	}
 	

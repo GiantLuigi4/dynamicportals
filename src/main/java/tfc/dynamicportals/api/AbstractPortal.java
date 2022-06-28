@@ -1,6 +1,5 @@
 package tfc.dynamicportals.api;
 
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -12,7 +11,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import tfc.dynamicportals.DynamicPortals;
 import tfc.dynamicportals.util.RenderTypes;
 
 import java.util.UUID;
@@ -102,11 +100,12 @@ public abstract class AbstractPortal {
 	 */
 	public abstract Quaternion raytraceRotation();
 	
+	public abstract Quaternion getWeirdQuat();
+	
 	/**
 	 * @return the opposite of {@link #raytraceRotation()}
 	 */
-	// TODO: default implementation for this
-	// y,-x,z->-y,-x,-z
+	// TODO: it's the same as raytraceRotation
 	public abstract Quaternion oppositeRaytraceRotation();
 	
 	/**

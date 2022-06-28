@@ -24,10 +24,6 @@ public class VecMath {
 		return new Vec3(newPoint.i(), newPoint.j(), newPoint.k());
 	}
 	
-	public static double getQuaternionMagnitude(Quaternion q) {
-		return Mth.fastInvSqrt(q.r() * q.r() + q.i() * q.i() + q.j() * q.j() + q.k() * q.k());
-	}
-	
 	public static Vec3 old_transform(Vec3 src, Quaternion selfRot, Quaternion otherRot, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
 		if (motion) {
 			Quaternion selfRotConj = selfRot.copy();
@@ -40,7 +36,6 @@ public class VecMath {
 				pos = pos.multiply(1, 1, -1);
 			}
 			pos = VecMath.rotate(pos, otherRotConj);
-//			pos = VecMath.rotate(pos, new Quaternion(0, 1, 0, 0));
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);

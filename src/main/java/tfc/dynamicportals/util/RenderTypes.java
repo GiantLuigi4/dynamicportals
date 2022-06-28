@@ -14,6 +14,7 @@ import tfc.dynamicportals.Renderer;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RenderTypes {
+	public static final AtomicReference<RenderTarget> targ = new AtomicReference<>();
 	private static final RenderStateShard.ShaderStateShard RENDERTYPE_LEASH_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
 	public static final RenderType STENCIL_DRAW = RenderType.create(
 			"dynamic_portals_stencil",
@@ -27,9 +28,7 @@ public class RenderTypes {
 					.setLightmapState(RenderType.NO_LIGHTMAP)
 					.createCompositeState(false)
 	);
-	
 	private static final RenderStateShard.ShaderStateShard POSITION_COLOR_TEX = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader);
-	public static final AtomicReference<RenderTarget> targ = new AtomicReference<>();
 	private static final RenderStateShard.EmptyTextureStateShard FBOTexture = new RenderStateShard.EmptyTextureStateShard(() -> {
 		RenderSystem.enableTexture();
 		RenderSystem.setShaderTexture(0, targ.get().getColorTextureId());
