@@ -7,6 +7,7 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -17,7 +18,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
-import sun.misc.Unsafe;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.async.AsyncDispatcher;
@@ -25,7 +25,6 @@ import tfc.dynamicportals.util.async.ReusableThread;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.locks.LockSupport;
 
 public class Renderer {
 	private static final RenderTarget stencilTarget = new TextureTarget(
@@ -119,6 +118,7 @@ public class Renderer {
 					Quaternion dstQuat = portal.target.oppositeRaytraceRotation();
 					Vec3 srcOff = portal.raytraceOffset();
 					Vec3 dstOff = portal.target.raytraceOffset();
+					interpStart = VecMath.rotate(interpStart.subtract(srcOff), portal.getWeirdQuat()).add(srcOff);
 					interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
 					interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 				} else {
@@ -126,12 +126,12 @@ public class Renderer {
 					interpStart = interpStart.add(offset);
 				}
 				istart = interpStart;
-				ireach = interpReach;
+				ireach = VecMath.rotate(interpReach, portal.getWeirdQuat());
 				iend = istart.add(ireach);
-				double size = 0.1;
-//				positions.clear();
+				double size = 0.01;
+				positions.clear();
 //				if (positions.size() < 100 && rand.nextInt(100) % 20 == 0)
-//					positions.add(istart);
+//					positions.add(iend);
 //				if (positions.size() >= 100) {
 //					positions.remove(0);
 //				}
@@ -143,20 +143,25 @@ public class Renderer {
 //							1, 1, 1, 1
 //					);
 //				}
-
+				
+				Matrix4f matrix4f = stack.last().pose();
+				Matrix3f matrix3f = stack.last().normal();
+				consumer.vertex(matrix4f, (float) istart.x, (float) istart.y, (float) istart.z).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
+				consumer.vertex(matrix4f, (float) (iend.x), (float) (iend.y), (float) (iend.z)).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
+				
 				LevelRenderer.renderLineBox(
 						stack, consumer,
 						istart.x, istart.y, istart.z,
 						istart.x + size, istart.y + size, istart.z + size,
 						1, 0, 1, 1
 				);
-//
-//				LevelRenderer.renderLineBox(
-//						stack, consumer,
-//						iend.x, iend.y, iend.z,
-//						iend.x + size, iend.y + size, iend.z + size,
-//						1, 0, 0, 1
-//				);
+				size *= 10;
+				LevelRenderer.renderLineBox(
+						stack, consumer,
+						iend.x, iend.y, iend.z,
+						iend.x + size, iend.y + size, iend.z + size,
+						1, 0, 0, 1
+				);
 //
 				forceDraw(source);
 			}
@@ -275,10 +280,10 @@ public class Renderer {
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
 			portal.getGraph().update();
 		} else if (
-				(int) orx != (int) rx || (int) ory != (int) ry ||
-						(int) oldPos.x != (int) camVec.x ||
-						(int) oldPos.y != (int) camVec.y ||
-						(int) oldPos.z != (int) camVec.z
+				       (int) orx != (int) rx || (int) ory != (int) ry ||
+						       (int) oldPos.x != (int) camVec.x ||
+						       (int) oldPos.y != (int) camVec.y ||
+						       (int) oldPos.z != (int) camVec.z
 		) {
 			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
