@@ -39,9 +39,9 @@ public class RaytraceHelper {
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
 						interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-						interpStart = VecMath.rotate(interpStart.subtract(dstOff), portal.target.getWeirdQuat()).add(dstOff);
+						interpStart = VecMath.rotate(interpStart.subtract(dstOff), portal.target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
 						interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
-						interpReach = VecMath.rotate(interpReach, portal.target.getWeirdQuat());
+						interpReach = VecMath.rotate(interpReach, portal.target.get180DegreesRotationAroundVerticalAxis());
 					} else {
 						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 						interpStart = interpStart.add(offset);

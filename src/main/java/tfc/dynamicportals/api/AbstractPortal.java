@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -12,6 +13,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.util.RenderTypes;
+import tfc.dynamicportals.util.VecMath;
 
 import java.util.UUID;
 
@@ -100,7 +102,16 @@ public abstract class AbstractPortal {
 	 */
 	public abstract Quaternion raytraceRotation();
 	
-	public abstract Quaternion getWeirdQuat();
+	/**
+	 * @return a quaternion for rotating the look vector by 180 degrees around the vertical axis of the portal
+	 * for now used only by startVec and reachVec in the raytracing, maybe should be used for everything
+	 */
+	public Quaternion get180DegreesRotationAroundVerticalAxis() {
+		Quaternion weird = Quaternion.ONE.copy();
+		Quaternion q = this.raytraceRotation(); q.conj();
+		weird.mul(new Vector3f(VecMath.rotate(new Vec3(0, 1, 0), q)).rotationDegrees(180));
+		return weird;
+	}
 	
 	/**
 	 * @return whether or not the raytrace rotation needs to be rotated

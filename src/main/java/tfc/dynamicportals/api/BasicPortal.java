@@ -142,26 +142,14 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	@Override
-	public Quaternion getWeirdQuat() {
-		Quaternion weird = Quaternion.ONE.copy();
-		if (this.rotation.x == 0) {
-			if (this.rotation.y == 0) {
-				//I need a 180 rotation around vertical axis of the portal
-				weird = new Vector3f(new Vec3(0, 1, 0).zRot((float) rotation.z)).rotationDegrees(180);
-			}
-		}
-		return weird;
-	}
-	
-	@Override
 	public Quaternion raytraceRotation() {
-		Quaternion quat = Quaternion.ONE.copy();
-		quat.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-		quat.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-		quat.mul(new Quaternion(0, 0, (float) -rotation.z, false));
-		if (target == this) quat.mul(new Quaternion(0, 90, 0, true));
+		Quaternion rot = Quaternion.ONE.copy();
+		rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
+		rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
+		rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
+		if (target == this) rot.mul(new Quaternion(0, 90, 0, true));
 		
-		return quat;
+		return rot;
 	}
 	
 	protected Vec3 _computeNormal() {
