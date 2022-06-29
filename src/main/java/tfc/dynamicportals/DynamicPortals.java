@@ -26,6 +26,6 @@ public class DynamicPortals {
 	}
 	
 	public static void registerCommands(RegisterCommandsEvent event) {
-		event.getDispatcher().register(DynamicPortalsCommand.build());
+		event.getDispatcher().register(DynamicPortalsCommand.build(event.getDispatcher()));
 	}
 }
