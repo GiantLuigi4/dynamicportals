@@ -143,6 +143,8 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion raytraceRotation() {
+		//Should technically be the same as
+		//Quaternion.fromYXZ(-rotation.x, -rotation.y, -rotation.z);
 		Quaternion rot = Quaternion.ONE.copy();
 		rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
 		rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));

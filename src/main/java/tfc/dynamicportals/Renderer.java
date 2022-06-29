@@ -36,7 +36,6 @@ public class Renderer {
 			true, Minecraft.ON_OSX
 	);
 	private static final ArrayList<ReusableThread> threads = new ArrayList<>();
-	private static final ArrayList<Vec3> positions = new ArrayList<>();
 	private static final Random rand = new Random();
 	private static boolean isStencilPresent = false;
 	private static boolean screenspaceTex = false;
@@ -130,20 +129,6 @@ public class Renderer {
 				ireach = interpReach;
 				iend = istart.add(ireach);
 				double size = 0.01;
-				positions.clear();
-//				if (positions.size() < 100 && rand.nextInt(100) % 20 == 0)
-//					positions.add(iend);
-//				if (positions.size() >= 100) {
-//					positions.remove(0);
-//				}
-//				for (Vec3 v : positions) {
-//					LevelRenderer.renderLineBox(
-//							stack, consumer,
-//							v.x, v.y, v.z,
-//							v.x + size, v.y + size, v.z + size,
-//							1, 1, 1, 1
-//					);
-//				}
 				
 				Matrix4f matrix4f = stack.last().pose();
 				Matrix3f matrix3f = stack.last().normal();
@@ -156,14 +141,13 @@ public class Renderer {
 						istart.x + size, istart.y + size, istart.z + size,
 						1, 0, 1, 1
 				);
-				size *= 10;
+				
 				LevelRenderer.renderLineBox(
 						stack, consumer,
 						iend.x, iend.y, iend.z,
 						iend.x + size, iend.y + size, iend.z + size,
 						1, 0, 0, 1
 				);
-//
 				forceDraw(source);
 			}
 		}

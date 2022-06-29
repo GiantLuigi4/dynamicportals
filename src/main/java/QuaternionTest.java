@@ -1,5 +1,7 @@
 import com.mojang.math.Quaternion;
 
+import java.util.Random;
+
 //Class to test quaternion operation, needs to be removed asap
 public class QuaternionTest {
 	public static void main(String[] args) {
@@ -9,27 +11,19 @@ public class QuaternionTest {
 		//q2^ * q1^ = (q1*q2)^
 		//..
 		//..
-		
-		Quaternion q1 = new Quaternion(2, 3, 4, 1);
-		Quaternion q2 = new Quaternion(5, 3, 6, 2);
-		Quaternion p = new Quaternion(1, 1, 1, 0);
-		
-		Quaternion q1c = q1.copy();
-		q1c.conj();
-		Quaternion q2c = q2.copy();
-		q2c.conj();
-		
-		System.out.println(q1c + "; " + q2c);
-		
-		Quaternion q1cTimesQ2c = q2c.copy();
-		q1cTimesQ2c.mul(q1c);
-		Quaternion q2cTimesQ1c = q1c.copy();
-		q2cTimesQ1c.mul(q2c);
-		
-		Quaternion q1TimesQ2Conj = q2.copy();
-		q1TimesQ2Conj.mul(q1);
-		q1TimesQ2Conj.conj();
-		System.out.println(q1cTimesQ2c + "; " + q1TimesQ2Conj);
-		System.out.println(q2cTimesQ1c + "; " + "");
+		Random r = new Random();
+		for (int i = 0; i < 200; i++) {
+			
+			int a = r.nextInt(100), b = r.nextInt(100), c = r.nextInt(100);
+			Quaternion q = Quaternion.ONE.copy();
+			q.mul(new Quaternion(0, a, 0, true));
+			q.mul(new Quaternion(b, 0, 0, true));
+			q.mul(new Quaternion(0, 0, c, true));
+			
+			Quaternion p = Quaternion.fromYXZ((float) Math.toRadians(a), (float) Math.toRadians(b), (float) Math.toRadians(c));
+			if (!q.equals(p)) {
+				System.out.println(q + "; " + p);
+			}
+		}
 	}
 }

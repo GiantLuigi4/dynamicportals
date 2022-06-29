@@ -108,7 +108,8 @@ public abstract class AbstractPortal {
 	 */
 	public Quaternion get180DegreesRotationAroundVerticalAxis() {
 		Quaternion weird = Quaternion.ONE.copy();
-		Quaternion q = this.raytraceRotation(); q.conj();
+		Quaternion q = this.raytraceRotation();
+		q.conj();
 		weird.mul(new Vector3f(VecMath.rotate(new Vec3(0, 1, 0), q)).rotationDegrees(180));
 		return weird;
 	}

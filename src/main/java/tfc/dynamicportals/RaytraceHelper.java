@@ -4,7 +4,6 @@ import com.mojang.math.Quaternion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.VecMath;
@@ -78,14 +77,13 @@ public class RaytraceHelper {
 //
 //					Vec3 istart = new Vec3(interpStart.x(), interpStart.y(), interpStart.z());
 //					Vec3 iend = new Vec3(interpStart.x() + interpReach.x(), interpStart.y() + interpReach.y(), interpStart.z() + interpReach.z());
-					BlockHitResult result = entity.level.clip(
+					minecraft.hitResult = entity.level.clip(
 							new ClipContext(
 									istart, iend,
 									ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY,
 									entity
 							)
 					);
-					minecraft.hitResult = result;
 				}
 			}
 		}

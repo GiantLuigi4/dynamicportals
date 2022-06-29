@@ -7,7 +7,6 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.Vec2Argument;
@@ -24,9 +23,7 @@ public class DynamicPortalsCommand {
 	public static LiteralArgumentBuilder<CommandSourceStack> build(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dynamicportals");
 		LiteralArgumentBuilder<CommandSourceStack> create = literal("create");
-		Command<CommandSourceStack> cmd = context -> {
-			return 0;
-		};
+		Command<CommandSourceStack> cmd = context -> 0;
 		create.executes(cmd);
 //		CommandNode<CommandSourceStack> commandNode = create.build();
 		CommandNode<CommandSourceStack> commandNode = dispatcher.register(builder);
@@ -38,7 +35,7 @@ public class DynamicPortalsCommand {
 		builderFork("size", Vec2Argument.vec2(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		builderFork("normal", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		commandNode.addChild(create.build());
-		
+
 //		builder.then(commandNode);
 		
 		return builder;
@@ -49,6 +46,7 @@ public class DynamicPortalsCommand {
 	}
 	
 	// give me something to work with, and I will butcher it until it works in a way which is easy to work with
+	//:GWchadThink: epic luigi
 	private static <T> void builderFork(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> root, Function<CommandContext<CommandSourceStack>, Collection<CommandSourceStack>> infoSupplier, Command<CommandSourceStack> cmd) {
 		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> builder = LiteralArgumentBuilder.literal(name);
 		ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, T>> builder1 = RequiredArgumentBuilder.argument(name, type);
