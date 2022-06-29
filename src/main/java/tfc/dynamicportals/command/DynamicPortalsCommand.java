@@ -1,17 +1,22 @@
 package tfc.dynamicportals.command;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.RedirectModifier;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.Vec2Argument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
+import net.minecraft.world.phys.Vec3;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.function.Function;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 
@@ -19,38 +24,36 @@ public class DynamicPortalsCommand {
 	public static LiteralArgumentBuilder<CommandSourceStack> build(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dynamicportals");
 		LiteralArgumentBuilder<CommandSourceStack> create = literal("create");
-		CommandNode commandNode = create.build();
-		// this is jank, but it works
-		loopback(builderFork("position", Vec3Argument.vec3(), commandNode, commandNode.getRedirectModifier()), commandNode, commandNode);
-		loopback(builderFork("rotation", Vec3Argument.vec3(), commandNode, commandNode.getRedirectModifier()), commandNode, commandNode);
-		loopback(builderFork("size", Vec2Argument.vec2(), commandNode, commandNode.getRedirectModifier()), commandNode, commandNode);
-		loopback(builderFork("normal", Vec3Argument.vec3(), commandNode, commandNode.getRedirectModifier()), commandNode, commandNode);
-		builder.then(commandNode);
+		Command<CommandSourceStack> cmd = context -> {
+			return 0;
+		};
+		create.executes(cmd);
+//		CommandNode<CommandSourceStack> commandNode = create.build();
+		CommandNode<CommandSourceStack> commandNode = dispatcher.register(builder);
+		builderFork("position", Vec3Argument.vec3(), commandNode, (context) -> {
+			context.getSource().withPosition(context.getArgument("position", Vec3.class));
+			return Collections.singleton(context.getSource());
+		}, cmd);
+		builderFork("rotation", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
+		builderFork("size", Vec2Argument.vec2(), commandNode, DynamicPortalsCommand::toSource, cmd);
+		builderFork("normal", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
+		commandNode.addChild(create.build());
+		
+//		builder.then(commandNode);
 		
 		return builder;
 	}
 	
-	private static void loopback(ArgumentBuilder src, CommandNode dst, CommandNode root) {
-		dst.addChild(src.build());
+	private static Collection<CommandSourceStack> toSource(CommandContext<CommandSourceStack> context) {
+		return Collections.singleton(context.getSource());
 	}
 	
-	private static <T> RequiredArgumentBuilder genericsAreDumb(String name, ArgumentType<T> argument) {
-		return RequiredArgumentBuilder.argument(name, argument);
-	}
-	
-	private static ArgumentBuilder yeetGenerics(ArgumentBuilder builder) {
-		return builder;
-	}
-	
-	private static <T, V> ArgumentBuilder<CommandSourceStack, ?> builderFork(String name, ArgumentType<T> argument, CommandNode node, RedirectModifier<V> modif) {
-		ArgumentBuilder builder = LiteralArgumentBuilder.literal(name);
-		ArgumentBuilder builder1 = genericsAreDumb(name, argument);
-		builder1 = builder1.forward(node, modif, false);
+	// give me something to work with, and I will butcher it until it works in a way which is easy to work with
+	private static <T> void builderFork(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> root, Function<CommandContext<CommandSourceStack>, Collection<CommandSourceStack>> infoSupplier, Command<CommandSourceStack> cmd) {
+		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> builder = LiteralArgumentBuilder.literal(name);
+		ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, T>> builder1 = RequiredArgumentBuilder.argument(name, type);
+		builder1.fork(root, infoSupplier::apply);
 		builder.then(builder1);
-		return builder;
-	}
-	
-	private static <T> LiteralArgumentBuilder<CommandSourceStack> builder(String name, ArgumentType<T> argument) {
-		return LiteralArgumentBuilder.literal(name).then(genericsAreDumb(name, argument));
+		root.addChild(builder.build());
 	}
 }
