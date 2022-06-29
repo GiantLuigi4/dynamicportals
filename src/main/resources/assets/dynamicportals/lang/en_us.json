@@ -1,0 +1,6 @@
+{
+  "dynamicportals.command.bread.id": "A portal with the id %s has been created",
+  "dynamicportals.command.fail.cheese.size_crab": "I'm not sure why you're seeing this, so report what exactly your command was to https://github.com/GiantLuigi4/dynamicportals/issues",
+  "dynamicportals.command.fail.cheese.missing_args": "In order to create a portal, you must supply the following arguments: [size:Vec2]",
+  "dynamicportals.command.fail.cheese.missing_size": "In order to create a portal, you must supply an argument for the size of the portal."
+}
