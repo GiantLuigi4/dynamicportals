@@ -55,7 +55,7 @@ public class DynamicPortalsCommand {
 			WorldCoordinates pos = ctx.getArgument("position", WorldCoordinates.class);
 			WorldCoordinates rot = ctx.getArgument("rotation", WorldCoordinates.class);
 			WorldCoordinates norm = ctx.getArgument("normal", WorldCoordinates.class);
-			UUID uuid = new UUID(System.nanoTime(), context.getSource().getEntity().getLevel().getGameTime());
+			UUID uuid = new UUID(System.nanoTime(), context.getSource().getLevel().getGameTime());
 			try {
 				uuid = ctx.getArgument("uuid", UUID.class);
 			} catch (Throwable ignored) {
