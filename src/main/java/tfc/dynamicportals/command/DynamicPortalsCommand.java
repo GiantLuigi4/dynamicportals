@@ -29,18 +29,24 @@ import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 public class DynamicPortalsCommand {
 	public static LiteralArgumentBuilder<CommandSourceStack> build(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dynamicportals");
+		builder.executes(context -> {
+			context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.help"), false);
+			return 0;
+		});
+		
 		LiteralArgumentBuilder<CommandSourceStack> create = literal("create");
+		// the command execution function
 		Command<CommandSourceStack> cmd = context -> {
 			DynamicPortalsSourceStack ctx;
 			if (context.getSource() instanceof DynamicPortalsSourceStack)
 				ctx = (DynamicPortalsSourceStack) context.getSource();
 			else {
-				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.fail.cheese.missing_args"));
+				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.missing_args"));
 				return -1;
 			}
 			WorldCoordinates size = ctx.getArgument("size", WorldCoordinates.class);
 			if (size == null) {
-				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.fail.cheese.missing_size"));
+				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.missing_size"));
 				return -1;
 			}
 			WorldCoordinates pos = ctx.getArgument("position", WorldCoordinates.class);
@@ -48,7 +54,7 @@ public class DynamicPortalsCommand {
 			WorldCoordinates norm = ctx.getArgument("normal", WorldCoordinates.class);
 			UUID uuid = new UUID(System.nanoTime(), context.getSource().getEntity().getLevel().getGameTime());
 			try {
-//				ctx.getArgument("uuid", )
+				uuid = ctx.getArgument("uuid", UUID.class);
 			} catch (Throwable ignored) {
 			}
 			BasicPortal portal = new BasicPortal(uuid);
@@ -78,7 +84,7 @@ public class DynamicPortalsCommand {
 				Vec3 vec1 = size.getPosition(ctx);
 				sizeVec = new Vector2d(vec1.x, vec1.z);
 			} catch (Throwable ignored) {
-				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.fail.cheese.size_crab"));
+				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.size_crab"));
 				return -1;
 			}
 			portal.setSize(sizeVec.x, sizeVec.y);
@@ -98,17 +104,19 @@ public class DynamicPortalsCommand {
 		// TODO: provide help when command is executed with no arguments
 		create.executes(cmd);
 		CommandNode<CommandSourceStack> commandNode = dispatcher.register(builder);
+		// arguments
 		builderFork("position", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		builderFork("rotation", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		builderFork("size", Vec2Argument.vec2(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		builderFork("normal", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
-		// TODO: boolean argument
+		// TODO: boolean argument for front only
 		builderFork("uuid", UuidArgument.uuid(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		commandNode.addChild(create.build());
 		
 		return builder;
 	}
 	
+	// jank hack to forward information to the redirects
 	private static CommandSourceStack toSource(CommandContext<CommandSourceStack> context) {
 		int perm = 0;
 		while (context.getSource().hasPermission(perm)) perm++;
@@ -134,8 +142,7 @@ public class DynamicPortalsCommand {
 	
 	// give me something to work with, and I will butcher it until it works in a way which is easy to work with
 	//:GWchadThink: epic luigi
-	private static <T> void builderFork(String
-												name, ArgumentType<T> type, CommandNode<CommandSourceStack> root, Function<CommandContext<CommandSourceStack>, CommandSourceStack> infoSupplier, Command<CommandSourceStack> cmd) {
+	private static <T> void builderFork(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> root, Function<CommandContext<CommandSourceStack>, CommandSourceStack> infoSupplier, Command<CommandSourceStack> cmd) {
 		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> builder = LiteralArgumentBuilder.literal(name);
 		ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, T>> builder1 = RequiredArgumentBuilder.argument(name, type);
 		builder1.redirect(root, infoSupplier::apply);
