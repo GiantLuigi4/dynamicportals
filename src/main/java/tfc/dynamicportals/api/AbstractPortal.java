@@ -105,6 +105,7 @@ public abstract class AbstractPortal {
 	/**
 	 * @return a quaternion for rotating the look vector by 180 degrees around the vertical axis of the portal
 	 * for now used only by startVec and reachVec in the raytracing, maybe should be used for everything
+	 * (position vector for motion as well)
 	 */
 	public Quaternion get180DegreesRotationAroundVerticalAxis() {
 		Quaternion weird = Quaternion.ONE.copy();
@@ -176,8 +177,18 @@ public abstract class AbstractPortal {
 	 */
 	public abstract boolean overlaps(AABB box);
 	
-	// TODO: see if I can get a default implementation for this
-	public abstract Vec2 adjustLook(Vec2 vector, boolean reverse);
+	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
+		Vec3 look = VecMath.getLookVec(vector);
+		if (reverse)
+			look = VecMath.old_transform(look, Quaternion.ONE, raytraceRotation(), target == this, true, Vec3.ZERO, Vec3.ZERO);
+		else {
+			look = look.multiply(-1, 1, -1);
+			look = VecMath.old_transform(look, raytraceRotation(), Quaternion.ONE, target == this, true, Vec3.ZERO, Vec3.ZERO);
+		}
+		look = VecMath.rotate(look, target.get180DegreesRotationAroundVerticalAxis());
+		
+		return VecMath.lookAngle(look);
+	}
 	
 	/**
 	 * used for checking if the entity has crossed through the portal for sake of teleportation

@@ -317,15 +317,21 @@ public class BasicPortal extends AbstractPortal {
 		Vector3d position = this.position;
 		Vec3 rotation = this.rotation;
 		// rotate
-		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
-		if (isMirror) stack.mulPose(new Quaternion(0, 180, 0, true));
-		// I don't really know why mirrors need this rotation
+		if (isMirror) {
+			// mirror
+			stack.scale(1, 1, -1);
+			// I don't really know why mirrors need this rotation
+			stack.mulPose(new Quaternion(0, 180, 0, true));
+			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+		} else {
+			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+		}
 		// translate
-		stack.translate(-position.x, -position.y, isMirror ? position.z : -position.z);
-		// mirror
-		if (isMirror) stack.scale(1, 1, -1);
+		stack.translate(-position.x, -position.y, isMirror ? -position.z : -position.z);
 	}
 	
 	@Override
@@ -467,14 +473,6 @@ public class BasicPortal extends AbstractPortal {
 		return v;
 	}
 	
-	@Override
-	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
-		if (reverse)
-			// TODO: vertical rotation
-			return new Vec2(vector.x, clamp(vector.y - (float) Math.toDegrees(rotation.x)));
-		return new Vec2(vector.x, clamp(vector.y + (float) Math.toDegrees(rotation.x)));
-	}
-	
 	// TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
@@ -498,8 +496,9 @@ public class BasicPortal extends AbstractPortal {
 					oldPos = VecMath.old_transform(oldPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
 					oPos = VecMath.old_transform(oPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
 					pos = VecMath.old_transform(pos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
-//					interpStart = VecMath.start_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-//					interpReach = VecMath.start_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
+					oldPos = VecMath.rotate(oldPos.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
+					oPos = VecMath.rotate(oPos.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
+					pos = VecMath.rotate(pos.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
 				}
 				
 				Vec2 vec = entity.getRotationVector();
@@ -515,7 +514,11 @@ public class BasicPortal extends AbstractPortal {
 				entity.setYRot(vec.y + 180);
 				entity.yRotO = vecOld.y + 180;
 				
-				motion = VecMath.old_transform(motion, srcQuat, dstQuat, false, true, Vec3.ZERO, Vec3.ZERO);
+				motion = VecMath.old_transform(motion, srcQuat, dstQuat, target == this, true, Vec3.ZERO, Vec3.ZERO);
+//				motion = motion.scale(-1);
+				double scl = motion.length();
+				motion = VecMath.rotate(motion, target.get180DegreesRotationAroundVerticalAxis());
+				motion = motion.normalize().scale(scl);
 				entity.setDeltaMovement(motion);
 				if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
 				else entity.absMoveTo(pos.x, pos.y, pos.z);
@@ -523,8 +526,11 @@ public class BasicPortal extends AbstractPortal {
 				
 				entity.setXRot(vec.x);
 				entity.xRotO = vecOld.x;
-				entity.setYRot(vec.y + 180);
-				entity.yRotO = vecOld.y + 180;
+				// TODO: figure this out
+//				entity.setYRot(vec.y + 180);
+				entity.setYRot(vec.y);
+//				entity.yRotO = vecOld.y + 180;
+				entity.yRotO = vecOld.y;
 				
 				entity.xo = oPos.x;
 				entity.xOld = oldPos.x;

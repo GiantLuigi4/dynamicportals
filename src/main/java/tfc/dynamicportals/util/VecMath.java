@@ -2,6 +2,7 @@ package tfc.dynamicportals.util;
 
 import com.mojang.math.Quaternion;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class VecMath {
@@ -43,5 +44,25 @@ public class VecMath {
 		pos = old_transform(pos, selfRot, otherRot, isMirror, true, sourceTransformation, destTransformation);
 		pos = pos.add(destTransformation);
 		return pos;
+	}
+	
+	public static Vec3 getLookVec(Vec2 vec) {
+		float f = vec.x * ((float)Math.PI / 180F);
+		float f1 = -vec.y * ((float)Math.PI / 180F);
+		float f2 = Mth.cos(f1);
+		float f3 = Mth.sin(f1);
+		float f4 = Mth.cos(f);
+		float f5 = Mth.sin(f);
+		return new Vec3((double)(f3 * f4), (double)(-f5), (double)(f2 * f4));
+	}
+	
+	public static Vec2 lookAngle(Vec3 vector) {
+		double d0 = vector.x - 0;
+		double d1 = vector.y - 0;
+		double d2 = vector.z - 0;
+		double d3 = Math.sqrt(d0 * d0 + d2 * d2);
+		double xr = (Mth.wrapDegrees((float)(-(Mth.atan2(d1, d3) * (double)(180F / (float)Math.PI)))));
+		double yr = (Mth.wrapDegrees((float)(Mth.atan2(d2, d0) * (double)(180F / (float)Math.PI)) - 90.0F));
+		return new Vec2((float) xr, (float) yr);
 	}
 }
