@@ -44,7 +44,7 @@ public abstract class AbstractPortal {
 	 *
 	 * @param target the other portal in the pair
 	 */
-	public void setTarget(BasicPortal target) {
+	public void setTarget(AbstractPortal target) {
 		this.target = target;
 	}
 	

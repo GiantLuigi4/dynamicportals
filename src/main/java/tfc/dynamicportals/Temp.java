@@ -83,7 +83,7 @@ public class Temp {
 		portal.setPosition(-5.5, 4.75, -2);
 		portal.setSize(3, 3);
 		portal.computeNormal();
-		
+
 //		for (AbstractPortal abstractPortal : portals) {
 //			abstractPortal.target = abstractPortal;
 //		}
