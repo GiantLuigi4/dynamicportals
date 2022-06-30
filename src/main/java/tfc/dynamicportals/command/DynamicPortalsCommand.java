@@ -73,8 +73,8 @@ public class DynamicPortalsCommand {
 				rotation = new Vec3(ve.x, ve.y, ve.z);
 			} catch (Throwable ignored) {
 				Vec2 rotato = context.getSource().getRotation();
-				// TODO: fix this
-				rotation = new Vec3(Math.toRadians(rotato.y), 0, 0);
+				// TODO: fix this (x rotation is backwards)
+				rotation = new Vec3(Math.toRadians(rotato.y), Math.toRadians(-rotato.x), 0);
 			}
 			Vec3 normal;
 			try {
