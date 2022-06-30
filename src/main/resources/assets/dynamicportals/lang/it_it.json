@@ -1,0 +1,7 @@
+{
+  "dynamicportals.command.bread.id": "Un portale di id %s è stato creato",
+  "dynamicportals.command.bread.help": "§6[DynamicPortals]§r\nIl comando 'dynamic portals' è simile al comando 'execute', avendo molteplici argomenti differenti che possono essere riempiti in qualsiasi ordine.\n\nQuesti argomenti sono i seguenti:\n§aFormato: §e[Richiesto/Opzionale, Tipo, Nome]§r\n  §6[Rich, Vec2, size]§r Dimensioni: due numeri decimali rappresentanti quanto grande dovrebbe essere il portale.\n  §6[Opz, Vec3, position]§r Posizione: la posizione del portale.\n  §6[Opz, Vec3, rotation]§r Rotazione: quale direzione dovrebbe guardare il portale. Questo include pitch, yaw, e roll.\n  §6[Opz, Vec3, normal]§r Normale: vettore \"normale\" del portale. È usato per decidere da quale direzione il portale dovrebbe essere renderizzato.\n\n§6[Esempi]§r\n§a/dynamicportals size 5 5 create §rcreates a portal with a width and height of 5, at the player's (or executor's) feet, and rotated the way the player is facing.",
+  "dynamicportals.command.cheese.size_crab": "Non so perchè stai leggendo questo, quindi reporta esattamente che comando hai fatto a https://github.com/GiantLuigi4/dynamicportals/issues",
+  "dynamicportals.command.cheese.missing_args": "Per creare un portale, devi fornire il seguente argomento [size:Vec2]",
+  "dynamicportals.command.cheese.missing_size": "Per creare un portale, devi fornire un argomento per le dimensioni del portale."
+}
