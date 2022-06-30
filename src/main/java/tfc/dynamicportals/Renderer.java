@@ -1,7 +1,5 @@
 package tfc.dynamicportals;
 
-import com.jozufozu.flywheel.backend.gl.GlStateTracker;
-import com.jozufozu.flywheel.event.BeginFrameEvent;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
@@ -57,7 +55,7 @@ public class Renderer {
 	}
 	
 	// TODO: this should be cleaned up at some point
-	public static void renderPortal(PoseStack a, RenderType type, RenderBuffers buffers, AbstractPortal portal, GlStateTracker.State state, Frustum frustum) {
+	public static void renderPortal(PoseStack a, RenderType type, RenderBuffers buffers, AbstractPortal portal, Frustum frustum) {
 		if (recursion == 2) {
 			// TODO: do stuff with this
 			return;
@@ -240,7 +238,6 @@ public class Renderer {
 		// attempt to reset gl state
 		RenderSystem.enableCull();
 		Lighting.setupFor3DItems();
-		state.restore();
 		// TODO: fix the lighting
 	}
 	
@@ -262,10 +259,10 @@ public class Renderer {
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
 			portal.getGraph().update();
 		} else if (
-				       (int) orx != (int) rx || (int) ory != (int) ry ||
-						       (int) oldPos.x != (int) camVec.x ||
-						       (int) oldPos.y != (int) camVec.y ||
-						       (int) oldPos.z != (int) camVec.z
+				(int) orx != (int) rx || (int) ory != (int) ry ||
+						(int) oldPos.x != (int) camVec.x ||
+						(int) oldPos.y != (int) camVec.y ||
+						(int) oldPos.z != (int) camVec.z
 		) {
 			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
@@ -293,18 +290,18 @@ public class Renderer {
 		source.endLastBatch();
 	}
 	
-	public static void onBeginFrame(BeginFrameEvent event) {
+	public static void preDrawLevel(Camera camera) {
 		// store the camera position
-		camX = event.getCamera().getPosition().x;
-		camY = event.getCamera().getPosition().y;
-		camZ = event.getCamera().getPosition().z;
+		camX = camera.getPosition().x;
+		camY = camera.getPosition().y;
+		camZ = camera.getPosition().z;
 		// setup clear colors
 		portalTarget.setClearColor(0, 0, 0, 0);
 		portalTarget.setClearColor(0, 0, 0, 0);
 		if (recursion == 0) {
-			camVec = event.getCamera().getPosition();
-			rx = event.getCamera().getXRot();
-			ry = event.getCamera().getYRot();
+			camVec = camera.getPosition();
+			rx = camera.getXRot();
+			ry = camera.getYRot();
 		}
 	}
 	
@@ -324,7 +321,6 @@ public class Renderer {
 		
 		recursion = recursion + 1;
 		
-		GlStateTracker.State state = GlStateTracker.getRestoreState();
 		PoseStack stack = event.getPoseStack();
 		Frustum frustum = new Frustum(stack.last().pose(), event.getProjectionMatrix());
 		stack.pushPose();
@@ -350,7 +346,7 @@ public class Renderer {
 		
 		for (AbstractPortal portal1 : portals) {
 			if (portal1.shouldRender(frustum, camX, camY, camZ)) {
-				renderPortal(stack, type, buffers, portal1, state, frustum);
+				renderPortal(stack, type, buffers, portal1, frustum);
 			}
 		}
 		

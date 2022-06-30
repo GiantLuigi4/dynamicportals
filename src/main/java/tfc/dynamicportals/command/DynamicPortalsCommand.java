@@ -1,9 +1,9 @@
 package tfc.dynamicportals.command;
 
-import com.jozufozu.flywheel.repack.joml.Vector2d;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -18,8 +18,11 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import tfc.dynamicportals.Temp;
+import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
 import tfc.dynamicportals.util.DynamicPortalsSourceStack;
+import tfc.dynamicportals.util.Vec2d;
 
 import java.util.UUID;
 import java.util.function.Function;
@@ -57,7 +60,7 @@ public class DynamicPortalsCommand {
 				uuid = ctx.getArgument("uuid", UUID.class);
 			} catch (Throwable ignored) {
 			}
-			BasicPortal portal = new BasicPortal(uuid);
+			BasicPortal portal = new BasicCommandPortal(uuid);
 			Vec3 vec;
 			try {
 				vec = pos.getPosition(ctx);
@@ -66,11 +69,12 @@ public class DynamicPortalsCommand {
 			}
 			Vec3 rotation;
 			try {
-				Vec2 ve = rot.getRotation(ctx);
-				rotation = new Vec3(ve.x, ve.y, 0);
+				Vec3 ve = rot.getPosition(ctx);
+				rotation = new Vec3(ve.x - 0.5, ve.y, ve.z - 0.5);
 			} catch (Throwable ignored) {
 				Vec2 rotato = context.getSource().getRotation();
-				rotation = new Vec3(rotato.x, rotato.y, 0);
+				// TODO: fix this
+				rotation = new Vec3(Math.toRadians(rotato.y), 0, 0);
 			}
 			Vec3 normal;
 			try {
@@ -79,10 +83,10 @@ public class DynamicPortalsCommand {
 				normal = null;
 			}
 			portal.setPosition(vec.x, vec.y, vec.z);
-			Vector2d sizeVec;
+			Vec2d sizeVec;
 			try {
 				Vec3 vec1 = size.getPosition(ctx);
-				sizeVec = new Vector2d(vec1.x, vec1.z);
+				sizeVec = new Vec2d(vec1.x - 0.5, vec1.z - 0.5);
 			} catch (Throwable ignored) {
 				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.size_crab"));
 				return -1;
@@ -98,7 +102,17 @@ public class DynamicPortalsCommand {
 					log = false;
 				}
 			}
-			ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.id", Double.NaN), log);
+			int v = Temp.addPortal(context.getSource().getLevel(), (CommandPortal) portal);
+			ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.id", v), log);
+			Integer i = ctx.getArgument("target", Integer.class);
+			if (i != null) {
+				CommandPortal portal1 = Temp.get((int) i);
+				((AbstractPortal) portal1).target = portal;
+				portal.target = (AbstractPortal) portal1;
+			}
+			if (portal.target == portal)
+				ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.mirror", v), log);
+			else ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.target", v), log);
 			return 0;
 		};
 		// TODO: provide help when command is executed with no arguments
@@ -111,6 +125,8 @@ public class DynamicPortalsCommand {
 		builderFork("normal", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		// TODO: boolean argument for front only
 		builderFork("uuid", UuidArgument.uuid(), commandNode, DynamicPortalsCommand::toSource, cmd);
+		// TODO: portal selector argument type
+		builderFork("target", IntegerArgumentType.integer(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		commandNode.addChild(create.build());
 		
 		return builder;

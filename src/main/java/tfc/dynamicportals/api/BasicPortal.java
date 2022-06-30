@@ -1,6 +1,5 @@
 package tfc.dynamicportals.api;
 
-import com.jozufozu.flywheel.repack.joml.Vector2d;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.*;
@@ -19,13 +18,14 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.lwjgl.opengl.GL11;
 import tfc.dynamicportals.util.Quad;
+import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
 
 import java.util.UUID;
 
 public class BasicPortal extends AbstractPortal {
 	protected Vector3d position;
-	protected Vector2d size;
+	protected Vec2d size;
 	protected Vec3 rotation;
 	protected Vec3 normal;
 	protected PortalCamera cam;
@@ -49,12 +49,12 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	public BasicPortal setSize(double x, double y) {
-		this.size = new Vector2d(x, y);
+		this.size = new Vec2d(x, y);
 		recomputePortal();
 		return this;
 	}
 	
-	public BasicPortal setSize(Vector2d size) {
+	public BasicPortal setSize(Vec2d size) {
 		this.size = size;
 		recomputePortal();
 		return this;

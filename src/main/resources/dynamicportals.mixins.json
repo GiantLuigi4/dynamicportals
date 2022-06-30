@@ -24,7 +24,9 @@
     "client.quality.ClientChunkCacheMixin",
     "client.quality.ClientNetworkingMixin",
     "client.quality.LevelRendererMixin",
-    "client.selection.GameRendererMixin"
+    "client.selection.GameRendererMixin",
+    "client.fixes.VBOMixin",
+    "client.core.LevenRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

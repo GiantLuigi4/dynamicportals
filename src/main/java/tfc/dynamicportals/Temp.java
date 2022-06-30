@@ -3,14 +3,50 @@ package tfc.dynamicportals;
 import net.minecraft.world.level.Level;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
+import tfc.dynamicportals.command.CommandPortal;
 import tfc.dynamicportals.vanilla.EndPortal;
 import tfc.dynamicportals.vanilla.NetherPortal;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 public class Temp {
 	private static AbstractPortal[] portals;
+	
+	private static ArrayList<CommandPortal> cmdPortals = new ArrayList<>();
+	
+	public static CommandPortal get(int id) {
+		for (CommandPortal cmdPortal : cmdPortals) {
+			if (cmdPortal.myId() == id) {
+				return cmdPortal;
+			}
+		}
+		return null;
+	}
+	
+	public static int addPortal(Level lvl, CommandPortal portal) {
+		ArrayList<Integer> ints = new ArrayList<>();
+		for (CommandPortal cmdPortal : cmdPortals) ints.add(cmdPortal.myId());
+		int id = -1;
+		int max = 0;
+		for (int i = 0; i < ints.size(); i++) {
+			max = Math.max(ints.get(i), max);
+			if (!ints.contains(i)) {
+				id = i;
+				break;
+			}
+		}
+		if (ints.size() == 0) max = -1;
+		if (id == -1) id = max + 1;
+		
+		int v = portal.setId(id);
+		cmdPortals.add(portal);
+		if (id != v)
+			// TODO: use unsafe to throw unchecked
+			throw new RuntimeException(new IllegalArgumentException("Portal was created with an id of " + v + " even though its id was meant to be " + id));
+		return v;
+	}
 	
 	static {
 		ArrayList<AbstractPortal> portals = new ArrayList<>();
@@ -83,10 +119,14 @@ public class Temp {
 		portal.setPosition(-5.5, 4.75, -2);
 		portal.setSize(3, 3);
 		portal.computeNormal();
+		
+		ArrayList<AbstractPortal> allPortals = new ArrayList<>();
+		for (CommandPortal cmdPortal : cmdPortals) allPortals.add((AbstractPortal) cmdPortal);
+		Collections.addAll(allPortals, portals);
 
 //		for (AbstractPortal abstractPortal : portals) {
 //			abstractPortal.target = abstractPortal;
 //		}
-		return Temp.portals;
+		return allPortals.toArray(new BasicPortal[0]);
 	}
 }

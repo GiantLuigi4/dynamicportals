@@ -19,7 +19,6 @@ public class DynamicPortals {
 //		MinecraftForge.EVENT_BUS.addListener();
 		
 		MinecraftForge.EVENT_BUS.addListener(Renderer::onRenderEvent);
-		MinecraftForge.EVENT_BUS.addListener(Renderer::onBeginFrame);
 		
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::registerCommands);
 	}
