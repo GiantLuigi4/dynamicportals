@@ -70,7 +70,7 @@ public class DynamicPortalsCommand {
 			Vec3 rotation;
 			try {
 				Vec3 ve = rot.getPosition(ctx);
-				rotation = new Vec3(ve.x - 0.5, ve.y, ve.z - 0.5);
+				rotation = new Vec3(ve.x, ve.y, ve.z);
 			} catch (Throwable ignored) {
 				Vec2 rotato = context.getSource().getRotation();
 				// TODO: fix this
@@ -86,7 +86,7 @@ public class DynamicPortalsCommand {
 			Vec2d sizeVec;
 			try {
 				Vec3 vec1 = size.getPosition(ctx);
-				sizeVec = new Vec2d(vec1.x - 0.5, vec1.z - 0.5);
+				sizeVec = new Vec2d(vec1.x, vec1.z);
 			} catch (Throwable ignored) {
 				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.size_crab"));
 				return -1;
@@ -119,10 +119,10 @@ public class DynamicPortalsCommand {
 		create.executes(cmd);
 		CommandNode<CommandSourceStack> commandNode = dispatcher.register(builder);
 		// arguments
-		builderFork("position", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("rotation", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("size", Vec2Argument.vec2(), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("normal", Vec3Argument.vec3(), commandNode, DynamicPortalsCommand::toSource, cmd);
+		builderFork("position", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource, cmd);
+		builderFork("rotation", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource, cmd);
+		builderFork("size", Vec2Argument.vec2(false), commandNode, DynamicPortalsCommand::toSource, cmd);
+		builderFork("normal", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource, cmd);
 		// TODO: boolean argument for front only
 		builderFork("uuid", UuidArgument.uuid(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		// TODO: portal selector argument type
