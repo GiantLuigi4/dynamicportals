@@ -3,7 +3,6 @@ package tfc.dynamicportals.command;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -21,15 +20,29 @@ import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
+import tfc.dynamicportals.command.args.PortalSelectorArgument;
+import tfc.dynamicportals.command.args.StringArrayArgument;
+import tfc.dynamicportals.command.portals.BasicCommandPortal;
+import tfc.dynamicportals.command.portals.BasicEndPortal;
+import tfc.dynamicportals.command.portals.BasicNetherPortal;
 import tfc.dynamicportals.util.DynamicPortalsSourceStack;
 import tfc.dynamicportals.util.Vec2d;
 
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.Function;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 
 public class DynamicPortalsCommand {
+	private static final HashMap<String, Function<UUID, BasicPortal>> portalCreators = new HashMap<>();
+	
+	static {
+		portalCreators.put("basic", BasicCommandPortal::new);
+		portalCreators.put("nether", BasicNetherPortal::new);
+		portalCreators.put("end", BasicEndPortal::new);
+	}
+	
 	public static LiteralArgumentBuilder<CommandSourceStack> build(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dynamicportals");
 		builder.executes(context -> {
@@ -57,10 +70,17 @@ public class DynamicPortalsCommand {
 			WorldCoordinates norm = ctx.getArgument("normal", WorldCoordinates.class);
 			UUID uuid = new UUID(System.nanoTime(), context.getSource().getLevel().getGameTime());
 			try {
-				uuid = ctx.getArgument("uuid", UUID.class);
+				UUID cmdUUid = ctx.getArgument("uuid", UUID.class);
+				if (cmdUUid != null) uuid = cmdUUid;
 			} catch (Throwable ignored) {
 			}
-			BasicPortal portal = new BasicCommandPortal(uuid);
+			String type = "basic";
+			try {
+				String cmdType = ctx.getArgument("type", String.class);
+				if (cmdType != null) type = cmdType;
+			} catch (Throwable ignored) {
+			}
+			BasicPortal portal = portalCreators.get(type).apply(uuid);
 			Vec3 vec;
 			try {
 				vec = pos.getPosition(ctx);
@@ -75,6 +95,11 @@ public class DynamicPortalsCommand {
 				Vec2 rotato = context.getSource().getRotation();
 				// TODO: fix this (x rotation is backwards)
 				rotation = new Vec3(Math.toRadians(rotato.y), Math.toRadians(-rotato.x), 0);
+			}
+			try {
+				if (ctx.getArgument("frontonly", String.class).equals("true"))
+					portal.computeNormal();
+			} catch (Throwable ignored) {
 			}
 			Vec3 normal;
 			try {
@@ -104,9 +129,9 @@ public class DynamicPortalsCommand {
 			}
 			int v = Temp.addPortal(context.getSource().getLevel(), (CommandPortal) portal);
 			ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.id", v), log);
-			Integer i = ctx.getArgument("target", Integer.class);
+			FullPortalFilter i = ctx.getArgument("target", FullPortalFilter.class);
 			if (i != null) {
-				CommandPortal portal1 = Temp.get((int) i);
+				CommandPortal portal1 = Temp.filter(i, context)[0];
 				((AbstractPortal) portal1).target = portal;
 				portal.target = (AbstractPortal) portal1;
 			}
@@ -123,10 +148,10 @@ public class DynamicPortalsCommand {
 		builderFork("rotation", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource, cmd);
 		builderFork("size", Vec2Argument.vec2(false), commandNode, DynamicPortalsCommand::toSource, cmd);
 		builderFork("normal", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource, cmd);
-		// TODO: boolean argument for front only
+		builderFork("type", StringArrayArgument.of(new String[]{"basic", "nether", "end"}), commandNode, DynamicPortalsCommand::toSource, cmd);
+		builderFork("frontonly", StringArrayArgument.of(new String[]{"true", "false"}), commandNode, DynamicPortalsCommand::toSource, cmd);
 		builderFork("uuid", UuidArgument.uuid(), commandNode, DynamicPortalsCommand::toSource, cmd);
-		// TODO: portal selector argument type
-		builderFork("target", IntegerArgumentType.integer(), commandNode, DynamicPortalsCommand::toSource, cmd);
+		builderFork("target", PortalSelectorArgument.create(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		commandNode.addChild(create.build());
 		
 		return builder;

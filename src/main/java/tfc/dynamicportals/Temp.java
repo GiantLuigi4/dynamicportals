@@ -1,14 +1,18 @@
 package tfc.dynamicportals;
 
+import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.world.level.Level;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
 import tfc.dynamicportals.command.CommandPortal;
+import tfc.dynamicportals.command.FullPortalFilter;
+import tfc.dynamicportals.command.PortalFilter;
 import tfc.dynamicportals.vanilla.EndPortal;
 import tfc.dynamicportals.vanilla.NetherPortal;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class Temp {
@@ -128,5 +132,9 @@ public class Temp {
 //			abstractPortal.target = abstractPortal;
 //		}
 		return allPortals.toArray(new BasicPortal[0]);
+	}
+	
+	public static CommandPortal[] filter(FullPortalFilter i, CommandContext<?> ctx) {
+		return i.filter(List.copyOf(cmdPortals), ctx);
 	}
 }

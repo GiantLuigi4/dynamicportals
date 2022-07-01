@@ -248,4 +248,8 @@ public abstract class AbstractPortal {
 	public ShaderInstance blitShader() {
 		return GameRenderer.getPositionTexShader();
 	}
+	
+	public UUID getUUID() {
+		return uuid;
+	}
 }

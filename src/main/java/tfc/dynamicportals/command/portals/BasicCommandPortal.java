@@ -1,6 +1,7 @@
-package tfc.dynamicportals.command;
+package tfc.dynamicportals.command.portals;
 
 import tfc.dynamicportals.api.BasicPortal;
+import tfc.dynamicportals.command.CommandPortal;
 
 import java.util.UUID;
 
@@ -19,5 +20,10 @@ public class BasicCommandPortal extends BasicPortal implements CommandPortal {
 	@Override
 	public int setId(int val) {
 		return id = val;
+	}
+	
+	@Override
+	public String type() {
+		return "basic";
 	}
 }
