@@ -26,7 +26,10 @@
     "client.quality.LevelRendererMixin",
     "client.selection.GameRendererMixin",
     "client.fixes.VBOMixin",
-    "client.core.LevenRendererMixin"
+    "client.core.LevenRendererMixin",
+    "client.access.VertexFormatAccessor",
+    "client.optimization.VBOMixin",
+    "client.optimization.VertexFormatMixin"
   ],
   "injectors": {
     "defaultRequire": 1

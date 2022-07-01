@@ -94,8 +94,7 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 							filter = (portals, ctx) -> {
 								ArrayList<CommandPortal> output = new ArrayList<>();
 								for (CommandPortal portal : temp.filter(portals, ctx)) {
-									System.out.println(((AbstractPortal) portal).getUUID());
-									if (((AbstractPortal) portal).getUUID().toString().equals(split[1])) {
+									if (((AbstractPortal) portal).uuid.toString().equals(split[1])) {
 										output.add(portal);
 									}
 								}

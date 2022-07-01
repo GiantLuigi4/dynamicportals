@@ -4,14 +4,34 @@ import java.util.ArrayList;
 
 public class AsyncDispatcher {
 	private static final ReusableThread[] threads;
-	
 	private static final ArrayList<Runnable> runnables = new ArrayList<>();
+	
+	
+	private static final ReusableThread schedulerThread = new ReusableThread(()->{
+		while (true) {
+			if (runnables.isEmpty()) {
+				try {
+					Thread.sleep(1);
+				} catch (Throwable ignored) {
+				}
+			} else {
+				try {
+					scheduleNext(runnables.remove(0));
+				} catch (Throwable ignored) {
+				}
+			}
+		}
+	});
+	
+	static {
+		schedulerThread.start();
+	}
 	
 	private static final Object lock = new Object();
 	private static boolean dispatcherSelected = false;
 	
 	static {
-		threads = new ReusableThread[4];
+		threads = new ReusableThread[16];
 		for (int i = 0; i < threads.length; i++) {
 			threads[i] = new ReusableThread(() -> {
 			});
@@ -19,49 +39,12 @@ public class AsyncDispatcher {
 	}
 	
 	public static void dispatch(Runnable runnable) {
-		synchronized (runnables) {
-			if (countOpenings() == 0) {
-				runnables.add(() -> {
-					runnable.run();
-					boolean isDispatcher = false;
-					synchronized (lock) {
-						if (!dispatcherSelected) {
-							isDispatcher = true;
-							dispatcherSelected = true;
-						}
-					}
-					if (isDispatcher) {
-						awaitOpening();
-						synchronized (runnables) {
-							for (int i = 0; i < countOpenings(); i++) {
-								if (runnables.isEmpty()) return;
-								scheduleNext(runnables.remove(0));
-							}
-						}
-					}
-				});
-			} else {
-				scheduleNext(() -> {
-					runnable.run();
-					boolean isDispatcher = false;
-					synchronized (lock) {
-						if (!dispatcherSelected) {
-							isDispatcher = true;
-							dispatcherSelected = true;
-						}
-					}
-					if (isDispatcher) {
-						awaitOpening();
-						synchronized (runnables) {
-							for (int i = 0; i < countOpenings(); i++) {
-								if (runnables.isEmpty()) return;
-								scheduleNext(runnables.remove(0));
-							}
-						}
-					}
-				});
-			}
-		}
+		if (countOpenings() == 0) runnables.add(runnable);
+		else scheduleNext(runnable);
+//		synchronized (runnables) {
+//			if (countOpenings() == 0) runnables.add(() -> exec(runnable));
+//			else scheduleNext(() -> exec(runnable));
+//		}
 	}
 	
 	private static int countOpenings() {

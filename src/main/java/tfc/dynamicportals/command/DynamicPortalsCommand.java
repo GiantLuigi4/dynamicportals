@@ -96,11 +96,6 @@ public class DynamicPortalsCommand {
 				// TODO: fix this (x rotation is backwards)
 				rotation = new Vec3(Math.toRadians(rotato.y), Math.toRadians(-rotato.x), 0);
 			}
-			try {
-				if (ctx.getArgument("frontonly", String.class).equals("true"))
-					portal.computeNormal();
-			} catch (Throwable ignored) {
-			}
 			Vec3 normal;
 			try {
 				normal = norm.getPosition(ctx);
@@ -120,6 +115,11 @@ public class DynamicPortalsCommand {
 			portal.setRotation(rotation.x, rotation.y, rotation.z);
 			if (normal != null) {
 				portal.setNormal(normal);
+			}
+			try {
+				if (ctx.getArgument("frontonly", String.class).equals("true"))
+					portal.computeNormal();
+			} catch (Throwable ignored) {
 			}
 			boolean log = true;
 			if (context.getSource().hasPermission(4)) {
@@ -153,6 +153,31 @@ public class DynamicPortalsCommand {
 		builderFork("uuid", UuidArgument.uuid(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		builderFork("target", PortalSelectorArgument.create(), commandNode, DynamicPortalsCommand::toSource, cmd);
 		commandNode.addChild(create.build());
+		
+		{
+			ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> builder2 = LiteralArgumentBuilder.literal("delete");
+			ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, FullPortalFilter>> builder1 = RequiredArgumentBuilder.argument("target", PortalSelectorArgument.create());
+			Command<CommandSourceStack> exec = context -> {
+				FullPortalFilter i = context.getArgument("target", FullPortalFilter.class);
+				int count = 0;
+				for (CommandPortal commandPortal : Temp.filter(i, context)) {
+					Temp.remove(commandPortal.myId());
+					count += 1;
+				}
+				boolean log = true;
+				if (context.getSource().hasPermission(4)) {
+					if (context.getSource().getLevel().getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
+						log = false;
+					}
+				}
+				context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.delete", count), log);
+				return count;
+			};
+			builder2.executes(exec);
+			builder1.executes(exec);
+			builder2.then(builder1);
+			commandNode.addChild(builder2.build());
+		}
 		
 		return builder;
 	}

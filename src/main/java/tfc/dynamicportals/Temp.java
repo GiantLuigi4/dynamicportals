@@ -6,7 +6,6 @@ import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.BasicPortal;
 import tfc.dynamicportals.command.CommandPortal;
 import tfc.dynamicportals.command.FullPortalFilter;
-import tfc.dynamicportals.command.PortalFilter;
 import tfc.dynamicportals.vanilla.EndPortal;
 import tfc.dynamicportals.vanilla.NetherPortal;
 
@@ -18,12 +17,14 @@ import java.util.UUID;
 public class Temp {
 	private static AbstractPortal[] portals;
 	
-	private static ArrayList<CommandPortal> cmdPortals = new ArrayList<>();
+	private static final ArrayList<CommandPortal> cmdPortals = new ArrayList<>();
 	
 	public static CommandPortal get(int id) {
-		for (CommandPortal cmdPortal : cmdPortals) {
-			if (cmdPortal.myId() == id) {
-				return cmdPortal;
+		synchronized (cmdPortals) {
+			for (CommandPortal cmdPortal : cmdPortals) {
+				if (cmdPortal.myId() == id) {
+					return cmdPortal;
+				}
 			}
 		}
 		return null;
@@ -45,7 +46,9 @@ public class Temp {
 		if (id == -1) id = max + 1;
 		
 		int v = portal.setId(id);
-		cmdPortals.add(portal);
+		synchronized (cmdPortals) {
+			cmdPortals.add(portal);
+		}
 		if (id != v)
 			// TODO: use unsafe to throw unchecked
 			throw new RuntimeException(new IllegalArgumentException("Portal was created with an id of " + v + " even though its id was meant to be " + id));
@@ -124,17 +127,27 @@ public class Temp {
 		portal.setSize(3, 3);
 		portal.computeNormal();
 		
-		ArrayList<AbstractPortal> allPortals = new ArrayList<>();
-		for (CommandPortal cmdPortal : cmdPortals) allPortals.add((AbstractPortal) cmdPortal);
-		Collections.addAll(allPortals, portals);
-
-//		for (AbstractPortal abstractPortal : portals) {
-//			abstractPortal.target = abstractPortal;
-//		}
-		return allPortals.toArray(new BasicPortal[0]);
+		synchronized (cmdPortals) {
+			ArrayList<AbstractPortal> allPortals = new ArrayList<>();
+			for (CommandPortal cmdPortal : cmdPortals.toArray(new CommandPortal[0]))
+				allPortals.add((AbstractPortal) cmdPortal);
+			Collections.addAll(allPortals, portals);
+			return allPortals.toArray(new BasicPortal[0]);
+		}
 	}
 	
 	public static CommandPortal[] filter(FullPortalFilter i, CommandContext<?> ctx) {
 		return i.filter(List.copyOf(cmdPortals), ctx);
+	}
+	
+	public static void remove(int myId) {
+		synchronized (cmdPortals) {
+			for (CommandPortal cmdPortal : cmdPortals) {
+				if (cmdPortal.myId() == myId) {
+					cmdPortals.remove(cmdPortal);
+					return;
+				}
+			}
+		}
 	}
 }

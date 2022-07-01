@@ -22,7 +22,7 @@ import java.util.UUID;
  * {@link BasicPortal} for some examples
  */
 public abstract class AbstractPortal {
-	private final UUID uuid;
+	public final UUID uuid;
 	public AbstractPortal target = this;
 	protected PortalVisibilityGraph graph;
 	
@@ -247,9 +247,5 @@ public abstract class AbstractPortal {
 	 */
 	public ShaderInstance blitShader() {
 		return GameRenderer.getPositionTexShader();
-	}
-	
-	public UUID getUUID() {
-		return uuid;
 	}
 }

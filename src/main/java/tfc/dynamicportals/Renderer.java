@@ -186,8 +186,10 @@ public class Renderer {
 		// draw
 //		Minecraft.getInstance().levelRenderer.capturedFrustum = portal.getGraph().getFrustum();
 		ObjectArrayList<LevelRenderer.RenderChunkInfo> chunkInfoList = Minecraft.getInstance().levelRenderer.renderChunksInFrustum;
-		Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.getGraph().getChunks();
-		Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
+		if  (portal.getGraph() != null) {
+			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.getGraph().getChunks();
+			Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
+		}
 		
 		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
 			if (istart != null) {
