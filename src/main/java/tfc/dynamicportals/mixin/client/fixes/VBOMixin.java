@@ -19,27 +19,27 @@ public class VBOMixin implements IClosable {
 		isClosed = true;
 	}
 	
-	@Inject(at= @At("HEAD"), method = "draw")
+	@Inject(at= @At("HEAD"), method = "draw", cancellable = true)
 	public void preDraw0(CallbackInfo ci) {
 		if (isClosed) ci.cancel();
 	}
 	
-	@Inject(at= @At("HEAD"), method = "drawChunkLayer")
+	@Inject(at= @At("HEAD"), method = "drawChunkLayer", cancellable = true)
 	public void preDraw1(CallbackInfo ci) {
 		if (isClosed) ci.cancel();
 	}
 	
-	@Inject(at= @At("HEAD"), method = "_drawWithShader")
+	@Inject(at= @At("HEAD"), method = "_drawWithShader", cancellable = true)
 	public void preDraw2(CallbackInfo ci) {
 		if (isClosed) ci.cancel();
 	}
 	
-	@Inject(at= @At("HEAD"), method = "upload_")
+	@Inject(at= @At("HEAD"), method = "upload_", cancellable = true)
 	public void preUpload(CallbackInfo ci) {
 		if (isClosed) ci.cancel();
 	}
 	
-	@Inject(at = @At("HEAD"), method = "bind")
+	@Inject(at = @At("HEAD"), method = "bind", cancellable = true)
 	public void preBind(CallbackInfo ci) {
 		if (isClosed) ci.cancel();
 	}
