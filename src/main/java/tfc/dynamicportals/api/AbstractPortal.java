@@ -180,10 +180,10 @@ public abstract class AbstractPortal {
 	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
 		Vec3 look = VecMath.getLookVec(vector);
 		if (reverse)
-			look = VecMath.old_transform(look, Quaternion.ONE, raytraceRotation(), target == this, true, Vec3.ZERO, Vec3.ZERO);
+			look = VecMath.transform(look, Quaternion.ONE, raytraceRotation(), target == this, true, Vec3.ZERO, Vec3.ZERO);
 		else {
 			look = look.multiply(-1, 1, -1);
-			look = VecMath.old_transform(look, raytraceRotation(), Quaternion.ONE, target == this, true, Vec3.ZERO, Vec3.ZERO);
+			look = VecMath.transform(look, raytraceRotation(), Quaternion.ONE, target == this, true, Vec3.ZERO, Vec3.ZERO);
 		}
 		look = VecMath.rotate(look, target.get180DegreesRotationAroundVerticalAxis());
 		

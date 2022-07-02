@@ -7,7 +7,7 @@ public class AsyncDispatcher {
 	private static final ArrayList<Runnable> runnables = new ArrayList<>();
 	
 	
-	private static final ReusableThread schedulerThread = new ReusableThread(()->{
+	private static final ReusableThread schedulerThread = new ReusableThread(() -> {
 		while (true) {
 			if (runnables.isEmpty()) {
 				try {
@@ -22,13 +22,12 @@ public class AsyncDispatcher {
 			}
 		}
 	});
-	
+	private static final Object lock = new Object();
+	private static final boolean dispatcherSelected = false;
+
 	static {
 		schedulerThread.start();
 	}
-	
-	private static final Object lock = new Object();
-	private static boolean dispatcherSelected = false;
 	
 	static {
 		threads = new ReusableThread[16];

@@ -65,88 +65,66 @@ public class Renderer {
 		ShaderInstance shaderInstance;
 		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
-
-//		// raytracing debug
-//		Vec3 start = Minecraft.getInstance().cameraEntity.getEyePosition(Minecraft.getInstance().getFrameTime());
-//		Vec3 end = Minecraft.getInstance().cameraEntity.getLookAngle();
-//		end = end.scale(8);
-//		end = start.add(end);
-//		double dist = portal.trace(start, end);
-//		Vec3 interp = new Vec3(
-//				Mth.lerp(dist, start.x, end.x),
-//				Mth.lerp(dist, start.y, end.y),
-//				Mth.lerp(dist, start.z, end.z)
-//		);
-//		if (dist != 1){
-//			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-//			LevelRenderer.renderLineBox(
-//					a, consumer,
-//					interp.x - 0.1, interp.y - 0.1, interp.z - 0.1,
-//					interp.x + 0.1, interp.y + 0.1, interp.z + 0.1,
-//					1, 1, 1, 1
-//			);
-//			forceDraw(source);
-//		}
 		
 		// copy stack (easier to work with, as I don't need to reset the stack's state)
 		PoseStack stack = new PoseStack();
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
-		Vec3 istart = null;
-		Vec3 ireach = null;
-		Vec3 iend = null;
 		
-		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
-			Entity entity = Minecraft.getInstance().cameraEntity;
-			double reach = Minecraft.getInstance().gameMode.getPickRange();
-			Vec3 start = entity.getEyePosition(Minecraft.getInstance().getFrameTime());
-			Vec3 look = entity.getViewVector(1.0F);
-			Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);
-			Vec3 end = start.add(reachVec);
-			
-			double dist = portal.trace(start, end);
-			
-			if (dist != 1) {
-				Vec3 interpStart = VecMath.lerp(dist, start, end);
-				Vec3 interpReach = VecMath.lerp(1 - dist, Vec3.ZERO, reachVec);
-				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-				if (portal.requireTraceRotation()) {
-					Quaternion srcQuat = portal.raytraceRotation();
-					Quaternion dstQuat = portal.target.raytraceRotation();
-					Vec3 srcOff = portal.raytraceOffset();
-					Vec3 dstOff = portal.target.raytraceOffset();
-					interpStart = VecMath.old_transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-					interpStart = VecMath.rotate(interpStart.subtract(dstOff), portal.target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
-					interpReach = VecMath.old_transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
-					interpReach = VecMath.rotate(interpReach, portal.target.get180DegreesRotationAroundVerticalAxis());
-				} else {
-					Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
-					interpStart = interpStart.add(offset);
+		// raytracing debug
+		{
+			if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
+				Entity entity = Minecraft.getInstance().cameraEntity;
+				double reach = Minecraft.getInstance().gameMode.getPickRange();
+				Vec3 start = entity.getEyePosition(Minecraft.getInstance().getFrameTime());
+				Vec3 look = entity.getViewVector(1.0F);
+				Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);
+				Vec3 end = start.add(reachVec);
+				
+				double dist = portal.trace(start, end);
+				
+				if (dist != 1) {
+					Vec3 interpStart = VecMath.lerp(dist, start, end);
+					Vec3 interpReach = VecMath.lerp(1 - dist, Vec3.ZERO, reachVec);
+					VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+					if (portal.requireTraceRotation()) {
+						Quaternion srcQuat = portal.raytraceRotation();
+						Quaternion dstQuat = portal.target.raytraceRotation();
+						Vec3 srcOff = portal.raytraceOffset();
+						Vec3 dstOff = portal.target.raytraceOffset();
+						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
+						interpStart = VecMath.rotate(interpStart.subtract(dstOff), portal.target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
+						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
+						interpReach = VecMath.rotate(interpReach, portal.target.get180DegreesRotationAroundVerticalAxis());
+					} else {
+						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
+						interpStart = interpStart.add(offset);
+					}
+					Vec3 istart = interpStart;
+					Vec3 ireach = interpReach;
+					Vec3 iend = istart.add(ireach);
+					double size = 0.01;
+					
+					Matrix4f matrix4f = stack.last().pose();
+					Matrix3f matrix3f = stack.last().normal();
+					consumer.vertex(matrix4f, (float) istart.x, (float) istart.y, (float) istart.z).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
+					consumer.vertex(matrix4f, (float) (iend.x), (float) (iend.y), (float) (iend.z)).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
+					
+					LevelRenderer.renderLineBox(
+							stack, consumer,
+							istart.x, istart.y, istart.z,
+							istart.x + size, istart.y + size, istart.z + size,
+							1, 0, 1, 1
+					);
+					
+					LevelRenderer.renderLineBox(
+							stack, consumer,
+							iend.x, iend.y, iend.z,
+							iend.x + size, iend.y + size, iend.z + size,
+							1, 0, 0, 1
+					);
+					forceDraw(source);
 				}
-				istart = interpStart;
-				ireach = interpReach;
-				iend = istart.add(ireach);
-				double size = 0.01;
-				
-				Matrix4f matrix4f = stack.last().pose();
-				Matrix3f matrix3f = stack.last().normal();
-				consumer.vertex(matrix4f, (float) istart.x, (float) istart.y, (float) istart.z).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
-				consumer.vertex(matrix4f, (float) (iend.x), (float) (iend.y), (float) (iend.z)).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
-				
-				LevelRenderer.renderLineBox(
-						stack, consumer,
-						istart.x, istart.y, istart.z,
-						istart.x + size, istart.y + size, istart.z + size,
-						1, 0, 1, 1
-				);
-				
-				LevelRenderer.renderLineBox(
-						stack, consumer,
-						iend.x, iend.y, iend.z,
-						iend.x + size, iend.y + size, iend.z + size,
-						1, 0, 0, 1
-				);
-				forceDraw(source);
 			}
 		}
 		
@@ -186,25 +164,9 @@ public class Renderer {
 		// draw
 //		Minecraft.getInstance().levelRenderer.capturedFrustum = portal.getGraph().getFrustum();
 		ObjectArrayList<LevelRenderer.RenderChunkInfo> chunkInfoList = Minecraft.getInstance().levelRenderer.renderChunksInFrustum;
-		if  (portal.getGraph() != null) {
+		if (portal.getGraph() != null) {
 			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.getGraph().getChunks();
 			Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
-		}
-		
-		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
-			if (istart != null) {
-				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-				consumer.vertex(matr, (float) istart.x, (float) istart.y, (float) istart.z).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
-				consumer.vertex(matr, (float) iend.x, (float) iend.y, (float) iend.z).color(0f, 0, 1, 1).normal(0, 0, 0).endVertex();
-
-//				LevelRenderer.renderLineBox(
-//						stack, consumer,
-//						istart.x - 0.01, istart.y - 0.01, istart.z - 0.01,
-//						istart.x + 0.01, istart.y + 0.01, istart.z + 0.01,
-//						1, 1, 1, 1
-//				);
-				forceDraw(source);
-			}
 		}
 		
 		Minecraft.getInstance().levelRenderer.renderChunksInFrustum = chunkInfoList;
@@ -261,10 +223,10 @@ public class Renderer {
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
 			portal.getGraph().update();
 		} else if (
-				(int) orx != (int) rx || (int) ory != (int) ry ||
-						(int) oldPos.x != (int) camVec.x ||
-						(int) oldPos.y != (int) camVec.y ||
-						(int) oldPos.z != (int) camVec.z
+				       (int) orx != (int) rx || (int) ory != (int) ry ||
+						       (int) oldPos.x != (int) camVec.x ||
+						       (int) oldPos.y != (int) camVec.y ||
+						       (int) oldPos.z != (int) camVec.z
 		) {
 			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
 			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));

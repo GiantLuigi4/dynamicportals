@@ -25,10 +25,8 @@ public class VecMath {
 		return new Vec3(newPoint.i(), newPoint.j(), newPoint.k());
 	}
 	
-	public static Vec3 old_transform(Vec3 src, Quaternion selfRot, Quaternion otherRot, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 destTransformation) {
+	public static Vec3 transform(Vec3 src, Quaternion selfRot, Quaternion otherRot, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 otherTransformation) {
 		if (motion) {
-			Quaternion selfRotConj = selfRot.copy();
-			selfRotConj.conj();
 			Quaternion otherRotConj = otherRot.copy();
 			otherRotConj.conj();
 			
@@ -37,23 +35,22 @@ public class VecMath {
 				pos = pos.multiply(1, 1, -1);
 			}
 			pos = VecMath.rotate(pos, otherRotConj);
-//			pos = VecMath.rotate(pos, new Quaternion(0, 1, 0, 0));
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);
-		pos = old_transform(pos, selfRot, otherRot, isMirror, true, sourceTransformation, destTransformation);
-		pos = pos.add(destTransformation);
+		pos = transform(pos, selfRot, otherRot, isMirror, true, sourceTransformation, otherTransformation);
+		pos = pos.add(otherTransformation);
 		return pos;
 	}
 	
 	public static Vec3 getLookVec(Vec2 vec) {
-		float f = vec.x * ((float)Math.PI / 180F);
-		float f1 = -vec.y * ((float)Math.PI / 180F);
+		float f = vec.x * ((float) Math.PI / 180F);
+		float f1 = -vec.y * ((float) Math.PI / 180F);
 		float f2 = Mth.cos(f1);
 		float f3 = Mth.sin(f1);
 		float f4 = Mth.cos(f);
 		float f5 = Mth.sin(f);
-		return new Vec3((double)(f3 * f4), (double)(-f5), (double)(f2 * f4));
+		return new Vec3(f3 * f4, -f5, f2 * f4);
 	}
 	
 	public static Vec2 lookAngle(Vec3 vector) {
@@ -61,8 +58,8 @@ public class VecMath {
 		double d1 = vector.y - 0;
 		double d2 = vector.z - 0;
 		double d3 = Math.sqrt(d0 * d0 + d2 * d2);
-		double xr = (Mth.wrapDegrees((float)(-(Mth.atan2(d1, d3) * (double)(180F / (float)Math.PI)))));
-		double yr = (Mth.wrapDegrees((float)(Mth.atan2(d2, d0) * (double)(180F / (float)Math.PI)) - 90.0F));
+		double xr = (Mth.wrapDegrees((float) (-(Mth.atan2(d1, d3) * (double) (180F / (float) Math.PI)))));
+		double yr = (Mth.wrapDegrees((float) (Mth.atan2(d2, d0) * (double) (180F / (float) Math.PI)) - 90.0F));
 		return new Vec2((float) xr, (float) yr);
 	}
 }
