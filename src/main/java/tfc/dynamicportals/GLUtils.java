@@ -106,7 +106,11 @@ public class GLUtils {
 //		RenderSystem.setProjectionMatrix(project);
 	}
 	
+	public static boolean isCullOn = false;
+	
 	public static boolean clear(int pMask) {
+		boolean wasCullOn = isCullOn;
+		if (wasCullOn) RenderSystem.disableCull();
 		GlStateManager._clear(pMask, Minecraft.ON_OSX);
 //		boolean didSpecial = false;
 //		if ((pMask & GL11.GL_DEPTH_BUFFER_BIT) == GL11.GL_DEPTH_BUFFER_BIT) clearDepth();
@@ -115,6 +119,7 @@ public class GLUtils {
 //			didSpecial = true;
 		}
 //		if ((pMask & GL11.GL_STENCIL_BUFFER_BIT) == GL11.GL_STENCIL_BUFFER_BIT) GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
+		if (wasCullOn) RenderSystem.enableCull();
 		return true;
 	}
 	
@@ -137,5 +142,13 @@ public class GLUtils {
 	
 	public static void swapBackface(boolean b) {
 		swapBackface = b;
+	}
+	
+	public static void setCullState(boolean b) {
+		if (GLUtils.shouldSwapBackface())
+			if (b) GL11.glCullFace(GL11.GL_FRONT);
+			else GL11.glCullFace(GL11.GL_BACK);
+		else GL11.glCullFace(GL11.GL_BACK);
+		isCullOn = b;
 	}
 }

@@ -16,7 +16,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import org.lwjgl.opengl.GL11;
+import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
@@ -346,14 +346,14 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public void setupRenderState() {
 		// TODO: check if this works well enough
-		if (target == this)
-			GL11.glCullFace(GL11.GL_FRONT);
+		if (this == target)
+			GLUtils.swapBackface(true);
 	}
 	
 	@Override
 	public void teardownRenderState() {
-		if (target == this)
-			GL11.glCullFace(GL11.GL_BACK);
+		if (this == target)
+			GLUtils.swapBackface(false);
 	}
 	
 	@Override

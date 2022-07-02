@@ -24,4 +24,14 @@ public class RenderSystemMixin {
 	private static void setClearColor(float pRed, float pGreen, float pBlue, float pAlpha, CallbackInfo ci) {
 		GLUtils.setClearColor(pRed, pGreen, pBlue, pAlpha);
 	}
+	
+	@Inject(at = @At("HEAD"), method = "enableCull")
+	private static void preEnableCull(CallbackInfo ci) {
+		GLUtils.setCullState(true);
+	}
+	
+	@Inject(at = @At("HEAD"), method = "disableCull")
+	private static void preDisableCull(CallbackInfo ci) {
+		GLUtils.setCullState(false);
+	}
 }
