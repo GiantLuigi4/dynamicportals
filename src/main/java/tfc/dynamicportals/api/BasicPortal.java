@@ -244,19 +244,56 @@ public class BasicPortal extends AbstractPortal {
 				consumer.vertex(stack.last().pose(), (float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
 				consumer.vertex(stack.last().pose(), (float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
 				
-				AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
-				Vec3 center = box.getCenter();
-				center = center.subtract(position.x, position.y, position.z);
-				Vec3 nearest = qd.nearestInQuad(center);
-				if (nearest != null) {
-					double size = 0.01;
-					LevelRenderer.renderLineBox(stack, consumer,
-							nearest.x - size, nearest.y - size, nearest.z - size,
-							nearest.x + size, nearest.y + size, nearest.z + size,
-							0, 0, 1, 1
-					);
+				Vec3 eye = Minecraft.getInstance().cameraEntity.getEyePosition();
+				eye = eye.subtract(position.x, position.y, position.z);
+				{
+					Vec3 nearestInside = qd.nearestInQuad(eye);
+					Vec3 nearest = qd.nearest(eye);
+					Vec3 edge = qd.nearestOnEdge(eye);
+					{
+						Vec3 mid = qd.center();
+						double size = 0.01;
+						LevelRenderer.renderLineBox(stack, consumer,
+								mid.x - size, mid.y - size, mid.z - size,
+								mid.x + size, mid.y + size, mid.z + size,
+								1, 1, 1, 1
+						);
+					}
+					if (edge != null && nearest != null) {
+						Vec3 mid = qd.center();
+						if (edge.distanceTo(mid) <= nearest.distanceTo(mid)) {
+							double size = 0.01;
+							LevelRenderer.renderLineBox(stack, consumer,
+									edge.x - size, edge.y - size, edge.z - size,
+									edge.x + size, edge.y + size, edge.z + size,
+									1, 0, nearestInside != null ? 1 : 0, 1
+							);
+						} else {
+							double size = 0.01;
+							LevelRenderer.renderLineBox(stack, consumer,
+									nearest.x - size, nearest.y - size, nearest.z - size,
+									nearest.x + size, nearest.y + size, nearest.z + size,
+									0, nearestInside != null ? 1 : 0, nearestInside == null ? 1 : 0, 1
+							);
+						}
+					} else {
+						if (nearest != null) {
+							double size = 0.01;
+							LevelRenderer.renderLineBox(stack, consumer,
+									nearest.x - size, nearest.y - size, nearest.z - size,
+									nearest.x + size, nearest.y + size, nearest.z + size,
+									0, nearestInside != null ? 1 : 0, nearestInside == null ? 1 : 0, 1
+							);
+						}
+					}
 				}
 				
+				//  entity bounding box
+				AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
+				Vec3 center = box.getCenter();
+//				center = center.subtract(position.x, position.y, position.z);
+				
+				// all the vars
 				Quaternion srcQuat = raytraceRotation();
 				Quaternion dstQuat = target.raytraceRotation();
 				Vec3 srcOff = raytraceOffset();

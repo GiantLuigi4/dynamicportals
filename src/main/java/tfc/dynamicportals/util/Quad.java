@@ -29,45 +29,19 @@ public class Quad {
 	
 	private static double bulkMax(double... values) {
 		double out = values[0];
-		for (int i = 1; i < values.length; i++) out = Math.min(out, values[i]);
+		for (int i = 1; i < values.length; i++) out = Math.max(out, values[i]);
 		return out;
 	}
 	
-	public boolean voxelOverlap(AABB box) {
-		if (bulkEq(pt0.y, pt1.y, pt2.y, pt3.y)) {
-			// TODO: get the main overlap check to work better
-			return new AABB(
-					bulkMin(pt0.x, pt1.x, pt2.x, pt3.x),
-					pt0.y,
-					bulkMin(pt0.z, pt1.z, pt2.z, pt3.z),
-					bulkMax(pt0.x, pt1.x, pt2.x, pt3.x),
-					pt0.y,
-					bulkMax(pt0.z, pt1.z, pt2.z, pt3.z)
-			).intersects(box);
-		}
-		return false;
-	}
-	
-	// TODO: this works well enough for now, but it's bad and dumb
 	public boolean overlaps(AABB box) {
-		// TODO: this is a temp fix
-		// it is bad
-		if (voxelOverlap(box)) {
-			return true;
-		}
 		Vec3 P = box.getCenter();
 		Vec3 n = nearestInQuad(P);
 		return n != null && box.contains(n);
 	}
 	
-	double absMax(double d0, double d1) {
-		if (Math.abs(d0) > Math.abs(d1)) return d0;
-		return d1;
-	}
-	
-	boolean absGreatest(double v0, double v1, double v2) {
-		v0 = Math.abs(v0);
-		return v0 > Math.abs(v1) && v0 > Math.abs(v2);
+	public Vec3 nearest(Vec3 point) {
+		Vec3 n;
+		return (n = nearestInQuad(point)) == null ? nearestOnEdge(point) : n;
 	}
 	
 	public Vec3 nearestInQuad(Vec3 P) {
@@ -83,20 +57,19 @@ public class Quad {
 		});
 		float det = A.determinant();
 		A.adjugateAndDet();
-		A.multiply(1/det);
+		A.multiply(1 / det);
 		
 		Vec3 nearest = new Vec3(
-				A.m00*P.x+A.m01*P.y+A.m02*P.z+A.m03*d,
-				A.m10*P.x+A.m11*P.y+A.m12*P.z+A.m13*d,
-				A.m20*P.x+A.m21*P.y+A.m22*P.z+A.m33*d
+				A.m00 * P.x + A.m01 * P.y + A.m02 * P.z + A.m03 * d,
+				A.m10 * P.x + A.m11 * P.y + A.m12 * P.z + A.m13 * d,
+				A.m20 * P.x + A.m21 * P.y + A.m22 * P.z + A.m33 * d
 		);
 		int i, j;
 		boolean inside = false;
-		for (i = 0, j = poly.length - 1; i < poly.length; j = i++)
-		{
+		for (i = 0, j = poly.length - 1; i < poly.length; j = i++) {
 			if ((((poly[i].x <= nearest.x) && (nearest.x < poly[j].x)) |
-					     ((poly[j].x <= nearest.x) && (nearest.x < poly[i].x))) &&
-					    (nearest.y < (poly[j].y - poly[i].y) * (nearest.x - poly[i].x) / (poly[j].x - poly[i].x) + poly[i].y))
+					((poly[j].x <= nearest.x) && (nearest.x < poly[i].x))) &&
+					(nearest.y < (poly[j].y - poly[i].y) * (nearest.x - poly[i].x) / (poly[j].x - poly[i].x) + poly[i].y))
 				inside = !inside;
 		}
 		
@@ -108,7 +81,7 @@ public class Quad {
 		double minDistance = Double.POSITIVE_INFINITY;
 		Vec3 actualNearest = null;
 		for (int i = 0; i < 4; i++) {
-			Vec3 possibleNearest = nearestOnEdgeAB(vert[i], vert[(i+1)%4], P);
+			Vec3 possibleNearest = nearestOnEdgeAB(vert[i], vert[(i + 1) % 4], P);
 			if (possibleNearest != null) {
 				double possibleDistance = P.distanceToSqr(possibleNearest);
 				if (minDistance > possibleDistance) {
@@ -123,8 +96,23 @@ public class Quad {
 	public Vec3 nearestOnEdgeAB(Vec3 A, Vec3 B, Vec3 P) {
 		Vec3 v = B.subtract(A);
 		Vec3 u = A.subtract(P);
-		double t = - (v.dot(u) / v.dot(v));
+		double t = -(v.dot(u) / v.dot(v));
 		if (t < 0 || t > 1) return null;
 		return A.scale(1 - t).add(B.scale(t));
+	}
+	
+	public Vec3 center() {
+		Vec3 bMin = new Vec3(
+				bulkMin(pt0.x, pt1.x, pt2.x, pt3.x),
+				bulkMin(pt0.y, pt1.y, pt2.y, pt3.y),
+				bulkMin(pt0.z, pt1.z, pt2.z, pt3.z)
+		);
+		Vec3 bMax = new Vec3(
+				bulkMax(pt0.x, pt1.x, pt2.x, pt3.x),
+				bulkMax(pt0.y, pt1.y, pt2.y, pt3.y),
+				bulkMax(pt0.z, pt1.z, pt2.z, pt3.z)
+		);
+		Vec3 mid = bMin.add(bMax).scale(0.5);
+		return mid;
 	}
 }
