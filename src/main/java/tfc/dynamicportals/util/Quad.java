@@ -71,7 +71,7 @@ public class Quad {
 	}
 	
 	public Vec3 nearestInQuad(Vec3 P) {
-		Vec3[] vert = new Vec3[]{pt0, pt1, pt2, pt3};
+		Vec3[] poly = new Vec3[]{pt0, pt1, pt2, pt3};
 		Vec3 normal = (pt0.subtract(pt1)).cross(pt2.subtract(pt1));
 		Vec3 n = normal.multiply(pt0).scale(-1);
 		double d = (n.x + n.y + n.z);
@@ -90,23 +90,15 @@ public class Quad {
 				A.m10*P.x+A.m11*P.y+A.m12*P.z+A.m13*d,
 				A.m20*P.x+A.m21*P.y+A.m22*P.z+A.m33*d
 		);
-//
-//		boolean inside = false;
-//		for (int i = 0, j = vert.length - 1; i<vert.length; j=i++) {
-//			double xi = vert[i].x, yi = vert[i].y, zi = vert[i].z;
-//			double xj = vert[j].x, yj = vert[j].y, zj = vert[j].z;
-//
-//			boolean intersect = ((yi > nearest.y) != (yj > nearest.y))
-//					&& (nearest.x < (xj-xi)*(nearest.y-yi)/(yj -yi)+xi);
-//			if (intersect) inside = !inside;
-//		}
-		boolean inside =
-				Math.abs(nearest.x) <= Math.abs(pt0.x - pt1.x) / 2 &&
-						Math.abs(nearest.y) <= Math.abs(pt0.y - pt2.y) &&
-						Math.abs(nearest.z) <= Math.abs(pt0.z - pt1.z) / 2
-				
-				;
-		
+		int i, j;
+		boolean inside = false;
+		for (i = 0, j = poly.length - 1; i < poly.length; j = i++)
+		{
+			if ((((poly[i].x <= nearest.x) && (nearest.x < poly[j].x)) |
+					     ((poly[j].x <= nearest.x) && (nearest.x < poly[i].x))) &&
+					    (nearest.y < (poly[j].y - poly[i].y) * (nearest.x - poly[i].x) / (poly[j].x - poly[i].x) + poly[i].y))
+				inside = !inside;
+		}
 		
 		return inside ? nearest : null;
 	}
