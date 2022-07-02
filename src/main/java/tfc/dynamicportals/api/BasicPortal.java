@@ -247,11 +247,12 @@ public class BasicPortal extends AbstractPortal {
 				AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
 				Vec3 center = box.getCenter();
 				center = center.subtract(position.x, position.y, position.z);
-				Vec3 nearest = qd.getNearest(center);
+				Vec3 nearest = qd.nearestInQuad(center);
 				if (nearest != null) {
+					double size = 0.01;
 					LevelRenderer.renderLineBox(stack, consumer,
-							nearest.x - 0.01, nearest.y - 0.01, nearest.z - 0.01,
-							nearest.x + 0.01, nearest.y + 0.01, nearest.z + 0.01,
+							nearest.x - size, nearest.y - size, nearest.z - size,
+							nearest.x + size, nearest.y + size, nearest.z + size,
 							0, 0, 1, 1
 					);
 				}

@@ -1,5 +1,6 @@
 package tfc.dynamicportals.util;
 
+import com.mojang.math.Matrix4f;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -54,7 +55,9 @@ public class Quad {
 		if (voxelOverlap(box)) {
 			return true;
 		}
-		return getNearest(box.getCenter()) != null;
+		Vec3 P = box.getCenter();
+		Vec3 n = nearestInQuad(P);
+		return n != null && box.contains(n);
 	}
 	
 	double absMax(double d0, double d1) {
@@ -67,71 +70,69 @@ public class Quad {
 		return v0 > Math.abs(v1) && v0 > Math.abs(v2);
 	}
 	
-	public Vec3 getNearest(Vec3 center) {
-		double dx_ = absMax(pt0.x - pt1.x, pt3.x - pt2.x);
-		double dy_ = absMax(pt3.y - pt0.y, pt2.y - pt1.y);
-		double dz_ = absMax(pt1.z - pt0.z, pt2.z - pt3.z);
+	public Vec3 nearestInQuad(Vec3 P) {
+		Vec3[] vert = new Vec3[]{pt0, pt1, pt2, pt3};
+		Vec3 normal = (pt0.subtract(pt1)).cross(pt2.subtract(pt1));
+		Vec3 n = normal.multiply(pt0).scale(-1);
+		double d = (n.x + n.y + n.z);
+		Matrix4f A = new Matrix4f(new float[]{
+				1, 0, 0, (float) -normal.x,
+				0, 1, 0, (float) -normal.y,
+				0, 0, 1, (float) -normal.z,
+				(float) normal.x, (float) normal.y, (float) normal.z, 0,
+		});
+		float det = A.determinant();
+		A.adjugateAndDet();
+		A.multiply(1/det);
 		
-		if (absGreatest(dz_, dx_, dy_)) {
-			return null;
-		} else if (absGreatest(dx_, dy_, dz_)) {
-			// TODO: check all of this
-			double dx0 = center.x / (pt0.x - pt1.x);
-			dx0 += 0.5;
-			if (dx0 < 0 || dx0 > 1) return null;
-			Vec3 interpTop = VecMath.lerp(dx0, pt1, pt0);
-			
-			dx0 = center.x / (pt3.x - pt2.x);
-			dx0 += 0.5;
-			if (dx0 < 0 || dx0 > 1) return null;
-			Vec3 interpBottom = VecMath.lerp(dx0, pt2, pt3);
-			
-			double y = interpTop.y - interpBottom.y;
-			double z = interpTop.z - interpBottom.z;
-			if (Math.abs(y) > Math.abs(z)) {
-				// TODO: check
-				double tx = center.y + y;
-				double dz0 = Math.abs(tx) / y;
-				if (tx < 0) dz0 = -dz0;
-				dz0 = 1 - dz0;
-				if (0 > dz0 || dz0 > 1) return null;
-				Vec3 point = VecMath.lerp(dz0, interpTop, interpBottom);
-				return point;
-			} else {
-				double tx = center.z + z;
-				double dz0 = Math.abs(tx) / z;
-				if (tx < 0) dz0 = -dz0;
-				dz0 = 1 - dz0;
-				if (0 > dz0 || dz0 > 1) return null;
-				Vec3 point = VecMath.lerp(dz0, interpTop, interpBottom);
-				return point;
+		Vec3 nearest = new Vec3(
+				A.m00*P.x+A.m01*P.y+A.m02*P.z+A.m03*d,
+				A.m10*P.x+A.m11*P.y+A.m12*P.z+A.m13*d,
+				A.m20*P.x+A.m21*P.y+A.m22*P.z+A.m33*d
+		);
+//
+//		boolean inside = false;
+//		for (int i = 0, j = vert.length - 1; i<vert.length; j=i++) {
+//			double xi = vert[i].x, yi = vert[i].y, zi = vert[i].z;
+//			double xj = vert[j].x, yj = vert[j].y, zj = vert[j].z;
+//
+//			boolean intersect = ((yi > nearest.y) != (yj > nearest.y))
+//					&& (nearest.x < (xj-xi)*(nearest.y-yi)/(yj -yi)+xi);
+//			if (intersect) inside = !inside;
+//		}
+		boolean inside =
+				Math.abs(nearest.x) <= Math.abs(pt0.x - pt1.x) / 2 &&
+						Math.abs(nearest.y) <= Math.abs(pt0.y - pt2.y) &&
+						Math.abs(nearest.z) <= Math.abs(pt0.z - pt1.z) / 2
+				
+				;
+		
+		
+		return inside ? nearest : null;
+	}
+	
+	public Vec3 nearestOnEdge(Vec3 P) {
+		Vec3[] vert = new Vec3[]{pt0, pt1, pt2, pt3};
+		double minDistance = Double.POSITIVE_INFINITY;
+		Vec3 actualNearest = null;
+		for (int i = 0; i < 4; i++) {
+			Vec3 possibleNearest = nearestOnEdgeAB(vert[i], vert[(i+1)%4], P);
+			if (possibleNearest != null) {
+				double possibleDistance = P.distanceToSqr(possibleNearest);
+				if (minDistance > possibleDistance) {
+					actualNearest = possibleNearest;
+					minDistance = possibleDistance;
+				}
 			}
 		}
-		// TODO: deal with quads that have no height
-		double dy0 = center.y / (pt3.y - pt0.y);
-		if (dy0 < 0 || dy0 > 1) return null;
-		Vec3 interpLeft = VecMath.lerp(dy0, pt0, pt3);
-		
-		dy0 = center.y / (pt2.y - pt1.y);
-		if (dy0 < 0 || dy0 > 1) return null;
-		Vec3 interpRight = VecMath.lerp(dy0, pt1, pt2);
-		
-		double x = interpLeft.x - interpRight.x;
-		double z = interpLeft.z - interpRight.z;
-		if (Math.abs(x) > Math.abs(z)) {
-			double tx = center.x + (x / 2);
-			double dx0 = Math.abs(tx) / x;
-			if (tx < 0) dx0 = (-dx0);
-			if (0 > dx0 || dx0 > 1) return null;
-			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
-			return point;
-		} else {
-			double tx = center.z + (z / 2);
-			double dx0 = Math.abs(tx) / z;
-			if (tx < 0) dx0 = (-dx0);
-			if (0 > dx0 || dx0 > 1) return null;
-			Vec3 point = VecMath.lerp(dx0, interpRight, interpLeft);
-			return point;
-		}
+		return actualNearest;
+	}
+	
+	public Vec3 nearestOnEdgeAB(Vec3 A, Vec3 B, Vec3 P) {
+		Vec3 v = B.subtract(A);
+		Vec3 u = A.subtract(P);
+		double t = - (v.dot(u) / v.dot(v));
+		if (t < 0 || t > 1) return null;
+		return A.scale(1 - t).add(B.scale(t));
 	}
 }
