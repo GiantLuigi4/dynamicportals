@@ -1,6 +1,5 @@
 package tfc.dynamicportals.command.portals;
 
-import tfc.dynamicportals.api.BasicPortal;
 import tfc.dynamicportals.command.CommandPortal;
 import tfc.dynamicportals.vanilla.NetherPortal;
 

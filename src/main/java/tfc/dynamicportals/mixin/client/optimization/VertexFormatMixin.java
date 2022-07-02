@@ -1,7 +1,6 @@
 package tfc.dynamicportals.mixin.client.optimization;
 
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.renderer.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -11,7 +10,7 @@ import tfc.dynamicportals.Renderer;
 @Mixin(VertexFormat.class)
 public class VertexFormatMixin {
 	private static VertexFormat bound = null;
-
+	
 	// TODO: for some reason, vbos
 	@Inject(at = @At("HEAD"), method = "_setupBufferState", cancellable = true)
 	public void preSetupBufferState(CallbackInfo ci) {

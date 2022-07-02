@@ -262,7 +262,7 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 dstOff = target.raytraceOffset();
 				Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
 				Vec3 srcPos = pos1;
-				pos1 = VecMath.old_transform(pos1, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
+				pos1 = VecMath.transform(pos1, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
 				
 				box = box.move(-srcPos.x, -srcPos.y, -srcPos.z);
 				box = box.move(pos1.x, pos1.y, pos1.z);
@@ -271,7 +271,7 @@ public class BasicPortal extends AbstractPortal {
 				stack.translate(-position.x, -position.y, -position.z);
 				LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
 				center = box.getCenter();
-				Vec3 motion = VecMath.old_transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, false, true, Vec3.ZERO, Vec3.ZERO);
+				Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, false, true, Vec3.ZERO, Vec3.ZERO);
 				
 				stack.translate(center.x, center.y, center.z);
 				consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
@@ -331,7 +331,7 @@ public class BasicPortal extends AbstractPortal {
 			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 		}
 		// translate
-		stack.translate(-position.x, -position.y, isMirror ? -position.z : -position.z);
+		stack.translate(-position.x, -position.y, -position.z);
 	}
 	
 	@Override
@@ -493,9 +493,9 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 				Vec3 pos = position;
 				if (target != this) {
-					oldPos = VecMath.old_transform(oldPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
-					oPos = VecMath.old_transform(oPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
-					pos = VecMath.old_transform(pos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
+					oldPos = VecMath.transform(oldPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
+					oPos = VecMath.transform(oPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
+					pos = VecMath.transform(pos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
 					oldPos = VecMath.rotate(oldPos.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
 					oPos = VecMath.rotate(oPos.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
 					pos = VecMath.rotate(pos.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
@@ -514,7 +514,7 @@ public class BasicPortal extends AbstractPortal {
 				entity.setYRot(vec.y + 180);
 				entity.yRotO = vecOld.y + 180;
 				
-				motion = VecMath.old_transform(motion, srcQuat, dstQuat, target == this, true, Vec3.ZERO, Vec3.ZERO);
+				motion = VecMath.transform(motion, srcQuat, dstQuat, target == this, true, Vec3.ZERO, Vec3.ZERO);
 //				motion = motion.scale(-1);
 				double scl = motion.length();
 				motion = VecMath.rotate(motion, target.get180DegreesRotationAroundVerticalAxis());

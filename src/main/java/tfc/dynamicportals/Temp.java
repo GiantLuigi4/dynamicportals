@@ -15,45 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class Temp {
-	private static AbstractPortal[] portals;
-	
 	private static final ArrayList<CommandPortal> cmdPortals = new ArrayList<>();
-	
-	public static CommandPortal get(int id) {
-		synchronized (cmdPortals) {
-			for (CommandPortal cmdPortal : cmdPortals) {
-				if (cmdPortal.myId() == id) {
-					return cmdPortal;
-				}
-			}
-		}
-		return null;
-	}
-	
-	public static int addPortal(Level lvl, CommandPortal portal) {
-		ArrayList<Integer> ints = new ArrayList<>();
-		for (CommandPortal cmdPortal : cmdPortals) ints.add(cmdPortal.myId());
-		int id = -1;
-		int max = 0;
-		for (int i = 0; i < ints.size(); i++) {
-			max = Math.max(ints.get(i), max);
-			if (!ints.contains(i)) {
-				id = i;
-				break;
-			}
-		}
-		if (ints.size() == 0) max = -1;
-		if (id == -1) id = max + 1;
-		
-		int v = portal.setId(id);
-		synchronized (cmdPortals) {
-			cmdPortals.add(portal);
-		}
-		if (id != v)
-			// TODO: use unsafe to throw unchecked
-			throw new RuntimeException(new IllegalArgumentException("Portal was created with an id of " + v + " even though its id was meant to be " + id));
-		return v;
-	}
+	private static AbstractPortal[] portals;
 	
 	static {
 		ArrayList<AbstractPortal> portals = new ArrayList<>();
@@ -107,6 +70,42 @@ public class Temp {
 		}
 		
 		Temp.portals = portals.toArray(new AbstractPortal[0]);
+	}
+	
+	public static CommandPortal get(int id) {
+		synchronized (cmdPortals) {
+			for (CommandPortal cmdPortal : cmdPortals) {
+				if (cmdPortal.myId() == id) {
+					return cmdPortal;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static int addPortal(Level lvl, CommandPortal portal) {
+		ArrayList<Integer> ints = new ArrayList<>();
+		for (CommandPortal cmdPortal : cmdPortals) ints.add(cmdPortal.myId());
+		int id = -1;
+		int max = 0;
+		for (int i = 0; i < ints.size(); i++) {
+			max = Math.max(ints.get(i), max);
+			if (!ints.contains(i)) {
+				id = i;
+				break;
+			}
+		}
+		if (ints.size() == 0) max = -1;
+		if (id == -1) id = max + 1;
+		
+		int v = portal.setId(id);
+		synchronized (cmdPortals) {
+			cmdPortals.add(portal);
+		}
+		if (id != v)
+			// TODO: use unsafe to throw unchecked
+			throw new RuntimeException(new IllegalArgumentException("Portal was created with an id of " + v + " even though its id was meant to be " + id));
+		return v;
 	}
 	
 	public static AbstractPortal[] getPortals(Level level) {

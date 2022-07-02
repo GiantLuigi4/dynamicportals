@@ -20,6 +20,7 @@ public class DynamicPortalsSourceStack extends CommandSourceStack {
 	public final String input;
 	public final List<ParsedCommandNode<CommandSourceStack>> nodes;
 	public final CommandContext<CommandSourceStack> context;
+	
 	public DynamicPortalsSourceStack(CommandSource pSource, Vec3 pWorldPosition, Vec2 pRotation, ServerLevel pLevel, int pPermissionLevel, String pTextName, Component pDisplayName, MinecraftServer pServer, @Nullable Entity pEntity, boolean pSilent, @Nullable ResultConsumer<CommandSourceStack> pConsumer, EntityAnchorArgument.Anchor pAnchor, String input, List<ParsedCommandNode<CommandSourceStack>> nodes, CommandContext<CommandSourceStack> context) {
 		super(pSource, pWorldPosition, pRotation, pLevel, pPermissionLevel, pTextName, pDisplayName, pServer, pEntity, pSilent, pConsumer, pAnchor);
 		this.input = input;
