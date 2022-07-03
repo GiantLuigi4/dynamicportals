@@ -322,8 +322,8 @@ public class BasicPortal extends AbstractPortal {
 			stack.translate(-position.x, -position.y, -position.z);
 			
 			// draw
-//			if (box != null)
-//				LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
+			if (box != null)
+				LevelRenderer.renderLineBox(stack, consumer, box.inflate(Minecraft.getInstance().options.renderDebug ? 0.01 : 0), 1, 0, 0, 1);
 			stack.popPose();
 		}
 	}

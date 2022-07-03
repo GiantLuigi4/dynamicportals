@@ -276,9 +276,7 @@ public class Renderer {
 	public static void onRenderEvent(RenderLevelLastEvent event) {
 		if (recursion > 1) return;
 		
-		for (ReusableThread thread : threads) {
-			thread.await();
-		}
+		RenderTarget bound = GLUtils.boundTarget();
 		
 		/* enable stencils */
 		// truthfully this is unused, this is just for compatibility
@@ -359,6 +357,8 @@ public class Renderer {
 			ory = Minecraft.getInstance().gameRenderer.getMainCamera().getYRot();
 			oldPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 		}
+		
+		GLUtils.switchFBO(bound);
 	}
 	
 	public static void refreshStencilBuffer(int framebufferWidth, int framebufferHeight) {

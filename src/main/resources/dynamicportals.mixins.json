@@ -30,6 +30,7 @@
     "client.quality.ClientChunkCacheMixin",
     "client.quality.ClientNetworkingMixin",
     "client.quality.LevelRendererMixin",
+    "client.quality.ViewAreaMixin",
     "client.selection.GameRendererMixin"
   ],
   "injectors": {
