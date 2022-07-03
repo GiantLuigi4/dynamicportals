@@ -24,7 +24,7 @@ public class AsyncDispatcher {
 	});
 	private static final Object lock = new Object();
 	private static final boolean dispatcherSelected = false;
-
+	
 	static {
 		schedulerThread.start();
 	}

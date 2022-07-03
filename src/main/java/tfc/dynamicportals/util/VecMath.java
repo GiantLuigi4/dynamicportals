@@ -6,12 +6,14 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class VecMath {
+	
 	public static Vec3 lerp(double pct, Vec3 start, Vec3 end) {
-		return new Vec3(
-				Mth.lerp(pct, start.x, end.x),
-				Mth.lerp(pct, start.y, end.y),
-				Mth.lerp(pct, start.z, end.z)
-		);
+//		return new Vec3(
+//					Mth.lerp(pct, start.x, end.x),
+//					Mth.lerp(pct, start.y, end.y),
+//					Mth.lerp(pct, start.z, end.z)
+//			);
+		return start.add(end.subtract(start).scale(pct));
 	}
 	
 	// I don't even know why I tried to fix something that was already correct

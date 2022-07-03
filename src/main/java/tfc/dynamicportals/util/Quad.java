@@ -44,69 +44,59 @@ public class Quad {
 		return (n = nearestInQuad(point)) == null ? nearestOnEdge(point) : n;
 	}
 	
-	public Vec3 nearestInQuad(Vec3 P) {
+	public Vec3 nearestInQuad(Vec3 point) {
 		Vec3[] vertices = new Vec3[]{pt0, pt1, pt2, pt3};
+		
+		//The equation of a 3d plane is of the type ax+by+cz+d=0
+		
+		//The normal vector of this plane is (a,b,c)
+		//We calculate it by doing the cross product of two of the edges:
+		//Given two vectors, the third perpendicular to both of them is one and only one
 		Vec3 normal = (pt0.subtract(pt1)).cross(pt2.subtract(pt1));
-		Vec3 n = normal.multiply(pt0).scale(-1);
-		double d = (n.x + n.y + n.z);
+		//d represents the offset from the origin, since there is none we assume it's 0
+		
+		//Consider the matrix equation Ax=B, x=B/A=inv(A)*B
+		//"A" is the matrix of our plane, "B" is a 1x4 matrix containing (point.x,point.y,point.z,0)
 		Matrix4f A = new Matrix4f(new float[]{
 				1, 0, 0, (float) -normal.x,
 				0, 1, 0, (float) -normal.y,
 				0, 0, 1, (float) -normal.z,
 				(float) normal.x, (float) normal.y, (float) normal.z, 0,
 		});
+		
+		//The inverse of a matrix A is its adjugated (idk what it is) times the inverse of its det
 		float det = A.determinant();
 		A.adjugateAndDet();
 		A.multiply(1 / det);
 		
+		//Matrix multiplication between inv(A) and B
 		Vec3 nearest = new Vec3(
-				A.m00 * P.x + A.m01 * P.y + A.m02 * P.z + A.m03 * d,
-				A.m10 * P.x + A.m11 * P.y + A.m12 * P.z + A.m13 * d,
-				A.m20 * P.x + A.m21 * P.y + A.m22 * P.z + A.m33 * d
+				A.m00 * point.x + A.m01 * point.y + A.m02 * point.z,
+				A.m10 * point.x + A.m11 * point.y + A.m12 * point.z,
+				A.m20 * point.x + A.m21 * point.y + A.m22 * point.z
 		);
-		boolean inside = false;
 		
-			for (int i = 0; i < vertices.length; i++) {
-				Vec3 v1 = vertices[i], v2 = vertices[(i + 3) % 4];
-				boolean flag1 = (v1.x <= nearest.x) && (nearest.x < v2.x);
-				boolean flag2 = (v2.x <= nearest.x) && (nearest.x < v1.x);
-				boolean flag3 = (nearest.y <= (v2.y - v1.y) * (nearest.x - v1.x) / (v2.x - v1.x) + v1.y);
-				if ((flag1 | flag2) && flag3)
-					inside = !inside;
+		//https://stackoverflow.com/questions/62475889/point-in-polygon-3d-same-plane-algorithm
+		boolean inside = true;
+		Vec3 d0 = (nearest.subtract(pt0)).cross(pt0.subtract(pt3));
+		for (int i = 1; i < vertices.length; i++) {
+			Vec3 di = nearest.subtract(vertices[i]).cross(vertices[i].subtract(vertices[i - 1]));
+			if (d0.dot(di) <= 0) {
+				inside = false;
+				break;
 			}
-//		if (nearest.x == pt0.x) {
-			for (int i = 0; i < vertices.length; i++) {
-				Vec3 v1 = vertices[i], v2 = vertices[(i+3)%4];
-				boolean flag1 = (v1.z <= nearest.z) && (nearest.z < v2.z);
-				boolean flag2 = (v2.z <= nearest.z) && (nearest.z < v1.z);
-				boolean flag3 = (nearest.y <= (v2.y - v1.y) * (nearest.z - v1.z) / (v2.z - v1.z) + v1.y);
-				if ((flag1 | flag2) && flag3)
-					inside = !inside;
-			}
-//		}
-		
-//		if (nearest.y == pt0.y) {
-			for (int i = 0; i < vertices.length; i++) {
-				Vec3 v1 = vertices[i], v2 = vertices[(i+3)%4];
-				boolean flag1 = (v1.z <= nearest.z) && (nearest.z < v2.z);
-				boolean flag2 = (v2.z <= nearest.z) && (nearest.z < v1.z);
-				boolean flag3 = (nearest.x <= (v2.x - v1.x) * (nearest.z - v1.z) / (v2.z - v1.z) + v1.x);
-				if ((flag1 | flag2) && flag3)
-					inside = !inside;
-			}
-//		}
-		
+		}
 		return inside ? nearest : null;
 	}
 	
-	public Vec3 nearestOnEdge(Vec3 P) {
+	public Vec3 nearestOnEdge(Vec3 point) {
 		Vec3[] vert = new Vec3[]{pt0, pt1, pt2, pt3};
 		double minDistance = Double.POSITIVE_INFINITY;
 		Vec3 actualNearest = null;
 		for (int i = 0; i < 4; i++) {
-			Vec3 possibleNearest = nearestOnEdgeAB(vert[i], vert[(i + 1) % 4], P);
+			Vec3 possibleNearest = nearestOnEdgeAB(vert[i], vert[(i + 1) % 4], point);
 			if (possibleNearest != null) {
-				double possibleDistance = P.distanceToSqr(possibleNearest);
+				double possibleDistance = point.distanceToSqr(possibleNearest);
 				if (minDistance > possibleDistance) {
 					actualNearest = possibleNearest;
 					minDistance = possibleDistance;
@@ -116,12 +106,12 @@ public class Quad {
 		return actualNearest;
 	}
 	
-	public Vec3 nearestOnEdgeAB(Vec3 A, Vec3 B, Vec3 P) {
+	public Vec3 nearestOnEdgeAB(Vec3 A, Vec3 B, Vec3 point) {
 		Vec3 v = B.subtract(A);
-		Vec3 u = A.subtract(P);
+		Vec3 u = A.subtract(point);
 		double t = -(v.dot(u) / v.dot(v));
 		if (t < 0 || t > 1) return null;
-		return A.scale(1 - t).add(B.scale(t));
+		return VecMath.lerp(t, A, B);
 	}
 	
 	public Vec3 center() {

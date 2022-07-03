@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import org.lwjgl.opengl.GL11;
 
 public class GLUtils {
+	public static boolean isCullOn = false;
 	static RenderTarget bound;
 	private static float red;
 	private static float green;
@@ -105,8 +106,6 @@ public class GLUtils {
 //
 //		RenderSystem.setProjectionMatrix(project);
 	}
-	
-	public static boolean isCullOn = false;
 	
 	public static boolean clear(int pMask) {
 		boolean wasCullOn = isCullOn;
