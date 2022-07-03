@@ -11,11 +11,15 @@ import com.mojang.math.Quaternion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import tfc.dynamicportals.access.IAmAChunkMap;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.async.AsyncDispatcher;
@@ -311,6 +315,26 @@ public class Renderer {
 		for (AbstractPortal portal1 : portals) {
 			if (portal1.shouldRender(frustum, camX, camY, camZ)) {
 				renderPortal(stack, type, buffers, portal1, frustum);
+			}
+		}
+		
+		if (!FMLEnvironment.production) {
+			if (Minecraft.getInstance().debugRenderer.renderChunkborder) {
+				VertexConsumer consumer = buffers.bufferSource().getBuffer(RenderType.LINES);
+				ClientChunkCache cache = Minecraft.getInstance().level.getChunkSource();
+				for (LevelChunk chunk : ((IAmAChunkMap) cache).forcedChunks()) {
+					LevelRenderer.renderLineBox(
+							stack, consumer,
+							chunk.getPos().getMinBlockX(),
+							chunk.getMinBuildHeight(),
+							chunk.getPos().getMinBlockZ(),
+							chunk.getPos().getMaxBlockX(),
+							chunk.getMaxBuildHeight(),
+							chunk.getPos().getMaxBlockZ(),
+							1, 0, 1, 1
+					);
+				}
+				forceDraw(buffers.bufferSource());
 			}
 		}
 		

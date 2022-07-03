@@ -17,12 +17,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import tfc.dynamicportals.access.IAmAChunkMap;
 
 import java.util.HashMap;
 import java.util.function.Consumer;
 
 @Mixin(ClientChunkCache.class)
-public abstract class ClientChunkCacheMixin {
+public abstract class ClientChunkCacheMixin implements IAmAChunkMap {
 	@Shadow
 	@Final
 	public ClientLevel level;
@@ -83,5 +84,16 @@ public abstract class ClientChunkCacheMixin {
 	@Unique
 	public LevelChunk getChunk(ChunkPos pos) {
 		return chunks.getOrDefault(pos, null);
+	}
+	
+	@Override
+	public LevelChunk[] forcedChunks() {
+		return chunks.values().toArray(new LevelChunk[0]);
+	}
+	
+	@Override
+	public LevelChunk[] regularChunks() {
+		// TODO
+		return new LevelChunk[0];
 	}
 }
