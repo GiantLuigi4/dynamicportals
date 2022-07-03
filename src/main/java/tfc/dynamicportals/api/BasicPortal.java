@@ -232,17 +232,17 @@ public class BasicPortal extends AbstractPortal {
 			
 			if (Minecraft.getInstance().options.renderDebug) {
 				Quad qd = makeQuad();
-				consumer.vertex(stack.last().pose(), (float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
-				consumer.vertex(stack.last().pose(), (float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z).color(1f, 0, 0, 1).normal(1, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z).color(1f, 0, 0, 1).normal(1, 0, 0).endVertex();
 				
-				consumer.vertex(stack.last().pose(), (float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
-				consumer.vertex(stack.last().pose(), (float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z).color(1f, 1, 0, 1).normal(0, 0, 1).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z).color(1f, 1, 0, 1).normal(0, 0, 1).endVertex();
 				
-				consumer.vertex(stack.last().pose(), (float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
-				consumer.vertex(stack.last().pose(), (float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z).color(1f, 0, 1, 1).normal(1, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z).color(1f, 0, 1, 1).normal(1, 0, 0).endVertex();
 				
-				consumer.vertex(stack.last().pose(), (float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
-				consumer.vertex(stack.last().pose(), (float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z).color(1f, 1, 0, 1).normal(0, 0, 0).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z).color(0f, 1, 1, 1).normal(0, 0, 1).endVertex();
+				consumer.vertex(stack.last().pose(), (float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z).color(0f, 1, 1, 1).normal(0, 0, 1).endVertex();
 				
 				Vec3 eye = Minecraft.getInstance().cameraEntity.getEyePosition();
 				eye = eye.subtract(position.x, position.y, position.z);
@@ -322,8 +322,8 @@ public class BasicPortal extends AbstractPortal {
 			stack.translate(-position.x, -position.y, -position.z);
 			
 			// draw
-			if (box != null)
-				LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
+//			if (box != null)
+//				LevelRenderer.renderLineBox(stack, consumer, box, 1, 0, 0, 1);
 			stack.popPose();
 		}
 	}

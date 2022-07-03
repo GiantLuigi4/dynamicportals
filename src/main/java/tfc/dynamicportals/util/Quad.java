@@ -45,7 +45,7 @@ public class Quad {
 	}
 	
 	public Vec3 nearestInQuad(Vec3 P) {
-		Vec3[] poly = new Vec3[]{pt0, pt1, pt2, pt3};
+		Vec3[] vertices = new Vec3[]{pt0, pt1, pt2, pt3};
 		Vec3 normal = (pt0.subtract(pt1)).cross(pt2.subtract(pt1));
 		Vec3 n = normal.multiply(pt0).scale(-1);
 		double d = (n.x + n.y + n.z);
@@ -64,14 +64,37 @@ public class Quad {
 				A.m10 * P.x + A.m11 * P.y + A.m12 * P.z + A.m13 * d,
 				A.m20 * P.x + A.m21 * P.y + A.m22 * P.z + A.m33 * d
 		);
-		int i, j;
 		boolean inside = false;
-		for (i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-			if ((((poly[i].x <= nearest.x) && (nearest.x < poly[j].x)) |
-					((poly[j].x <= nearest.x) && (nearest.x < poly[i].x))) &&
-					(nearest.y < (poly[j].y - poly[i].y) * (nearest.x - poly[i].x) / (poly[j].x - poly[i].x) + poly[i].y))
-				inside = !inside;
-		}
+		
+			for (int i = 0; i < vertices.length; i++) {
+				Vec3 v1 = vertices[i], v2 = vertices[(i + 3) % 4];
+				boolean flag1 = (v1.x <= nearest.x) && (nearest.x < v2.x);
+				boolean flag2 = (v2.x <= nearest.x) && (nearest.x < v1.x);
+				boolean flag3 = (nearest.y <= (v2.y - v1.y) * (nearest.x - v1.x) / (v2.x - v1.x) + v1.y);
+				if ((flag1 | flag2) && flag3)
+					inside = !inside;
+			}
+//		if (nearest.x == pt0.x) {
+			for (int i = 0; i < vertices.length; i++) {
+				Vec3 v1 = vertices[i], v2 = vertices[(i+3)%4];
+				boolean flag1 = (v1.z <= nearest.z) && (nearest.z < v2.z);
+				boolean flag2 = (v2.z <= nearest.z) && (nearest.z < v1.z);
+				boolean flag3 = (nearest.y <= (v2.y - v1.y) * (nearest.z - v1.z) / (v2.z - v1.z) + v1.y);
+				if ((flag1 | flag2) && flag3)
+					inside = !inside;
+			}
+//		}
+		
+//		if (nearest.y == pt0.y) {
+			for (int i = 0; i < vertices.length; i++) {
+				Vec3 v1 = vertices[i], v2 = vertices[(i+3)%4];
+				boolean flag1 = (v1.z <= nearest.z) && (nearest.z < v2.z);
+				boolean flag2 = (v2.z <= nearest.z) && (nearest.z < v1.z);
+				boolean flag3 = (nearest.x <= (v2.x - v1.x) * (nearest.z - v1.z) / (v2.z - v1.z) + v1.x);
+				if ((flag1 | flag2) && flag3)
+					inside = !inside;
+			}
+//		}
 		
 		return inside ? nearest : null;
 	}
