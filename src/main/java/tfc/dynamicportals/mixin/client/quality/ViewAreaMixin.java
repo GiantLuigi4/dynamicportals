@@ -39,6 +39,9 @@ public abstract class ViewAreaMixin implements ExtendedView {
 	@Unique
 	VecMap<ChunkRenderDispatcher.RenderChunk> chunksMap = new VecMap<>(2);
 	
+	@Unique
+	VecMap<ChunkRenderDispatcher.RenderChunk> absChunksMap = new VecMap<>(2);
+	
 	@Inject(at = @At("TAIL"), method = "<init>")
 	public void postInit(ChunkRenderDispatcher pChunkRenderDispatcher, Level pLevel, int pViewDistance, LevelRenderer pLevelRenderer, CallbackInfo ci) {
 	}
@@ -124,14 +127,33 @@ public abstract class ViewAreaMixin implements ExtendedView {
 			z = Mth.positiveModulo(z, this.chunkGridSizeZ);
 			ChunkRenderDispatcher.RenderChunk chunk = getChunk(new Vec3i(x, y, z), true);
 			cir.setReturnValue(chunk);
-		} else {
-			cir.setReturnValue(null);
-		}
+		} else cir.setReturnValue(null);
 	}
 	
 	@Override
 	public ChunkRenderDispatcher.RenderChunk makeChunk(Vec3i vec, boolean relative) {
-		// TODO: absolute get
+		if (!relative) {
+			Vec3i relativePos = new Vec3i(vec.getX() - centerX, vec.getY(), vec.getZ() - centerZ);
+			ChunkRenderDispatcher.RenderChunk renderChunk = get(relativePos);
+			if (renderChunk != null) {
+				return renderChunk;
+			}
+			int x = vec.getX();
+			int y = vec.getY();
+			int z = vec.getZ();
+			int index = this.getChunkIndex(x, y, z);
+			ChunkRenderDispatcher.RenderChunk chunk = chunkFactory.new RenderChunk(index, x * 16, y * 16, z * 16);
+			this.absChunksMap.put(new Vec3i(x, y, z), chunk);
+			return chunk;
+		}
+		{
+			Vec3i absPos = new Vec3i(vec.getX() + centerX, vec.getY(), vec.getZ() + centerZ);
+			int x = absPos.getX();
+			int y = absPos.getY();
+			int z = absPos.getZ();
+			ChunkRenderDispatcher.RenderChunk renderChunk = this.absChunksMap.get(new Vec3i(x, y, z));
+			if (renderChunk != null) return renderChunk;
+		}
 		int x = vec.getX();
 		int y = vec.getY();
 		int z = vec.getZ();
@@ -141,9 +163,39 @@ public abstract class ViewAreaMixin implements ExtendedView {
 		return chunk;
 	}
 	
+	private ChunkRenderDispatcher.RenderChunk get(Vec3i vec) {
+		int x = vec.getX();
+		int y = vec.getY();
+		int z = vec.getZ();
+		ChunkRenderDispatcher.RenderChunk chunk = chunksMap.get(new Vec3i(x, y, z));
+		return chunk;
+	}
+	
 	@Override
 	public ChunkRenderDispatcher.RenderChunk getChunk(Vec3i vec, boolean relative) {
-		// TODO: absolute get
+		if (!relative) {
+			Vec3i relativePos = new Vec3i(vec.getX() - centerX, vec.getY(), vec.getZ() - centerZ);
+			ChunkRenderDispatcher.RenderChunk renderChunk = get(relativePos);
+			if (renderChunk != null) return renderChunk;
+			int x = vec.getX();
+			int y = vec.getY();
+			int z = vec.getZ();
+			ChunkRenderDispatcher.RenderChunk chunk = this.absChunksMap.get(new Vec3i(x, y, z));
+			return chunk;
+		}
+		{
+			Vec3i absPos = new Vec3i(vec.getX() + centerX, vec.getY(), vec.getZ() + centerZ);
+			int x = absPos.getX();
+			int y = absPos.getY();
+			int z = absPos.getZ();
+			ChunkRenderDispatcher.RenderChunk renderChunk = this.absChunksMap.get(new Vec3i(x, y, z));
+			if (renderChunk != null) return renderChunk;
+		}
 		return chunksMap.get(vec);
+	}
+	
+	@Override
+	public VecMap<ChunkRenderDispatcher.RenderChunk> extraView() {
+		return absChunksMap;
 	}
 }

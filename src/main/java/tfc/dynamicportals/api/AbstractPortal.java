@@ -35,6 +35,12 @@ public abstract class AbstractPortal {
 	}
 	
 	public PortalVisibilityGraph getGraph() {
+		if (graph != null) {
+			Vec3 offset = raytraceOffset();
+			graph.originX = (int) offset.x;
+			graph.originY = (int) offset.y;
+			graph.originZ = (int) offset.z;
+		}
 		return graph;
 	}
 	

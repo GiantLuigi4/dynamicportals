@@ -12,6 +12,7 @@ public class PortalVisibilityGraph {
 	private final ObjectArrayList<LevelRenderer.RenderChunkInfo> renderChunksInFrustum = new ObjectArrayList<>(16);
 	private final LevelRenderer renderer;
 	private Frustum frustum;
+	public int originX, originY, originZ;
 	
 	public PortalVisibilityGraph(LevelRenderer renderer) {
 		this.renderer = renderer;
@@ -20,6 +21,28 @@ public class PortalVisibilityGraph {
 	// TODO: improve this
 	public void update() {
 		renderChunksInFrustum.clear();
+//		int dist = Minecraft.getInstance().options.renderDistance;
+//		ViewArea area = ((LevelRendererAccessor) renderer).getViewArea();
+//		ExtendedView extendedView = (ExtendedView) area;
+//		for (int x = -dist / 2; x < dist / 2; x++) {
+//			for (int y = -dist / 2; y < dist / 2; y++) {
+//				for (int z = -dist / 2; z < dist / 2; z++) {
+//					int ax = originX / 16 + x;
+//					int ay = originY / 16 + y;
+//					int az = originZ / 16 + z;
+//
+//					ChunkRenderDispatcher.RenderChunk renderChunk = extendedView.getChunk(new Vec3i(ax, ay, az), false);
+//					if (renderChunk == null)
+//						renderChunk = extendedView.makeChunk(new Vec3i(ax, ay, az), false);
+//					AABB box = renderChunk.getBoundingBox();
+//					if (frustum.isVisible(box)) {
+//						LevelRenderer.RenderChunkInfo info = renderer.renderChunkStorage.get().renderInfoMap.get(renderChunk);
+//						if (info != null)
+//							renderChunksInFrustum.add(info);
+//					}
+//				}
+//			}
+//		}
 		for (LevelRenderer.RenderChunkInfo renderChunk : renderer.renderChunkStorage.get().renderChunks) {
 			// TODO: side checking
 			if (renderChunk == null) continue;

@@ -31,7 +31,9 @@
     "client.quality.ClientNetworkingMixin",
     "client.quality.LevelRendererMixin",
     "client.quality.ViewAreaMixin",
-    "client.selection.GameRendererMixin"
+    "client.selection.GameRendererMixin",
+    "client.access.LevelRendererAccessor",
+    "client.quality.RenderInfoMapMixin"
   ],
   "injectors": {
     "defaultRequire": 1
