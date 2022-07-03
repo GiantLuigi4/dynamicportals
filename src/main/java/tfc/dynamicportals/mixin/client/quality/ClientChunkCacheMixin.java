@@ -18,8 +18,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tfc.dynamicportals.access.IAmAChunkMap;
+import tfc.dynamicportals.mixin.client.access.StorageAccessor;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Consumer;
 
 @Mixin(ClientChunkCache.class)
@@ -93,7 +95,11 @@ public abstract class ClientChunkCacheMixin implements IAmAChunkMap {
 	
 	@Override
 	public LevelChunk[] regularChunks() {
-		// TODO
-		return new LevelChunk[0];
+		// AT did weird
+		AtomicReferenceArray<LevelChunk> chunksArray = ((StorageAccessor) (Object) storage).chunks();
+		LevelChunk[] chunks = new LevelChunk[chunksArray.length()];
+		for (int i = 0; i < chunks.length; i++)
+			chunks[i] = chunksArray.get(i);
+		return chunks;
 	}
 }

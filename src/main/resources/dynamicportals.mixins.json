@@ -14,22 +14,23 @@
   "client": [
     "client.MojangWhy",
     "client.access.ChunkStorageAccessor",
+    "client.access.StorageAccessor",
+    "client.access.VertexFormatAccessor",
     "client.core.GlStateManagerMixin",
+    "client.core.LevenRendererMixin",
     "client.core.ShaderMixin",
     "client.core.WindowMixin",
+    "client.fixes.VBOMixin",
     "client.hackery.ClientLevelMixin",
     "client.hackery.RenderSystemMixin",
     "client.hackery.RenderTargetMixin",
     "client.optimization.GameRendererMixin",
+    "client.optimization.VBOMixin",
+    "client.optimization.VertexFormatMixin",
     "client.quality.ClientChunkCacheMixin",
     "client.quality.ClientNetworkingMixin",
     "client.quality.LevelRendererMixin",
-    "client.selection.GameRendererMixin",
-    "client.fixes.VBOMixin",
-    "client.core.LevenRendererMixin",
-    "client.access.VertexFormatAccessor",
-    "client.optimization.VBOMixin",
-    "client.optimization.VertexFormatMixin"
+    "client.selection.GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

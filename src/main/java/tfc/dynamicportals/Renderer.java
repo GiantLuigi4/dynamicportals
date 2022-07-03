@@ -328,10 +328,23 @@ public class Renderer {
 							chunk.getPos().getMinBlockX(),
 							chunk.getMinBuildHeight(),
 							chunk.getPos().getMinBlockZ(),
-							chunk.getPos().getMaxBlockX(),
+							chunk.getPos().getMaxBlockX() + 1,
 							chunk.getMaxBuildHeight(),
-							chunk.getPos().getMaxBlockZ(),
+							chunk.getPos().getMaxBlockZ() + 1,
 							1, 0, 1, 1
+					);
+				}
+				for (LevelChunk chunk : ((IAmAChunkMap) cache).regularChunks()) {
+					if (chunk == null) continue;
+					LevelRenderer.renderLineBox(
+							stack, consumer,
+							chunk.getPos().getMinBlockX(),
+							chunk.getMinBuildHeight(),
+							chunk.getPos().getMinBlockZ(),
+							chunk.getPos().getMaxBlockX() + 1,
+							chunk.getMaxBuildHeight(),
+							chunk.getPos().getMaxBlockZ() + 1,
+							0, 1, 1, 1
 					);
 				}
 				forceDraw(buffers.bufferSource());
