@@ -218,6 +218,7 @@ public class BasicPortal extends AbstractPortal {
 					// left vector
 					
 					// I don't need it anymore, you can remove it luigi
+					// luigi: nah, I'm keeping it
 					Vec3 vec = VecMath.rotate(new Vec3(1, 0, 0), quaternion);
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
 					consumer.vertex(stack.last().pose(), (float) vec.x, (float) vec.y, (float) vec.z).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
@@ -326,10 +327,11 @@ public class BasicPortal extends AbstractPortal {
 		stack.translate(position.x, position.y, position.z);
 		// rotate
 		//It's the same isn't it?
-		stack.mulPose(raytraceRotation());
-//		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-//		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
-//		stack.mulPose(new Quaternion(0, 0, (float) -rotation.z, false));
+		// luigi: no, it is different
+//		stack.mulPose(raytraceRotation());
+		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
+		stack.mulPose(new Quaternion(0, 0, (float) -rotation.z, false));
 	}
 	
 	@Override
@@ -339,20 +341,17 @@ public class BasicPortal extends AbstractPortal {
 		Vec3 rotation = this.rotation;
 		// rotate
 		
-		//TODO: why is there this apparently useless if
+		//why is there this apparently useless if
+		// luigi: because it's not useless
 		if (isMirror) {
 			// mirror
 			stack.scale(1, 1, -1);
 			// I don't really know why mirrors need this rotation
 			stack.mulPose(new Quaternion(0, 180, 0, true));
-			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
-		} else {
-			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 		}
+		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 		// translate
 		stack.translate(-position.x, -position.y, -position.z);
 	}
