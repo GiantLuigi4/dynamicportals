@@ -35,11 +35,6 @@ public class PortalVisibilityGraph {
 //					if (renderChunk == null)
 //						renderChunk = extendedView.makeChunk(new Vec3i(ax, ay, az), false);
 //					AABB box = renderChunk.getBoundingBox();
-//					if (frustum.isVisible(box)) {
-//						LevelRenderer.RenderChunkInfo info = renderer.renderChunkStorage.get().renderInfoMap.get(renderChunk);
-//						if (info != null)
-//							renderChunksInFrustum.add(info);
-//					}
 //				}
 //			}
 //		}

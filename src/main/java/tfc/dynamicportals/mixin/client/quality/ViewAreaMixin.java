@@ -97,7 +97,7 @@ public abstract class ViewAreaMixin implements ExtendedView {
 			int offsetPosZ = z - 8 - gridSizeZ / 2;
 			int gridPosZ = offsetPosZ + Math.floorMod(iterZ * 16 - offsetPosZ, gridSizeZ);
 			int l2 = this.level.getMinBuildHeight() + iterY * 16;
-			ChunkRenderDispatcher.RenderChunk chunkrenderdispatcher$renderchunk = this.chunksMap.get(new Vec3i(iterX, iterY, iterZ));
+			ChunkRenderDispatcher.RenderChunk chunkrenderdispatcher$renderchunk = getChunk(new Vec3i(iterX, iterY, iterZ), true);
 			BlockPos blockpos = chunkrenderdispatcher$renderchunk.getOrigin();
 			if (gridPosX != blockpos.getX() || l2 != blockpos.getY() || gridPosZ != blockpos.getZ()) {
 				chunkrenderdispatcher$renderchunk.setOrigin(gridPosX, l2, gridPosZ);

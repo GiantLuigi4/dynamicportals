@@ -13,17 +13,14 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import tfc.dynamicportals.access.ExtendedView;
 import tfc.dynamicportals.access.IAmAChunkMap;
 import tfc.dynamicportals.api.AbstractPortal;
-import tfc.dynamicportals.mixin.client.access.LevelRendererAccessor;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.async.AsyncDispatcher;
 import tfc.dynamicportals.util.async.ReusableThread;
@@ -322,17 +319,17 @@ public class Renderer {
 		if (!FMLEnvironment.production) {
 			if (Minecraft.getInstance().debugRenderer.renderChunkborder) {
 				if (Minecraft.getInstance().options.renderDebug) {
-					ViewArea area = ((LevelRendererAccessor)Minecraft.getInstance().levelRenderer).getViewArea();
-					ExtendedView extendedView = (ExtendedView) area;
-					VertexConsumer consumer = buffers.bufferSource().getBuffer(RenderType.LINES);
-					for (ChunkRenderDispatcher.RenderChunk value : extendedView.extraView().values()) {
-						LevelRenderer.renderLineBox(
-								stack, consumer,
-								value.getBoundingBox(),
-								1, 0.5f, 0, 1
-						);
-					}
-					forceDraw(buffers.bufferSource());
+//					ViewArea area = ((LevelRendererAccessor)Minecraft.getInstance().levelRenderer).getViewArea();
+//					ExtendedView extendedView = (ExtendedView) area;
+//					VertexConsumer consumer = buffers.bufferSource().getBuffer(RenderType.LINES);
+//					for (ChunkRenderDispatcher.RenderChunk value : extendedView.extraView().values()) {
+//						LevelRenderer.renderLineBox(
+//								stack, consumer,
+//								value.getBoundingBox(),
+//								1, 0.5f, 0, 1
+//						);
+//					}
+//					forceDraw(buffers.bufferSource());
 				} else {
 					VertexConsumer consumer = buffers.bufferSource().getBuffer(RenderType.LINES);
 					ClientChunkCache cache = Minecraft.getInstance().level.getChunkSource();

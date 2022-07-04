@@ -14,6 +14,7 @@
   "client": [
     "client.MojangWhy",
     "client.access.ChunkStorageAccessor",
+    "client.access.LevelRendererAccessor",
     "client.access.StorageAccessor",
     "client.access.VertexFormatAccessor",
     "client.core.GlStateManagerMixin",
@@ -30,10 +31,7 @@
     "client.quality.ClientChunkCacheMixin",
     "client.quality.ClientNetworkingMixin",
     "client.quality.LevelRendererMixin",
-    "client.quality.ViewAreaMixin",
-    "client.selection.GameRendererMixin",
-    "client.access.LevelRendererAccessor",
-    "client.quality.RenderInfoMapMixin"
+    "client.selection.GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
