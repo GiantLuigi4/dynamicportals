@@ -326,12 +326,9 @@ public class BasicPortal extends AbstractPortal {
 		// translate
 		stack.translate(position.x, position.y, position.z);
 		// rotate
-		//It's the same isn't it?
-		// luigi: no, it is different
-//		stack.mulPose(raytraceRotation());
-		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
-		stack.mulPose(new Quaternion(0, 0, (float) -rotation.z, false));
+		Quaternion quaternion = raytraceRotation();
+		if (target == this) quaternion.mul(new Quaternion(0, -90, 0, true));
+		stack.mulPose(quaternion);
 	}
 	
 	@Override
