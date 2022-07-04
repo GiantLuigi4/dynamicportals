@@ -17,6 +17,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import tfc.dynamicportals.GLUtils;
+import tfc.dynamicportals.Renderer;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
@@ -215,6 +216,8 @@ public class BasicPortal extends AbstractPortal {
 					//WHAT DO YOU MEAN I DON'T EVEN KNOW WHAT THIS IS
 					// luigi: https://cdn.discordapp.com/attachments/988184753255624774/991124702196154419/unknown.png
 					// left vector
+					
+					// I don't need it anymore, you can remove it luigi
 					Vec3 vec = VecMath.rotate(new Vec3(1, 0, 0), quaternion);
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
 					consumer.vertex(stack.last().pose(), (float) vec.x, (float) vec.y, (float) vec.z).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
@@ -250,40 +253,18 @@ public class BasicPortal extends AbstractPortal {
 					Vec3 nearestInside = qd.nearestInQuad(eye);
 					Vec3 nearest = qd.nearest(eye);
 					Vec3 edge = qd.nearestOnEdge(eye);
-					{
-						Vec3 mid = qd.center();
-						double size = 0.01;
-						LevelRenderer.renderLineBox(stack, consumer,
-								mid.x - size, mid.y - size, mid.z - size,
-								mid.x + size, mid.y + size, mid.z + size,
-								1, 1, 1, 1
-						);
-					}
+					Vec3 mid = qd.center();
+					double size = 0.01;
+					Renderer.renderPoint(stack, consumer, mid, size, 1, 1, 1);
 					if (edge != null && nearest != null) {
-						Vec3 mid = qd.center();
 						if (edge.distanceTo(mid) <= nearest.distanceTo(mid)) {
-							double size = 0.01;
-							LevelRenderer.renderLineBox(stack, consumer,
-									edge.x - size, edge.y - size, edge.z - size,
-									edge.x + size, edge.y + size, edge.z + size,
-									1, 0, nearestInside != null ? 1 : 0, 1
-							);
+							Renderer.renderPoint(stack, consumer, edge, size, 1, 1, nearestInside != null ? 1 : 0);
 						} else {
-							double size = 0.01;
-							LevelRenderer.renderLineBox(stack, consumer,
-									nearest.x - size, nearest.y - size, nearest.z - size,
-									nearest.x + size, nearest.y + size, nearest.z + size,
-									0, nearestInside != null ? 1 : 0, nearestInside == null ? 1 : 0, 1
-							);
+							Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInside != null ? 1 : 0, nearestInside == null ? 1 : 0);
 						}
 					} else {
 						if (nearest != null) {
-							double size = 0.01;
-							LevelRenderer.renderLineBox(stack, consumer,
-									nearest.x - size, nearest.y - size, nearest.z - size,
-									nearest.x + size, nearest.y + size, nearest.z + size,
-									0, nearestInside != null ? 1 : 0, nearestInside == null ? 1 : 0, 1
-							);
+							Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInside != null ? 1 : 0, nearestInside == null ? 1 : 0);
 						}
 					}
 				}
@@ -344,9 +325,11 @@ public class BasicPortal extends AbstractPortal {
 		// translate
 		stack.translate(position.x, position.y, position.z);
 		// rotate
-		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
-		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
-		stack.mulPose(new Quaternion(0, 0, (float) -rotation.z, false));
+		//It's the same isn't it?
+		stack.mulPose(raytraceRotation());
+//		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
+//		stack.mulPose(new Quaternion((float) -rotation.y, 0, 0, false));
+//		stack.mulPose(new Quaternion(0, 0, (float) -rotation.z, false));
 	}
 	
 	@Override
@@ -355,6 +338,8 @@ public class BasicPortal extends AbstractPortal {
 		Vector3d position = this.position;
 		Vec3 rotation = this.rotation;
 		// rotate
+		
+		//TODO: why is there this apparently useless if
 		if (isMirror) {
 			// mirror
 			stack.scale(1, 1, -1);

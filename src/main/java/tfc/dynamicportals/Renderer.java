@@ -112,21 +112,10 @@ public class Renderer {
 					Matrix4f matrix4f = stack.last().pose();
 					Matrix3f matrix3f = stack.last().normal();
 					consumer.vertex(matrix4f, (float) istart.x, (float) istart.y, (float) istart.z).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
-					consumer.vertex(matrix4f, (float) (iend.x), (float) (iend.y), (float) (iend.z)).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
+					consumer.vertex(matrix4f, (float) iend.x, (float) iend.y, (float) iend.z).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
 					
-					LevelRenderer.renderLineBox(
-							stack, consumer,
-							istart.x, istart.y, istart.z,
-							istart.x + size, istart.y + size, istart.z + size,
-							1, 0, 1, 1
-					);
-					
-					LevelRenderer.renderLineBox(
-							stack, consumer,
-							iend.x, iend.y, iend.z,
-							iend.x + size, iend.y + size, iend.z + size,
-							1, 0, 0, 1
-					);
+					renderPoint(stack, consumer, istart, size, 1, 0, 1);
+					renderPoint(stack, consumer, iend, size, 1, 0, 0);
 					forceDraw(source);
 				}
 			}
@@ -373,6 +362,15 @@ public class Renderer {
 		}
 		
 		GLUtils.switchFBO(bound);
+	}
+	
+	public static void renderPoint(PoseStack stack, VertexConsumer consumer, Vec3 vec, double size, float r, float g, float b) {
+		LevelRenderer.renderLineBox(
+				stack, consumer,
+				vec.x, vec.y, vec.z,
+				vec.x + size, vec.y + size, vec.z + size,
+				r, g, b, 1
+		);
 	}
 	
 	public static void refreshStencilBuffer(int framebufferWidth, int framebufferHeight) {
