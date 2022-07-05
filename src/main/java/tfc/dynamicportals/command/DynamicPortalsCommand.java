@@ -93,8 +93,7 @@ public class DynamicPortalsCommand {
 				rotation = new Vec3(Math.toRadians(ve.x), Math.toRadians(ve.y), Math.toRadians(ve.z));
 			} catch (Throwable ignored) {
 				Vec2 rotato = context.getSource().getRotation();
-				// TODO: fix this (x rotation is backwards)
-				rotation = new Vec3(Math.toRadians(rotato.y), Math.toRadians(-rotato.x), 0);
+				rotation = new Vec3(Math.toRadians(rotato.y), -Math.toRadians(rotato.x), 0);
 			}
 			Vec3 normal;
 			try {
@@ -161,6 +160,8 @@ public class DynamicPortalsCommand {
 				FullPortalFilter i = context.getArgument("target", FullPortalFilter.class);
 				int count = 0;
 				for (CommandPortal commandPortal : Temp.filter(i, context)) {
+					if (((AbstractPortal) commandPortal).target != commandPortal)
+						((AbstractPortal) commandPortal).target.setTarget(((AbstractPortal) commandPortal).target);
 					Temp.remove(commandPortal.myId());
 					count += 1;
 				}
