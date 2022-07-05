@@ -250,26 +250,26 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 eye = Minecraft.getInstance().cameraEntity.getEyePosition();
 				eye = eye.subtract(position.x, position.y, position.z);
 				{
-					Vec3 nearestInside = qd.nearestInQuad(eye);
+					Vec3 nearestInQuad = qd.nearestInQuad(eye);
+					Vec3 nearestOnEdge = qd.nearestOnEdge(eye);
 					Vec3 nearest = qd.nearest(eye);
-					Vec3 edge = qd.nearestOnEdge(eye);
 					Vec3 mid = qd.center();
 					double size = 0.01;
 					Renderer.renderPoint(stack, consumer, mid, size, 1, 1, 1);
-					if (edge != null && nearest != null) {
-						if (edge.distanceTo(mid) <= nearest.distanceTo(mid)) {
-							Renderer.renderPoint(stack, consumer, edge, size, 1, 1, nearestInside != null ? 1 : 0);
+					if (nearestOnEdge != null && nearest != null) {
+						if (nearestOnEdge.distanceToSqr(mid) <= nearest.distanceToSqr(mid)) {
+							Renderer.renderPoint(stack, consumer, nearestOnEdge, size, 1, 1, nearestInQuad != null ? 1 : 0);
 						} else {
-							Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInside != null ? 1 : 0, nearestInside == null ? 1 : 0);
+							Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInQuad != null ? 1 : 0, nearestInQuad == null ? 1 : 0);
 						}
 					} else {
 						if (nearest != null) {
-							Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInside != null ? 1 : 0, nearestInside == null ? 1 : 0);
+							Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInQuad != null ? 1 : 0, nearestInQuad == null ? 1 : 0);
 						}
 					}
 				}
 				
-				if (this.target != this) {
+				if (this != target) {
 					//  entity bounding box
 					AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
 					Vec3 center = box.getCenter();
@@ -283,6 +283,7 @@ public class BasicPortal extends AbstractPortal {
 					Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
 					Vec3 srcPos = pos1;
 					pos1 = VecMath.transform(pos1, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
+					pos1 = VecMath.rotate(pos1.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
 					
 					box = box.move(-srcPos.x, -srcPos.y, -srcPos.z);
 					box = box.move(pos1.x, pos1.y, pos1.z);
