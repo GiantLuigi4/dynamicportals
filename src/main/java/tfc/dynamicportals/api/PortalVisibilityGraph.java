@@ -11,8 +11,8 @@ import java.util.concurrent.BlockingQueue;
 public class PortalVisibilityGraph {
 	private final ObjectArrayList<LevelRenderer.RenderChunkInfo> renderChunksInFrustum = new ObjectArrayList<>(16);
 	private final LevelRenderer renderer;
-	private Frustum frustum;
 	public int originX, originY, originZ;
+	private Frustum frustum;
 	
 	public PortalVisibilityGraph(LevelRenderer renderer) {
 		this.renderer = renderer;

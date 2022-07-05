@@ -32,21 +32,18 @@ public abstract class LevelRendererMixin {
 	@Shadow
 	@Final
 	public BlockingQueue<ChunkRenderDispatcher.RenderChunk> recentlyCompiledChunks;
-	
+	@Shadow
+	@Final
+	public AtomicReference<LevelRenderer.RenderChunkStorage> renderChunkStorage;
 	@Shadow
 	@Nullable
 	private ClientLevel level;
-	
 	@Shadow
 	@Nullable
 	private ViewArea viewArea;
 	
 	@Shadow
 	protected abstract void updateRenderChunks(LinkedHashSet<LevelRenderer.RenderChunkInfo> pChunkInfos, LevelRenderer.RenderInfoMap pInfoMap, Vec3 pViewVector, Queue<LevelRenderer.RenderChunkInfo> pInfoQueue, boolean pShouldCull);
-	
-	@Shadow
-	@Final
-	public AtomicReference<LevelRenderer.RenderChunkStorage> renderChunkStorage;
 	
 	@Inject(at = @At("HEAD"), method = "prepareCullFrustum")
 	public void prePrepCullFrustum(PoseStack pPoseStack, Vec3 pCameraPos, Matrix4f pProjectionMatrix, CallbackInfo ci) {
@@ -82,7 +79,7 @@ public abstract class LevelRendererMixin {
 		if (Renderer.isStencilPresent())
 			ci.cancel();
 	}
-	
+
 //	@Inject(at = @At("HEAD"), method = "updateRenderChunks")
 //	public void preUpdateRenderChunks(LinkedHashSet<LevelRenderer.RenderChunkInfo> pChunkInfos, LevelRenderer.RenderInfoMap pInfoMap, Vec3 pViewVector, Queue<LevelRenderer.RenderChunkInfo> pInfoQueue, boolean pShouldCull, CallbackInfo ci) {
 //		VecMap<ChunkRenderDispatcher.RenderChunk> chunks = ((ExtendedView) viewArea).extraView();

@@ -144,12 +144,11 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion raytraceRotation() {
-		//Should technically be the same as
-		//Quaternion.fromYXZ(-rotation.x, -rotation.y, -rotation.z);
-		Quaternion rot = Quaternion.ONE.copy();
-		rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-		rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-		rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
+//		Quaternion rot = Quaternion.ONE.copy();
+//		rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
+//		rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
+//		rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
+		Quaternion rot = Quaternion.fromYXZ((float) -rotation.x, (float) -rotation.y, (float) -rotation.z);
 		if (target == this) rot.mul(new Quaternion(0, 90, 0, true));
 		
 		return rot;
@@ -270,35 +269,37 @@ public class BasicPortal extends AbstractPortal {
 					}
 				}
 				
-				//  entity bounding box
-				AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
-				Vec3 center = box.getCenter();
+				if (this.target != this) {
+					//  entity bounding box
+					AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
+					Vec3 center = box.getCenter();
 //				center = center.subtract(position.x, position.y, position.z);
-				
-				// all the vars
-				Quaternion srcQuat = raytraceRotation();
-				Quaternion dstQuat = target.raytraceRotation();
-				Vec3 srcOff = raytraceOffset();
-				Vec3 dstOff = target.raytraceOffset();
-				Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
-				Vec3 srcPos = pos1;
-				pos1 = VecMath.transform(pos1, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
-				
-				box = box.move(-srcPos.x, -srcPos.y, -srcPos.z);
-				box = box.move(pos1.x, pos1.y, pos1.z);
-				
-				stack.pushPose();
-				stack.translate(-position.x, -position.y, -position.z);
-				LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
-				center = box.getCenter();
-				Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, false, true, Vec3.ZERO, Vec3.ZERO);
-				
-				stack.translate(center.x, center.y, center.z);
-				consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(0, 0, 0).endVertex();
-				stack.scale(10, 10, 10);
-				consumer.vertex(stack.last().pose(), (float) motion.x, (float) motion.y, (float) motion.z).color(0, 0, 0, 1).normal(0, 0, 0).endVertex();
-				
-				stack.popPose();
+					
+					// all the vars
+					Quaternion srcQuat = raytraceRotation();
+					Quaternion dstQuat = target.raytraceRotation();
+					Vec3 srcOff = raytraceOffset();
+					Vec3 dstOff = target.raytraceOffset();
+					Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
+					Vec3 srcPos = pos1;
+					pos1 = VecMath.transform(pos1, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
+					
+					box = box.move(-srcPos.x, -srcPos.y, -srcPos.z);
+					box = box.move(pos1.x, pos1.y, pos1.z);
+					
+					stack.pushPose();
+					stack.translate(-position.x, -position.y, -position.z);
+					LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
+					center = box.getCenter();
+					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, false, true, Vec3.ZERO, Vec3.ZERO);
+					
+					stack.translate(center.x, center.y, center.z);
+					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(1, 0, 0).endVertex();
+					stack.scale(10, 10, 10);
+					consumer.vertex(stack.last().pose(), (float) motion.x, (float) motion.y, (float) motion.z).color(0, 0, 0, 1).normal(1, 0, 0).endVertex();
+					
+					stack.popPose();
+				}
 			}
 			
 			stack.translate(-position.x, -position.y, -position.z);

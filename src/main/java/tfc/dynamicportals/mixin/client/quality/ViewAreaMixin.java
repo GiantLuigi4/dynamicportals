@@ -22,31 +22,30 @@ import tfc.dynamicportals.opt.VecMap;
 @Mixin(ViewArea.class)
 public abstract class ViewAreaMixin implements ExtendedView {
 	@Shadow
+	public ChunkRenderDispatcher.RenderChunk[] chunks;
+	@Shadow
 	protected int chunkGridSizeX;
 	@Shadow
 	protected int chunkGridSizeY;
 	@Shadow
 	protected int chunkGridSizeZ;
+	@Shadow
+	@Final
+	protected Level level;
+	@Unique
+	VecMap<ChunkRenderDispatcher.RenderChunk> chunksMap = new VecMap<>(2);
+	@Unique
+	VecMap<ChunkRenderDispatcher.RenderChunk> absChunksMap = new VecMap<>(2);
+	ChunkRenderDispatcher chunkFactory;
+	int centerX;
+	int centerZ;
 	
 	@Shadow
 	protected abstract int getChunkIndex(int pX, int pY, int pZ);
 	
-	@Shadow
-	@Final
-	protected Level level;
-	@Shadow
-	public ChunkRenderDispatcher.RenderChunk[] chunks;
-	@Unique
-	VecMap<ChunkRenderDispatcher.RenderChunk> chunksMap = new VecMap<>(2);
-	
-	@Unique
-	VecMap<ChunkRenderDispatcher.RenderChunk> absChunksMap = new VecMap<>(2);
-	
 	@Inject(at = @At("TAIL"), method = "<init>")
 	public void postInit(ChunkRenderDispatcher pChunkRenderDispatcher, Level pLevel, int pViewDistance, LevelRenderer pLevelRenderer, CallbackInfo ci) {
 	}
-	
-	ChunkRenderDispatcher chunkFactory;
 	
 	@Inject(at = @At("HEAD"), method = "createChunks", cancellable = true)
 	public void preCreateChunks(ChunkRenderDispatcher pRenderChunkFactory, CallbackInfo ci) {
@@ -69,15 +68,12 @@ public abstract class ViewAreaMixin implements ExtendedView {
 		}
 		ci.cancel();
 	}
-	
+
 	@Inject(at = @At("HEAD"), method = "releaseAllBuffers", cancellable = true)
 	public void preReleaseBuffers(CallbackInfo ci) {
 		for (ChunkRenderDispatcher.RenderChunk value : chunksMap.values()) value.releaseBuffers();
 		ci.cancel();
 	}
-	
-	int centerX;
-	int centerZ;
 	
 	@Inject(at = @At("HEAD"), method = "repositionCamera", cancellable = true)
 	public void prePosition(double pViewEntityX, double pViewEntityZ, CallbackInfo ci) {

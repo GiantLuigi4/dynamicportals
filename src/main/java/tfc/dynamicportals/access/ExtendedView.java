@@ -6,6 +6,8 @@ import tfc.dynamicportals.opt.VecMap;
 
 public interface ExtendedView {
 	ChunkRenderDispatcher.RenderChunk makeChunk(Vec3i vec, boolean relative);
+	
 	ChunkRenderDispatcher.RenderChunk getChunk(Vec3i vec, boolean relative);
+	
 	VecMap<ChunkRenderDispatcher.RenderChunk> extraView();
 }
