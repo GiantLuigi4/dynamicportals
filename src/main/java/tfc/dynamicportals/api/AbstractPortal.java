@@ -114,11 +114,11 @@ public abstract class AbstractPortal {
 	 * (position vector for motion as well)
 	 */
 	public Quaternion get180DegreesRotationAroundVerticalAxis() {
-		Quaternion weird = Quaternion.ONE.copy();
+		Quaternion rot = Quaternion.ONE.copy();
 		Quaternion q = this.raytraceRotation();
 		q.conj();
-		weird.mul(new Vector3f(VecMath.rotate(new Vec3(0, 1, 0), q)).rotationDegrees(180));
-		return weird;
+		rot.mul(new Vector3f(VecMath.rotate(new Vec3(0, 1, 0), q)).rotationDegrees(180));
+		return rot;
 	}
 	
 	/**
@@ -186,12 +186,11 @@ public abstract class AbstractPortal {
 	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
 		Vec3 look = VecMath.getLookVec(vector);
 		if (reverse)
-			look = VecMath.transform(look, Quaternion.ONE, raytraceRotation(), target == this, true, Vec3.ZERO, Vec3.ZERO);
+			look = VecMath.transform(look, Quaternion.ONE, raytraceRotation(), target.get180DegreesRotationAroundVerticalAxis(), target == this, true, Vec3.ZERO, Vec3.ZERO);
 		else {
 			look = look.multiply(-1, 1, -1);
-			look = VecMath.transform(look, raytraceRotation(), Quaternion.ONE, target == this, true, Vec3.ZERO, Vec3.ZERO);
+			look = VecMath.transform(look, raytraceRotation(), Quaternion.ONE, target.get180DegreesRotationAroundVerticalAxis(), target == this, true, Vec3.ZERO, Vec3.ZERO);
 		}
-		look = VecMath.rotate(look, target.get180DegreesRotationAroundVerticalAxis());
 		
 		return VecMath.lookAngle(look);
 	}

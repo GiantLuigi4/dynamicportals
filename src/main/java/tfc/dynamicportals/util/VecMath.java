@@ -27,8 +27,8 @@ public class VecMath {
 		return new Vec3(newPoint.i(), newPoint.j(), newPoint.k());
 	}
 	
-	public static Vec3 transform(Vec3 src, Quaternion selfRot, Quaternion otherRot, boolean isMirror, boolean motion, Vec3 sourceTransformation, Vec3 otherTransformation) {
-		if (motion) {
+	public static Vec3 transform(Vec3 src, Quaternion selfRot, Quaternion otherRot, Quaternion aroundYAxisRot, boolean isMirror, boolean absolute, Vec3 sourceTransformation, Vec3 otherTransformation) {
+		if (absolute) {
 			Quaternion otherRotConj = otherRot.copy();
 			otherRotConj.conj();
 			
@@ -37,10 +37,11 @@ public class VecMath {
 				pos = pos.multiply(1, 1, -1);
 			}
 			pos = VecMath.rotate(pos, otherRotConj);
+			pos = VecMath.rotate(pos, aroundYAxisRot);
 			return pos;
 		}
 		Vec3 pos = src.subtract(sourceTransformation);
-		pos = transform(pos, selfRot, otherRot, isMirror, true, sourceTransformation, otherTransformation);
+		pos = transform(pos, selfRot, otherRot, aroundYAxisRot, isMirror, true, sourceTransformation, otherTransformation);
 		pos = pos.add(otherTransformation);
 		return pos;
 	}

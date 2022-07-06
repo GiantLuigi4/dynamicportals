@@ -96,10 +96,8 @@ public class Renderer {
 						Quaternion dstQuat = portal.target.raytraceRotation();
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
-						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal == portal.target, false, srcOff, dstOff);
-						interpStart = VecMath.rotate(interpStart.subtract(dstOff), portal.target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
-						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
-						interpReach = VecMath.rotate(interpReach, portal.target.get180DegreesRotationAroundVerticalAxis());
+						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, false, srcOff, dstOff);
+						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, true, Vec3.ZERO, Vec3.ZERO);
 					} else {
 						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 						interpStart = interpStart.add(offset);
