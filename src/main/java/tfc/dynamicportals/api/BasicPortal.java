@@ -258,14 +258,12 @@ public class BasicPortal extends AbstractPortal {
 					Renderer.renderPoint(stack, consumer, mid, size, 1, 1, 1);
 					if (nearestOnEdge != null && nearest != null) {
 						if (nearestOnEdge.distanceToSqr(mid) <= nearest.distanceToSqr(mid)) {
-							Renderer.renderPoint(stack, consumer, nearestOnEdge, size, 1, 1, nearestInQuad != null ? 1 : 0);
+							Renderer.renderPoint(stack, consumer, nearestOnEdge, size, 1, 0, nearestInQuad != null ? 1 : 0);
 						} else {
 							Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInQuad != null ? 1 : 0, nearestInQuad == null ? 1 : 0);
 						}
-					} else {
-						if (nearest != null) {
-							Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInQuad != null ? 1 : 0, nearestInQuad == null ? 1 : 0);
-						}
+					} else if (nearest != null) {
+						Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInQuad != null ? 1 : 0, nearestInQuad == null ? 1 : 0);
 					}
 				}
 				
@@ -273,7 +271,7 @@ public class BasicPortal extends AbstractPortal {
 					//  entity bounding box
 					AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
 					Vec3 center = box.getCenter();
-//				center = center.subtract(position.x, position.y, position.z);
+//					center = center.subtract(position.x, position.y, position.z);
 					
 					// all the vars
 					Quaternion srcQuat = raytraceRotation();
@@ -282,8 +280,7 @@ public class BasicPortal extends AbstractPortal {
 					Vec3 dstOff = target.raytraceOffset();
 					Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
 					Vec3 srcPos = pos1;
-					pos1 = VecMath.transform(pos1, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
-					pos1 = VecMath.rotate(pos1.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
+					pos1 = VecMath.transform(pos1, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), this != target, false, srcOff, dstOff);
 					
 					box = box.move(-srcPos.x, -srcPos.y, -srcPos.z);
 					box = box.move(pos1.x, pos1.y, pos1.z);
@@ -292,7 +289,7 @@ public class BasicPortal extends AbstractPortal {
 					stack.translate(-position.x, -position.y, -position.z);
 					LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
 					center = box.getCenter();
-					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, false, true, Vec3.ZERO, Vec3.ZERO);
+					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, true, Vec3.ZERO, Vec3.ZERO);
 					
 					stack.translate(center.x, center.y, center.z);
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(1, 0, 0).endVertex();
@@ -485,15 +482,6 @@ public class BasicPortal extends AbstractPortal {
 		return plane.overlaps(box.move(-position.x, -position.y, -position.z));
 	}
 	
-	private float clamp(float horiz) {
-		float v = horiz;
-		if (v < 0) v += 360;
-//		v += 180;
-		v %= 360;
-//		v -= 180;
-		return v;
-	}
-	
 	// TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
@@ -514,44 +502,32 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 				Vec3 pos = position;
 				if (target != this) {
-					oldPos = VecMath.transform(oldPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
-					oPos = VecMath.transform(oPos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
-					pos = VecMath.transform(pos, srcQuat, dstQuat, this != target, false, srcOff, dstOff);
-					oldPos = VecMath.rotate(oldPos.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
-					oPos = VecMath.rotate(oPos.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
-					pos = VecMath.rotate(pos.subtract(dstOff), target.get180DegreesRotationAroundVerticalAxis()).add(dstOff);
+					oldPos = VecMath.transform(oldPos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, false, srcOff, dstOff);
+					oPos = VecMath.transform(oPos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, false, srcOff, dstOff);
+					pos = VecMath.transform(pos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, false, srcOff, dstOff);
 				}
 				
-				Vec2 vec = entity.getRotationVector();
-				Vec2 vecOld = new Vec2(entity.xRotO, entity.yRotO);
+				Vec2 rotVec = entity.getRotationVector();
+				Vec2 oldRotVec = new Vec2(entity.xRotO, entity.yRotO);
 //				System.out.println(vec);
-				vec = adjustLook(vec, false);
-				vecOld = adjustLook(vecOld, false);
-				vec = target.adjustLook(vec, true);
-				vecOld = target.adjustLook(vecOld, true);
+				rotVec = adjustLook(rotVec, false);
+				oldRotVec = adjustLook(oldRotVec, false);
+				rotVec = target.adjustLook(rotVec, true);
+				oldRotVec = target.adjustLook(oldRotVec, true);
 				
-				entity.setXRot(vec.x);
-				entity.xRotO = vecOld.x;
-				entity.setYRot(vec.y + 180);
-				entity.yRotO = vecOld.y + 180;
-				
-				motion = VecMath.transform(motion, srcQuat, dstQuat, target == this, true, Vec3.ZERO, Vec3.ZERO);
-//				motion = motion.scale(-1);
 				double scl = motion.length();
-				motion = VecMath.rotate(motion, target.get180DegreesRotationAroundVerticalAxis());
+				motion = VecMath.transform(motion, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), target == this, true, Vec3.ZERO, Vec3.ZERO);
+//				motion = motion.scale(-1);
 				motion = motion.normalize().scale(scl);
 				entity.setDeltaMovement(motion);
 				if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
 				else entity.absMoveTo(pos.x, pos.y, pos.z);
 				entity.setDeltaMovement(motion);
 				
-				entity.setXRot(vec.x);
-				entity.xRotO = vecOld.x;
-				// TODO: figure this out
-//				entity.setYRot(vec.y + 180);
-				entity.setYRot(vec.y);
-//				entity.yRotO = vecOld.y + 180;
-				entity.yRotO = vecOld.y;
+				entity.setXRot(rotVec.x); //they have to be negated when portal1 is looking up 90 degrrees help me
+				entity.xRotO = oldRotVec.x;
+				entity.setYRot(rotVec.y);
+				entity.yRotO = oldRotVec.y;
 				
 				entity.xo = oPos.x;
 				entity.xOld = oldPos.x;
