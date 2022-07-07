@@ -280,7 +280,7 @@ public class BasicPortal extends AbstractPortal {
 					Vec3 dstOff = target.raytraceOffset();
 					Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
 					Vec3 srcPos = pos1;
-					pos1 = VecMath.transform(pos1, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), this != target, false, srcOff, dstOff);
+					pos1 = VecMath.transform(pos1, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), this != target, srcOff, dstOff);
 					
 					box = box.move(-srcPos.x, -srcPos.y, -srcPos.z);
 					box = box.move(pos1.x, pos1.y, pos1.z);
@@ -289,7 +289,7 @@ public class BasicPortal extends AbstractPortal {
 					stack.translate(-position.x, -position.y, -position.z);
 					LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
 					center = box.getCenter();
-					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, true, Vec3.ZERO, Vec3.ZERO);
+					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, Vec3.ZERO, Vec3.ZERO);
 					
 					stack.translate(center.x, center.y, center.z);
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(1, 0, 0).endVertex();
@@ -502,21 +502,21 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 				Vec3 pos = position;
 				if (target != this) {
-					oldPos = VecMath.transform(oldPos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, false, srcOff, dstOff);
-					oPos = VecMath.transform(oPos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, false, srcOff, dstOff);
-					pos = VecMath.transform(pos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, false, srcOff, dstOff);
+					oldPos = VecMath.transform(oldPos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					oPos = VecMath.transform(oPos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					pos = VecMath.transform(pos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
 				}
 				
-				Vec2 rotVec = entity.getRotationVector();
-				Vec2 oldRotVec = new Vec2(entity.xRotO, entity.yRotO);
-//				System.out.println(vec);
-				rotVec = adjustLook(rotVec, false);
-				oldRotVec = adjustLook(oldRotVec, false);
-				rotVec = target.adjustLook(rotVec, true);
-				oldRotVec = target.adjustLook(oldRotVec, true);
+//				Vec2 rotVec = entity.getRotationVector();
+//				Vec2 oldRotVec = new Vec2(entity.xRotO, entity.yRotO);
+////				System.out.println(vec);
+//				rotVec = adjustLook(rotVec, false);
+//				oldRotVec = adjustLook(oldRotVec, false);
+//				rotVec = target.adjustLook(rotVec, true);
+//				oldRotVec = target.adjustLook(oldRotVec, true);
 				
 				double scl = motion.length();
-				motion = VecMath.transform(motion, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), target == this, true, Vec3.ZERO, Vec3.ZERO);
+				motion = VecMath.transform(motion, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
 //				motion = motion.scale(-1);
 				motion = motion.normalize().scale(scl);
 				entity.setDeltaMovement(motion);
@@ -524,10 +524,10 @@ public class BasicPortal extends AbstractPortal {
 				else entity.absMoveTo(pos.x, pos.y, pos.z);
 				entity.setDeltaMovement(motion);
 				
-				entity.setXRot(rotVec.x); //they have to be negated when portal1 is looking up 90 degrrees help me
-				entity.xRotO = oldRotVec.x;
-				entity.setYRot(rotVec.y);
-				entity.yRotO = oldRotVec.y;
+//				entity.setXRot(rotVec.x); //they have to be negated when portal1 is looking up 90 degrrees help me
+//				entity.xRotO = oldRotVec.x;
+//				entity.setYRot(rotVec.y);
+//				entity.yRotO = oldRotVec.y;
 				
 				entity.xo = oPos.x;
 				entity.xOld = oldPos.x;

@@ -16,8 +16,6 @@ public class VecMath {
 		return start.add(end.subtract(start).scale(pct));
 	}
 	
-	// I don't even know why I tried to fix something that was already correct
-	// https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
 	public static Vec3 rotate(Vec3 src, Quaternion rotation) {
 		Quaternion point = new Quaternion((float) src.x, (float) src.y, (float) src.z, 0);
 		Quaternion newPoint = rotation.copy();
@@ -27,8 +25,8 @@ public class VecMath {
 		return new Vec3(newPoint.i(), newPoint.j(), newPoint.k());
 	}
 	
-	public static Vec3 transform(Vec3 src, Quaternion selfRot, Quaternion otherRot, Quaternion aroundYAxisRot, boolean isMirror, boolean absolute, Vec3 sourceTransformation, Vec3 otherTransformation) {
-		if (absolute) {
+	public static Vec3 transform(Vec3 src, Quaternion selfRot, Quaternion otherRot, Quaternion aroundYAxisRot, boolean isMirror, Vec3 sourceTransformation, Vec3 otherTransformation) {
+		if (sourceTransformation.equals(Vec3.ZERO) && otherTransformation.equals(Vec3.ZERO)) {
 			Quaternion otherRotConj = otherRot.copy();
 			otherRotConj.conj();
 			
@@ -40,10 +38,7 @@ public class VecMath {
 			pos = VecMath.rotate(pos, aroundYAxisRot);
 			return pos;
 		}
-		Vec3 pos = src.subtract(sourceTransformation);
-		pos = transform(pos, selfRot, otherRot, aroundYAxisRot, isMirror, true, sourceTransformation, otherTransformation);
-		pos = pos.add(otherTransformation);
-		return pos;
+		return transform(src.subtract(sourceTransformation), selfRot, otherRot, aroundYAxisRot, isMirror, Vec3.ZERO, Vec3.ZERO).add(otherTransformation);
 	}
 	
 	public static Vec3 getLookVec(Vec2 vec) {
