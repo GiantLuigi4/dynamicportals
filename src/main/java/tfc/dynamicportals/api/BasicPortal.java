@@ -110,32 +110,32 @@ public class BasicPortal extends AbstractPortal {
 		return this;
 	}
 	
-	public boolean requiresTraceRotation() {
-		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
-		if (target instanceof BasicPortal) {
-			//Rounding because doubles are bad in binary
-			double pairXRot = Math.round((Math.toDegrees(((BasicPortal) target).rotation.x) % 360) * 1000.0) / 1000.0;
-			double thisXR = Math.round((Math.toDegrees(rotation.x) % 360) * 1000.0) / 1000.0;
-			if (pairXRot < 0) pairXRot += 360;
-			if (thisXR < 0) thisXR += 360;
-
-//			pairXRot += Math.toRadians(180);
-//			pairXRot %= Math.PI * 2;
-//			thisXR %= Math.PI * 2;
-			if ((thisXR % 180) == (pairXRot % 180) && (thisXR != pairXRot)) {
-				double yRot = ((BasicPortal) target).rotation.y;
-				if (yRot < 0) yRot = -(-yRot % Math.PI);
-				else yRot %= Math.PI;
-				
-				double yr = rotation.y;
-				if (yr < 0) yr = -(-yr % Math.PI);
-				else yr %= Math.PI;
-				
-				return yRot != -yr;
-			}
-		}
-		return true;
-	}
+//	public boolean requiresTraceRotation() {
+//		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
+//		if (target instanceof BasicPortal) {
+//			//Rounding because doubles are bad in binary
+//			double pairXRot = Math.round((Math.toDegrees(((BasicPortal) target).rotation.x) % 360) * 1000.0) / 1000.0;
+//			double thisXR = Math.round((Math.toDegrees(rotation.x) % 360) * 1000.0) / 1000.0;
+//			if (pairXRot < 0) pairXRot += 360;
+//			if (thisXR < 0) thisXR += 360;
+//
+////			pairXRot += Math.toRadians(180);
+////			pairXRot %= Math.PI * 2;
+////			thisXR %= Math.PI * 2;
+//			if ((thisXR % 180) == (pairXRot % 180) && (thisXR != pairXRot)) {
+//				double yRot = ((BasicPortal) target).rotation.y;
+//				if (yRot < 0) yRot = -(-yRot % Math.PI);
+//				else yRot %= Math.PI;
+//
+//				double yr = rotation.y;
+//				if (yr < 0) yr = -(-yr % Math.PI);
+//				else yr %= Math.PI;
+//
+//				return yRot != -yr;
+//			}
+//		}
+//		return true;
+//	}
 	
 	@Override
 	public Vec3 raytraceOffset() {
@@ -144,10 +144,6 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Quaternion raytraceRotation() {
-//		Quaternion rot = Quaternion.ONE.copy();
-//		rot.mul(new Quaternion(0, (float) -rotation.x, 0, false));
-//		rot.mul(new Quaternion((float) -rotation.y, 0, 0, false));
-//		rot.mul(new Quaternion(0, 0, (float) -rotation.z, false));
 		Quaternion rot = Quaternion.fromYXZ((float) -rotation.x, (float) -rotation.y, (float) -rotation.z);
 		if (target == this) rot.mul(new Quaternion(0, 90, 0, true));
 		
@@ -184,9 +180,10 @@ public class BasicPortal extends AbstractPortal {
 				// absolute position
 				stack.pushPose();
 				stack.translate(0, (float) size.y / 2, 0);
-				stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-				stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-				stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+				stack.mulPose(quadQuat());
+//				stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+//				stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+//				stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 				
 				// draw normal vector
 				if (normal != null) {
@@ -205,11 +202,11 @@ public class BasicPortal extends AbstractPortal {
 					stack.pushPose();
 					stack.translate(0, (float) size.y / 2, 1);
 					
-					stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-					stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
-					
+//					stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+//					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+//					stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 					Quaternion quaternion = quadQuat();
+					stack.mulPose(quaternion);
 					// luigi: lorenzo wanted this
 					
 					//WHAT DO YOU MEAN I DON'T EVEN KNOW WHAT THIS IS
@@ -229,9 +226,10 @@ public class BasicPortal extends AbstractPortal {
 			/* debug frustum culling box */
 			stack.pushPose();
 			
-			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+//			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+//			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+//			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+			stack.mulPose(quadQuat());
 			
 			if (Minecraft.getInstance().options.renderDebug) {
 				Quad qd = makeQuad();
@@ -334,7 +332,6 @@ public class BasicPortal extends AbstractPortal {
 	public void setupAsTarget(PoseStack stack) {
 		boolean isMirror = target == this;
 		Vector3d position = this.position;
-		Vec3 rotation = this.rotation;
 		// rotate
 		
 		//why is there this apparently useless if
@@ -345,9 +342,13 @@ public class BasicPortal extends AbstractPortal {
 			// I don't really know why mirrors need this rotation
 			stack.mulPose(new Quaternion(0, 180, 0, true));
 		}
-		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+		stack.mulPose(quadQuat());
+		
+//		Vec3 rotation = this.rotation;
+//		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
+//		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
+//		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
+		
 		// translate
 		stack.translate(-position.x, -position.y, -position.z);
 	}
@@ -452,10 +453,12 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	Quaternion quadQuat() {
-		Quaternion quaternion = Quaternion.ONE.copy();
-		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
-		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
-		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+//		Quaternion quaternion = Quaternion.ONE.copy();
+//		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
+//		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
+//		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
+		Quaternion quaternion = raytraceRotation();
+		quaternion.conj();
 		return quaternion;
 	}
 	
