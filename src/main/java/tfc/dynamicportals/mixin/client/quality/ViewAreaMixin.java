@@ -68,7 +68,7 @@ public abstract class ViewAreaMixin implements ExtendedView {
 		}
 		ci.cancel();
 	}
-
+	
 	@Inject(at = @At("HEAD"), method = "releaseAllBuffers", cancellable = true)
 	public void preReleaseBuffers(CallbackInfo ci) {
 		for (ChunkRenderDispatcher.RenderChunk value : chunksMap.values()) value.releaseBuffers();

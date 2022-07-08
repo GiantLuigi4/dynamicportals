@@ -109,7 +109,7 @@ public class BasicPortal extends AbstractPortal {
 		this.normal = normal;
 		return this;
 	}
-	
+
 //	public boolean requiresTraceRotation() {
 //		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
 //		if (target instanceof BasicPortal) {
@@ -146,7 +146,6 @@ public class BasicPortal extends AbstractPortal {
 	public Quaternion raytraceRotation() {
 		Quaternion rot = Quaternion.fromYXZ((float) -rotation.x, (float) -rotation.y, (float) -rotation.z);
 		if (target == this) rot.mul(new Quaternion(0, 90, 0, true));
-		
 		return rot;
 	}
 	
@@ -181,9 +180,6 @@ public class BasicPortal extends AbstractPortal {
 				stack.pushPose();
 				stack.translate(0, (float) size.y / 2, 0);
 				stack.mulPose(quadQuat());
-//				stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-//				stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-//				stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 				
 				// draw normal vector
 				if (normal != null) {
@@ -202,9 +198,6 @@ public class BasicPortal extends AbstractPortal {
 					stack.pushPose();
 					stack.translate(0, (float) size.y / 2, 1);
 					
-//					stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-//					stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-//					stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 					Quaternion quaternion = quadQuat();
 					stack.mulPose(quaternion);
 					// luigi: lorenzo wanted this
@@ -225,10 +218,6 @@ public class BasicPortal extends AbstractPortal {
 			
 			/* debug frustum culling box */
 			stack.pushPose();
-			
-//			stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-//			stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-//			stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
 			stack.mulPose(quadQuat());
 			
 			if (Minecraft.getInstance().options.renderDebug) {
@@ -334,8 +323,6 @@ public class BasicPortal extends AbstractPortal {
 		Vector3d position = this.position;
 		// rotate
 		
-		//why is there this apparently useless if
-		// luigi: because it's not useless
 		if (isMirror) {
 			// mirror
 			stack.scale(1, 1, -1);
@@ -343,12 +330,6 @@ public class BasicPortal extends AbstractPortal {
 			stack.mulPose(new Quaternion(0, 180, 0, true));
 		}
 		stack.mulPose(quadQuat());
-		
-//		Vec3 rotation = this.rotation;
-//		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-//		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-//		stack.mulPose(new Quaternion(0, (float) rotation.x, 0, false));
-		
 		// translate
 		stack.translate(-position.x, -position.y, -position.z);
 	}
@@ -379,9 +360,6 @@ public class BasicPortal extends AbstractPortal {
 	public double trace(Vec3 start, Vec3 end) {
 		// setup a matrix stack
 		PoseStack stack = new PoseStack();
-//		stack.mulPose(new Quaternion(0, 0, (float) rotation.z, false));
-//		stack.mulPose(new Quaternion((float) rotation.y, 0, 0, false));
-//		stack.mulPose(new Quaternion(0, (float) -rotation.x, 0, false));
 		stack.mulPose(quadQuat());
 		stack.translate(-position.x, -position.y, -position.z);
 		// copy to vec4
@@ -458,6 +436,7 @@ public class BasicPortal extends AbstractPortal {
 //		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
 //		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
 		Quaternion quaternion = raytraceRotation();
+		if (target == this) quaternion.mul(new Quaternion(0, -90, 0, true));
 		quaternion.conj();
 		return quaternion;
 	}

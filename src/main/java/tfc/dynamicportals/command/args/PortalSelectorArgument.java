@@ -1,6 +1,5 @@
 package tfc.dynamicportals.command.args;
 
-import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -8,6 +7,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.TranslatableComponent;
+import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.command.CommandPortal;
 import tfc.dynamicportals.command.FullPortalFilter;
@@ -20,21 +21,20 @@ import java.util.concurrent.CompletableFuture;
 
 public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 	public PortalSelectorArgument() {
-	
 	}
 	
 	public static PortalSelectorArgument create() {
 		return new PortalSelectorArgument();
 	}
 	
-	public FullPortalFilter parse(StringReader p_120843_) throws CommandSyntaxException {
+	public FullPortalFilter parse(StringReader reader) throws CommandSyntaxException {
 		// TODO: check
-		if (p_120843_.canRead()) {
-//			String str = p_120843_.readString();
+		if (reader.canRead()) {
+//			String str = reader.readString();
 			String str = "";
-			while (p_120843_.canRead()) {
-				if (p_120843_.peek() == ' ') break;
-				str += p_120843_.read();
+			while (reader.canRead()) {
+				if (reader.peek() == ' ') break;
+				str += reader.read();
 			}
 			try {
 				int id = Integer.parseInt(str);
@@ -61,121 +61,112 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 					for (String arg : args) {
 						String[] split = arg.split("=", 2);
 						if (split.length != 2) {
-							throw new CommandSyntaxException(null, new LiteralMessage("Invalid Selector, all equal signs should have text to both the left and right."));
+							throw new CommandSyntaxException(null, new TranslatableComponent("dynamicportals.command.cheese.equal"));
 						}
 						
 						success = true;
 						
-						if (split[0].equals("type")) {
-							FullPortalFilter temp = filter;
-							filter = (portals, ctx) -> {
-								ArrayList<CommandPortal> output = new ArrayList<>();
-								for (CommandPortal portal : temp.filter(portals, ctx)) {
-									if (portal.type().equals(split[1])) {
-										output.add(portal);
+						switch (split[0]) {
+							case "type" -> {
+								FullPortalFilter temp = filter;
+								filter = (portals, ctx) -> {
+									ArrayList<CommandPortal> output = new ArrayList<>();
+									for (CommandPortal portal : temp.filter(portals, ctx)) {
+										if (portal.type().equals(split[1])) {
+											output.add(portal);
+										}
 									}
-								}
-								return output.toArray(new CommandPortal[0]);
-							};
-						} else if (split[0].equals("id")) {
-							FullPortalFilter temp = filter;
-							int i = Integer.parseInt(split[1]);
-							filter = (portals, ctx) -> {
-								ArrayList<CommandPortal> output = new ArrayList<>();
-								for (CommandPortal portal : temp.filter(portals, ctx)) {
-									if (portal.myId() == i) {
-										output.add(portal);
+									return output.toArray(new CommandPortal[0]);
+								};
+							}
+							case "id" -> {
+								FullPortalFilter temp = filter;
+								int i = Integer.parseInt(split[1]);
+								filter = (portals, ctx) -> {
+									ArrayList<CommandPortal> output = new ArrayList<>();
+									for (CommandPortal portal : temp.filter(portals, ctx)) {
+										if (portal.myId() == i) {
+											output.add(portal);
+										}
 									}
-								}
-								return output.toArray(new CommandPortal[0]);
-							};
-						} else if (split[0].equals("uuid")) {
-							FullPortalFilter temp = filter;
-							filter = (portals, ctx) -> {
-								ArrayList<CommandPortal> output = new ArrayList<>();
-								for (CommandPortal portal : temp.filter(portals, ctx)) {
-									if (((AbstractPortal) portal).uuid.toString().equals(split[1])) {
-										output.add(portal);
+									return output.toArray(new CommandPortal[0]);
+								};
+							}
+							case "uuid" -> {
+								FullPortalFilter temp = filter;
+								filter = (portals, ctx) -> {
+									ArrayList<CommandPortal> output = new ArrayList<>();
+									for (CommandPortal portal : temp.filter(portals, ctx)) {
+										if (((AbstractPortal) portal).uuid.toString().equals(split[1])) {
+											output.add(portal);
+										}
 									}
-								}
-								return output.toArray(new CommandPortal[0]);
-							};
+									return output.toArray(new CommandPortal[0]);
+								};
+							}
 						}
 					}
 				}
 				if (success) return filter;
-				// TODO: translation
-				throw new CommandSyntaxException(null, new LiteralMessage("Invalid Selector, selector likely ends with a comma that shouldn't be there."));
+				
+				throw new CommandSyntaxException(null, new TranslatableComponent("dynamicportals.command.cheese.comma"));
 			}
-			throw new CommandSyntaxException(null, new LiteralMessage("Invalid Selector, unknown reason"));
+			throw new CommandSyntaxException(null, new TranslatableComponent("dynamicportals.command.cheese.unknown"));
 		}
-		throw new CommandSyntaxException(null, new LiteralMessage("Invalid Selector, likely empty?"));
+		throw new CommandSyntaxException(null, new TranslatableComponent("dynamicportals.command.cheese.maybe_empty"));
 	}
 	
-	// TODO: some clean up here would be nice
+	//lorenzo: cleaned up a bit+added selectors :D
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> pContext, SuggestionsBuilder pBuilder) {
-		if (!(pContext.getSource() instanceof SharedSuggestionProvider)) {
-			return Suggestions.empty();
-		} else {
-			String rem = pBuilder.getRemaining();
-			if (rem.equals("@")) {
+		if (pContext.getSource() instanceof SharedSuggestionProvider) {
+			String selector = pBuilder.getRemaining();
+			AbstractPortal[] portals = Temp.getPortals(null); //TODO: not actually null, but for now it's ok
+			if (selector.equals("@")) {
 				return SharedSuggestionProvider.suggest(new String[]{"@["}, pBuilder);
-			} else if (rem.startsWith("@[")) {
-				ArrayList<String> suggestions = new ArrayList<>();
-				if (rem.lastIndexOf(",") < rem.lastIndexOf("=")) {
-					int max = Math.max(rem.indexOf("["), rem.lastIndexOf(","));
-					String sub = rem.substring(max + 1);
-					if (sub.startsWith("type=")) {
-						String[] options = new String[]{
-								"basic",
-								"nether",
-								"end",
-						};
-						SuggestionsBuilder builder = new SuggestionsBuilder(pBuilder.getInput(), pBuilder.getStart() + rem.lastIndexOf("=") + 1);
-						String substr = rem.substring(rem.lastIndexOf("=") + 1);
-						for (String option : options) {
-							if (option.startsWith(substr)) {
-								builder.suggest(option);
-							}
-						}
-						pBuilder.add(builder);
+			} else if (selector.startsWith("@[")) {
+				int lastStart = Math.max(selector.indexOf("["), selector.lastIndexOf(","));
+				int lastEnd = Math.max(selector.lastIndexOf(","), selector.lastIndexOf("="));
+				SuggestionsBuilder builder = pBuilder.createOffset(pBuilder.getStart() + (lastEnd < 0 ? lastStart : lastEnd) + 1);
+				
+				String selectorType = selector.substring(lastStart + 1);
+				String argument = selector.substring((lastEnd < 0 ? lastStart : lastEnd) + 1);
+				
+				List<String> options = new ArrayList<>();
+				
+				if (selector.lastIndexOf(",") < selector.lastIndexOf("=")) {
+					if (selectorType.startsWith("type=")) {
+						options.addAll(List.of("basic", "nether", "end"));
+					} else if (selectorType.startsWith("uuid=")) {
+						for (AbstractPortal p : portals)
+							options.add(p.uuid.toString());
+					} else if (selectorType.startsWith("id=")) {
+						for (AbstractPortal p : portals)
+							if (p instanceof CommandPortal)
+								options.add(Integer.toString(((CommandPortal) p).myId()));
 					}
 				} else {
-					if (rem.endsWith(",") || rem.endsWith("[")) {
-						String[] options = new String[]{
-								"uuid",
-								"id",
-								"type",
-						};
-						SuggestionsBuilder builder = new SuggestionsBuilder(pBuilder.getInput(), pBuilder.getStart() + rem.length());
-						for (String option : options)
-							builder.suggest(option);
-						pBuilder.add(builder);
-					} else {
-						// TODO: validation
-						String[] options = new String[]{
-								"uuid",
-								"id",
-								"type",
-						};
-						int max = Math.max(rem.indexOf("["), rem.lastIndexOf(","));
-						SuggestionsBuilder builder = new SuggestionsBuilder(pBuilder.getInput(), pBuilder.getStart() + max + 1);
-						String substr = pBuilder.getRemaining().substring(max + 1);
-						System.out.println(substr);
-						for (String option : options) {
-							if (option.startsWith(substr) || option.equals(substr)) {
-								builder.suggest(option);
-							}
-						}
-						pBuilder.add(builder);
-						suggestions.add(rem + "]");
+					options.addAll(List.of("uuid=", "id=", "type="));
+				}
+				
+				for (String option : options) {
+					if (option.equals(argument)) {
+						return SharedSuggestionProvider.suggest(new String[]{",", "]"}, pBuilder.createOffset(pBuilder.getStart() + pBuilder.getRemaining().length()));
+					} else if (option.startsWith(argument)) {
+						builder.suggest(option);
 					}
 				}
-//				return SharedSuggestionProvider.suggest(suggestions.toArray(new String[0]), pBuilder);
+				
+				pBuilder.add(builder);
 				return pBuilder.buildFuture();
 			}
-			// TODO: suggestion provider for portal selectors
-			return SharedSuggestionProvider.suggest(new String[0], pBuilder);
+			List<String> ids = new ArrayList<>(List.of("@"));
+			for (AbstractPortal p : portals) {
+				if (p instanceof CommandPortal)
+					ids.add(Integer.toString(((CommandPortal) p).myId()));
+			}
+			return SharedSuggestionProvider.suggest(ids, pBuilder);
+		} else {
+			return Suggestions.empty();
 		}
 	}
 	
