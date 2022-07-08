@@ -25,5 +25,17 @@ public class QuaternionTest {
 				System.out.println(q + "; " + p);
 			}
 		}
+		
+		Quaternion q1 = Quaternion.ONE.copy();
+		q1.mul(new Quaternion(0, 10, 0, true));
+		q1.mul(new Quaternion(20, 0, 0, true));
+		q1.mul(new Quaternion(0, 0, 30, true));
+		
+		Quaternion q2 = Quaternion.ONE.copy();
+		q2.mul(new Quaternion(0, 0, -30, true));
+		q2.mul(new Quaternion(-20, 0, 0, true));
+		q2.mul(new Quaternion(0, -10, 0, true));
+		
+		System.out.println(q1 + "; " + q2);
 	}
 }
