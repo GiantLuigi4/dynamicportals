@@ -1,5 +1,6 @@
 package tfc.dynamicportals;
 
+import com.jozufozu.flywheel.event.BeginFrameEvent;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import tfc.dynamicportals.access.IAmAChunkMap;
 import tfc.dynamicportals.api.AbstractPortal;
@@ -141,7 +143,7 @@ public class Renderer {
 		stk.last().pose().load(a.last().pose());
 		stk.last().normal().load(a.last().normal());
 		// setup transform
-		portal.setupMatrix(stk);
+		portal.fullSetupMatrix(stk);
 		stk.mulPose(new Quaternion(0, 180, 0, true));
 		portal.target.setupAsTarget(stk);
 //		if (DynamicPortals.isRotate180Needed()) stk.mulPose(new Quaternion(0, 180, 0, true));
@@ -156,8 +158,14 @@ public class Renderer {
 //		Minecraft.getInstance().levelRenderer.capturedFrustum = portal.getGraph().getFrustum();
 		ObjectArrayList<LevelRenderer.RenderChunkInfo> chunkInfoList = Minecraft.getInstance().levelRenderer.renderChunksInFrustum;
 		if (portal.getGraph() != null) {
+			PoseStack sysStk = RenderSystem.getModelViewStack();
+//			RenderSystem.modelViewStack = stk;
+//			RenderSystem.applyModelViewMatrix();
+			MinecraftForge.EVENT_BUS.post(new BeginFrameEvent(Minecraft.getInstance().level, camera, frustum));// 51
 			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.getGraph().getChunks();
 			Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
+			RenderSystem.modelViewStack = sysStk;
+			RenderSystem.applyModelViewMatrix();
 		}
 		
 		Minecraft.getInstance().levelRenderer.renderChunksInFrustum = chunkInfoList;

@@ -318,7 +318,21 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	@Override
+	public void fullSetupMatrix(PoseStack stack) {
+		this.setupMatrix(stack);
+		
+		float xScl = (float) size.x;
+		float yScl = (float) size.y;
+		stack.scale(xScl, yScl, xScl);
+	}
+	
+	@Override
 	public void setupAsTarget(PoseStack stack) {
+		float xScl = 1f / (float) size.x;
+		float yScl = 1f / (float) size.y;
+		
+		stack.scale(xScl, yScl, xScl);
+		
 		boolean isMirror = target == this;
 		Vector3d position = this.position;
 		// rotate
