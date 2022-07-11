@@ -1,14 +1,15 @@
 {
   "dynamicportals.command.bread.id": "A portal with the id %s has been created",
   "dynamicportals.command.bread.help": "§6[DynamicPortals]§r\nThe dynamic portals command is similar to the execute command, having multiple different arguments which can be filled in in any order.\n\nThese arguments are as follows:\n§aFormat: §e[Required/Optional, Type, Name]§r\n  §6[Req, Vec2, size]§r Size: two decimal numbers representing how large the portal should be.\n  §6[Opt, Vec3, position]§r Position: the position of the portal.\n  §6[Opt, Vec3, rotation]§r Rotation: which direction the portal should be facing. This includes pitch, yaw, and roll.\n  §6[Opt, Vec3, normal]§r Normal: \\\"normal\\\" vector of the portal. This is used for deciding which direction the portal should be rendered from.\n  §6[Opt, Text, type]§r Type: the type of the portal. By default, the options are: basic, which is a portal with no overlay, nether, and end.\n  §6[Opt, Bool, frontonly]§r Front Only: whether or not the back side should be able to render/\n\n§6[Examples]§r\n§a/dynamicportals size 5 5 create §rcreates a portal with a width and height of 5, at the player's (or executor's) feet, and rotated the way the player is facing.",
-  "dynamicportals.command.bread.mirror": "The portal which has just been created is a mirror, but it can be bound up to another portal through creating a portal with a target set.",
-  "dynamicportals.command.bread.target": "The portal has just been created with a target being bound up, this has updated the portal it's targeting so that that portal is no longer a mirror, but instead teleports to the new portal.",
-  "dynamicportals.command.bread.delete": "Delete %s portals",
+  "dynamicportals.command.bread.mirror": "The portal of id %s which has just been created is a mirror, but it can be bound up to another portal through creating a portal with a target set.",
+  "dynamicportals.command.bread.target": "The portal of id %s has just been created with a target being bound up, this has updated the portal it's targeting so that that portal is no longer a mirror, but instead teleports to the new portal.",
+  "dynamicportals.command.bread.delete": "Deleted %s portals",
   "dynamicportals.command.cheese.size_crab": "I'm not sure why you're seeing this, so report what exactly your command was to https://github.com/GiantLuigi4/dynamicportals/issues",
   "dynamicportals.command.cheese.missing_args": "In order to create a portal, you must supply the following arguments: [size:Vec2]",
   "dynamicportals.command.cheese.missing_size": "In order to create a portal, you must supply an argument for the size of the portal.",
   "dynamicportals.command.cheese.comma": "Invalid Selector, selector likely ends with a comma that shouldn't be there.",
   "dynamicportals.command.cheese.equal": "Invalid Selector, all equal signs should have text to both the left and right.",
+  "dynamicportals.command.cheese.invalid_target": "Didn't find any portal for the specified target.",
   "dynamicportals.command.cheese.unknown": "In order to create a portal, you must supply an argument for the size of the portal.",
   "dynamicportals.command.cheese.maybe_empty": "Invalid Selector, likely empty?"
 }

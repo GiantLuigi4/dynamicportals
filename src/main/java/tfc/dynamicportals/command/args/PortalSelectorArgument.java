@@ -12,7 +12,6 @@ import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.command.CommandPortal;
 import tfc.dynamicportals.command.FullPortalFilter;
-import tfc.dynamicportals.command.PortalFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,15 +29,15 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 	public FullPortalFilter parse(StringReader reader) throws CommandSyntaxException {
 		// TODO: check
 		if (reader.canRead()) {
-//			String str = reader.readString();
-			String str = "";
+			String selector = "";
 			while (reader.canRead()) {
 				if (reader.peek() == ' ') break;
-				str += reader.read();
+				selector += reader.read();
 			}
+			System.out.println(selector);
 			try {
-				int id = Integer.parseInt(str);
-				return (PortalFilter) portals -> {
+				int id = Integer.parseInt(selector);
+				return (portals, context) -> {
 					for (CommandPortal portal : portals)
 						if (portal.myId() == id)
 							return new CommandPortal[]{portal};
@@ -46,65 +45,48 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 				};
 			} catch (Throwable ignored) {
 			}
-			if (str.equals("@")) return (PortalFilter) (portals) -> portals.toArray(new CommandPortal[0]);
+			if (selector.equals("@")) return (portals, context) -> portals.toArray(new CommandPortal[0]);
 			// TODO: actual selectors
-			if (str.startsWith("@[") && str.endsWith("]")) {
-				str = str.substring(2, str.length() - 1);
-				String[] args = str.split(",");
-				int cnt = 0;
-				for (char c : str.toCharArray()) {
-					if (c == ',') cnt++;
+			else if (selector.startsWith("@[") && selector.endsWith("]")) {
+				selector = selector.substring(2, selector.length() - 1);
+				String[] selectors = selector.split(",");
+				int selCount = 0;
+				for (char c : selector.toCharArray()) {
+					if (c == ',') selCount++;
 				}
 				FullPortalFilter filter = (portals, ctx) -> portals.toArray(new CommandPortal[0]);
 				boolean success = false;
-				if (args.length == (cnt + 1)) {
-					for (String arg : args) {
+				if (selectors.length == (selCount + 1)) {
+					for (String arg : selectors) {
 						String[] split = arg.split("=", 2);
-						if (split.length != 2) {
-							throw new CommandSyntaxException(null, new TranslatableComponent("dynamicportals.command.cheese.equal"));
-						}
+						if (split.length != 2) throw new CommandSyntaxException(null, new TranslatableComponent("dynamicportals.command.cheese.equal"));
 						
 						success = true;
 						
-						switch (split[0]) {
-							case "type" -> {
-								FullPortalFilter temp = filter;
-								filter = (portals, ctx) -> {
-									ArrayList<CommandPortal> output = new ArrayList<>();
-									for (CommandPortal portal : temp.filter(portals, ctx)) {
+						FullPortalFilter oldFilter = filter;
+						filter = (portals, ctx) -> {
+							ArrayList<CommandPortal> output = new ArrayList<>();
+							for (CommandPortal portal : oldFilter.filter(portals, ctx)) {
+								switch (split[0]) {
+									case "type" -> {
 										if (portal.type().equals(split[1])) {
 											output.add(portal);
 										}
 									}
-									return output.toArray(new CommandPortal[0]);
-								};
-							}
-							case "id" -> {
-								FullPortalFilter temp = filter;
-								int i = Integer.parseInt(split[1]);
-								filter = (portals, ctx) -> {
-									ArrayList<CommandPortal> output = new ArrayList<>();
-									for (CommandPortal portal : temp.filter(portals, ctx)) {
-										if (portal.myId() == i) {
+									case "id" -> {
+										if (portal.myId() == Integer.parseInt(split[1])) {
 											output.add(portal);
 										}
 									}
-									return output.toArray(new CommandPortal[0]);
-								};
-							}
-							case "uuid" -> {
-								FullPortalFilter temp = filter;
-								filter = (portals, ctx) -> {
-									ArrayList<CommandPortal> output = new ArrayList<>();
-									for (CommandPortal portal : temp.filter(portals, ctx)) {
+									case "uuid" -> {
 										if (((AbstractPortal) portal).uuid.toString().equals(split[1])) {
 											output.add(portal);
 										}
 									}
-									return output.toArray(new CommandPortal[0]);
-								};
+								}
 							}
-						}
+							return output.toArray(new CommandPortal[0]);
+						};
 					}
 				}
 				if (success) return filter;

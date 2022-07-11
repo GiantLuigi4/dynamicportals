@@ -29,13 +29,14 @@ import tfc.dynamicportals.util.DynamicPortalsSourceStack;
 import tfc.dynamicportals.util.Vec2d;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 
 public class DynamicPortalsCommand {
-	private static final HashMap<String, Function<UUID, BasicPortal>> portalCreators = new HashMap<>();
+	private static final Map<String, Function<UUID, BasicPortal>> portalCreators = new HashMap<>();
 	
 	static {
 		portalCreators.put("basic", BasicCommandPortal::new);
@@ -80,7 +81,7 @@ public class DynamicPortalsCommand {
 				if (cmdType != null) type = cmdType;
 			} catch (Throwable ignored) {
 			}
-			BasicPortal portal = portalCreators.get(type).apply(uuid);
+			BasicPortal newPortal = portalCreators.get(type).apply(uuid);
 			Vec3 vec;
 			try {
 				vec = pos.getPosition(ctx);
@@ -101,7 +102,7 @@ public class DynamicPortalsCommand {
 			} catch (Throwable ignored) {
 				normal = null;
 			}
-			portal.setPosition(vec.x, vec.y, vec.z);
+			newPortal.setPosition(vec.x, vec.y, vec.z);
 			Vec2d sizeVec;
 			try {
 				Vec3 vec1 = size.getPosition(ctx);
@@ -110,33 +111,33 @@ public class DynamicPortalsCommand {
 				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.size_crab"));
 				return -1;
 			}
-			portal.setSize(sizeVec.x, sizeVec.y);
-			portal.setRotation(rotation.x, rotation.y, rotation.z);
+			newPortal.setSize(sizeVec.x, sizeVec.y);
+			newPortal.setRotation(rotation.x, rotation.y, rotation.z);
 			if (normal != null) {
-				portal.setNormal(normal);
+				newPortal.setNormal(normal);
 			}
 			try {
 				if (ctx.getArgument("frontonly", String.class).equals("true"))
-					portal.computeNormal();
+					newPortal.computeNormal();
 			} catch (Throwable ignored) {
 			}
-			boolean log = true;
-			if (context.getSource().hasPermission(4)) {
-				if (context.getSource().getLevel().getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
-					log = false;
+
+			int newId = Temp.addPortal(context.getSource().getLevel(), (CommandPortal) newPortal);
+			ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.id", newId), log(context));
+			FullPortalFilter targetFilter = ctx.getArgument("target", FullPortalFilter.class);
+			if (targetFilter != null) {
+				CommandPortal[] possibleTargets = Temp.filter(targetFilter, context);
+				if (possibleTargets.length > 0) {
+					CommandPortal target = possibleTargets[0];
+					((AbstractPortal) target).target = newPortal;
+					newPortal.target = (AbstractPortal) target;
+				} else {
+					ctx.sendFailure(new TranslatableComponent("dynamicportals.command.cheese.invalid_target"));
 				}
 			}
-			int v = Temp.addPortal(context.getSource().getLevel(), (CommandPortal) portal);
-			ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.id", v), log);
-			FullPortalFilter i = ctx.getArgument("target", FullPortalFilter.class);
-			if (i != null) {
-				CommandPortal portal1 = Temp.filter(i, context)[0];
-				((AbstractPortal) portal1).target = portal;
-				portal.target = (AbstractPortal) portal1;
-			}
-			if (portal.target == portal)
-				ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.mirror", v), log);
-			else ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.target", v), log);
+			if (newPortal.target == newPortal)
+				ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.mirror", newId), log(context));
+			else ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.target", newId), log(context));
 			return 0;
 		};
 		// TODO: provide help when command is executed with no arguments
@@ -154,8 +155,8 @@ public class DynamicPortalsCommand {
 		commandNode.addChild(create.build());
 		
 		{
-			ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> builder2 = LiteralArgumentBuilder.literal("delete");
-			ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, FullPortalFilter>> builder1 = RequiredArgumentBuilder.argument("target", PortalSelectorArgument.create());
+			ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> deleteBuilder = LiteralArgumentBuilder.literal("delete");
+			ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, FullPortalFilter>> targetBuilder = RequiredArgumentBuilder.argument("target", PortalSelectorArgument.create());
 			Command<CommandSourceStack> exec = context -> {
 				FullPortalFilter i = context.getArgument("target", FullPortalFilter.class);
 				int count = 0;
@@ -165,29 +166,35 @@ public class DynamicPortalsCommand {
 					Temp.remove(commandPortal.myId());
 					count += 1;
 				}
-				boolean log = true;
-				if (context.getSource().hasPermission(4)) {
-					if (context.getSource().getLevel().getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
-						log = false;
-					}
-				}
-				context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.delete", count), log);
+
+				context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.delete", count), log(context));
 				return count;
 			};
-			builder2.executes(exec);
-			builder1.executes(exec);
-			builder2.then(builder1);
-			commandNode.addChild(builder2.build());
+			deleteBuilder.executes(exec);
+			targetBuilder.executes(exec);
+			deleteBuilder.then(targetBuilder);
+			commandNode.addChild(deleteBuilder.build());
 		}
 		
 		return builder;
+	}
+	
+	//TODO: see if it can be removed
+	private static boolean log(CommandContext<CommandSourceStack> context) {
+		boolean log = true;
+		if (context.getSource().hasPermission(4)) {
+			if (context.getSource().getLevel().getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
+				log = false;
+			}
+		}
+		return log;
 	}
 	
 	// jank hack to forward information to the redirects
 	private static CommandSourceStack toSource(CommandContext<CommandSourceStack> context) {
 		int perm = 0;
 		while (context.getSource().hasPermission(perm)) perm++;
-		DynamicPortalsSourceStack sourceStack = new DynamicPortalsSourceStack(
+		return new DynamicPortalsSourceStack(
 				context.getSource().source,
 				context.getSource().getPosition(),
 				context.getSource().getRotation(),
@@ -204,7 +211,6 @@ public class DynamicPortalsCommand {
 				context.getNodes(),
 				context
 		);
-		return sourceStack;
 	}
 	
 	// give me something to work with, and I will butcher it until it works in a way which is easy to work with
