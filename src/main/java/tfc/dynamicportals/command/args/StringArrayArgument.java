@@ -1,6 +1,5 @@
 package tfc.dynamicportals.command.args;
 
-import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -16,9 +15,6 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class StringArrayArgument implements ArgumentType<String> {
-	public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE = new SimpleCommandExceptionType(new TranslatableComponent("argument.pos3d.incomplete"));
-	public static final SimpleCommandExceptionType ERROR_MIXED_TYPE = new SimpleCommandExceptionType(new TranslatableComponent("argument.pos.mixed"));
-	
 	private final String[] options;
 	
 	public StringArrayArgument(String[] options) {
@@ -30,23 +26,20 @@ public class StringArrayArgument implements ArgumentType<String> {
 	}
 	
 	public String parse(StringReader reader) throws CommandSyntaxException {
-		// TODO: check
 		if (reader.canRead()) {
-			String str = reader.readString();
+			String parsed = reader.readString();
 			for (String option : options) {
-				if (str.equalsIgnoreCase(option)) return option;
+				if (parsed.equalsIgnoreCase(option)) return option;
 			}
-			throw new CommandSyntaxException(null, new LiteralMessage("Input stream must be one of: " + Arrays.toString(options)));
+			throw new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.unknown", parsed).append("; Option must be one of: " + Arrays.toString(options))).createWithContext(reader);
 		}
-		throw new CommandSyntaxException(null, new LiteralMessage("unknown error"));
+		throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.unknown")).createWithContext(reader);
 	}
 	
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> pContext, SuggestionsBuilder pBuilder) {
-		if (pContext.getSource() instanceof SharedSuggestionProvider) {
+		if (pContext.getSource() instanceof SharedSuggestionProvider)
 			return SharedSuggestionProvider.suggest(options, pBuilder);
-		} else {
-			return Suggestions.empty();
-		}
+		else return Suggestions.empty();
 	}
 	
 	public Collection<String> getExamples() {

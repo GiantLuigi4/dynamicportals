@@ -37,8 +37,8 @@ public class RaytraceHelper {
 						Quaternion dstQuat = portal.target.raytraceRotation();
 						Vec3 srcOff = portal.raytraceOffset();
 						Vec3 dstOff = portal.target.raytraceOffset();
-						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, srcOff, dstOff);
-						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, Vec3.ZERO, Vec3.ZERO);
+						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal.getScaleRatio(), portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, srcOff, dstOff);
+						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal.getScaleRatio(), portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, Vec3.ZERO, Vec3.ZERO);
 					} else {
 						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
 						interpStart = interpStart.add(offset);

@@ -1,6 +1,5 @@
 package tfc.dynamicportals.command.args;
 
-import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -9,6 +8,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.TranslatableComponent;
 import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.command.CommandPortal;
@@ -20,14 +20,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static net.minecraft.commands.arguments.selector.EntitySelectorParser.*;
-import static net.minecraft.commands.arguments.selector.options.EntitySelectorOptions.*;
+import static net.minecraft.commands.arguments.selector.EntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE;
+import static net.minecraft.commands.arguments.selector.options.EntitySelectorOptions.ERROR_UNKNOWN_OPTION;
 
 public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
+	public List<String> options = List.of("uuid", "id", "type");
+	
 	public PortalSelectorArgument() {
 	}
-	
-	public List<String> options = List.of("uuid", "id", "type");
 	
 	public static PortalSelectorArgument create() {
 		return new PortalSelectorArgument();
@@ -77,7 +77,7 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 							}
 							return filter;
 						} else {
-							throw new SimpleCommandExceptionType(new LiteralMessage("Invalid argument")).createWithContext(reader);
+							throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.invalid_argument")).createWithContext(reader);
 						}
 					} else if (reader.peek() == ' ') {
 						return (portals, context) -> portals.toArray(new CommandPortal[0]);
@@ -88,17 +88,18 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 					return (portals, context) -> portals.toArray(new CommandPortal[0]);
 				}
 			} else {
+				String r = reader.readString();
 				try {
-					int id = Integer.parseInt(reader.readString());
+					int id = Integer.parseInt(r);
 					return (portals, context) -> {
 						for (CommandPortal portal : portals)
 							if (portal.myId() == id)
 								return new CommandPortal[]{portal};
-						return null;
+						return new CommandPortal[0];
 					};
 				} catch (Throwable ignored) {
 				}
-				throw new SimpleCommandExceptionType(new LiteralMessage("Invalid portal id")).createWithContext(reader);
+				throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.invalid_simple_id", r)).createWithContext(reader);
 			}
 		} else {
 			throw ERROR_MISSING_SELECTOR_TYPE.createWithContext(reader);
@@ -108,16 +109,17 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 	public String[] parseSingleFilter(StringReader reader) throws CommandSyntaxException {
 		String option = reader.readString();
 		if (option.isEmpty())
-			throw new SimpleCommandExceptionType(new LiteralMessage("Empty option")).createWithContext(reader);
+			throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.empty_option")).createWithContext(reader);
 		else if (!options.contains(option))
 			throw ERROR_UNKNOWN_OPTION.createWithContext(reader, option);
 		if (reader.peek() == '=') {
 			reader.skip();
 			String argument = reader.readString();
-			if (argument.isEmpty()) throw new CommandSyntaxException(null, new LiteralMessage("Empty argument"));
+			if (argument.isEmpty())
+				throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.empty_option")).createWithContext(reader);
 			return new String[]{option, argument};
 		} else {
-			throw new CommandSyntaxException(null, new LiteralMessage("Missing equal sign."));
+			throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.missing_equal")).createWithContext(reader);
 		}
 	}
 	

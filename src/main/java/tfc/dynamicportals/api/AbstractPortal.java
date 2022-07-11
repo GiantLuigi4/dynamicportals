@@ -10,9 +10,9 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.util.RenderTypes;
+import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
 
 import java.util.UUID;
@@ -110,6 +110,10 @@ public abstract class AbstractPortal {
 	 */
 	public abstract Quaternion raytraceRotation();
 	
+	public abstract Vec3 getScaleRatio();
+	
+	public abstract Vec2d getSize();
+	
 	/**
 	 * @return a quaternion for rotating the look vector by 180 degrees around the vertical axis of the portal
 	 * for now used only by startVec and reachVec in the raytracing, maybe should be used for everything
@@ -184,17 +188,17 @@ public abstract class AbstractPortal {
 	 * @return if it overlaps the portal
 	 */
 	public abstract boolean overlaps(AABB box);
-	
-	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
-		Vec3 look = VecMath.getLookVec(vector);
-		if (reverse)
-			look = VecMath.transform(look, Quaternion.ONE, raytraceRotation(), get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
-		else {
-			look = VecMath.transform(look, raytraceRotation(), Quaternion.ONE, get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
-		}
-		
-		return VecMath.lookAngle(look);
-	}
+
+//	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
+//		Vec3 look = VecMath.getLookVec(vector);
+//		if (reverse)
+//			look = VecMath.transform(look, Quaternion.ONE, raytraceRotation(), get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
+//		else {
+//			look = VecMath.transform(look, raytraceRotation(), Quaternion.ONE, get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
+//		}
+//
+//		return VecMath.lookAngle(look);
+//	}
 	
 	/**
 	 * used for checking if the entity has crossed through the portal for sake of teleportation

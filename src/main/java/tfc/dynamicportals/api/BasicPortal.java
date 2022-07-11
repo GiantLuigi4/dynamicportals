@@ -55,12 +55,6 @@ public class BasicPortal extends AbstractPortal {
 		return this;
 	}
 	
-	public BasicPortal setSize(Vec2d size) {
-		this.size = size;
-		recomputePortal();
-		return this;
-	}
-	
 	public BasicPortal setRotation(double x, double y, double z) {
 		this.rotation = new Vec3(x, y, z);
 		recomputePortal();
@@ -109,6 +103,11 @@ public class BasicPortal extends AbstractPortal {
 		this.normal = normal;
 		return this;
 	}
+	
+	@Override
+	public Vec3 raytraceOffset() {
+		return new Vec3(position.x, position.y, position.z);
+	}
 
 //	public boolean requiresTraceRotation() {
 //		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
@@ -138,15 +137,30 @@ public class BasicPortal extends AbstractPortal {
 //	}
 	
 	@Override
-	public Vec3 raytraceOffset() {
-		return new Vec3(position.x, position.y, position.z);
-	}
-	
-	@Override
 	public Quaternion raytraceRotation() {
 		Quaternion rot = Quaternion.fromYXZ((float) -rotation.x, (float) -rotation.y, (float) -rotation.z);
 		if (target == this) rot.mul(new Quaternion(0, 90, 0, true));
 		return rot;
+	}
+	
+	@Override
+	public Vec3 getScaleRatio() {
+		if (this.target == this) {
+			return new Vec3(1, 1, 1);
+		} else {
+			return new Vec3(target.getSize().x / this.size.x, target.getSize().y / this.size.y, target.getSize().x / this.size.x);
+		}
+	}
+	
+	@Override
+	public Vec2d getSize() {
+		return size;
+	}
+	
+	public BasicPortal setSize(Vec2d size) {
+		this.size = size;
+		recomputePortal();
+		return this;
 	}
 	
 	protected Vec3 _computeNormal() {
@@ -267,7 +281,7 @@ public class BasicPortal extends AbstractPortal {
 					Vec3 dstOff = target.raytraceOffset();
 					Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
 					Vec3 srcPos = pos1;
-					pos1 = VecMath.transform(pos1, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), this != target, srcOff, dstOff);
+					pos1 = VecMath.transform(pos1, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this != target, srcOff, dstOff);
 					
 					box = box.move(-srcPos.x, -srcPos.y, -srcPos.z);
 					box = box.move(pos1.x, pos1.y, pos1.z);
@@ -276,7 +290,7 @@ public class BasicPortal extends AbstractPortal {
 					stack.translate(-position.x, -position.y, -position.z);
 					LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
 					center = box.getCenter();
-					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, Vec3.ZERO, Vec3.ZERO);
+					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, Vec3.ZERO, Vec3.ZERO);
 					
 					stack.translate(center.x, center.y, center.z);
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(1, 0, 0).endVertex();
@@ -498,17 +512,17 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 				Vec3 pos = position;
 				if (target != this) {
-					oldPos = VecMath.transform(oldPos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
-					oPos = VecMath.transform(oPos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
-					pos = VecMath.transform(pos, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					oldPos = VecMath.transform(oldPos, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					oPos = VecMath.transform(oPos, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					pos = VecMath.transform(pos, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
 				}
 				
 				Vec3 look = VecMath.getLookVec(entity.getRotationVector());
-				look = VecMath.transform(look, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
+				look = VecMath.transform(look, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
 				Vec2 rotVec = VecMath.lookAngle(look);
 				
 				Vec3 oldLook = VecMath.getLookVec(entity.getRotationVector());
-				oldLook = VecMath.transform(oldLook, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
+				oldLook = VecMath.transform(oldLook, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
 				Vec2 oldRotVec = VecMath.lookAngle(oldLook);
 				
 				entity.setXRot(rotVec.x);
@@ -516,7 +530,7 @@ public class BasicPortal extends AbstractPortal {
 				entity.setYRot(rotVec.y);
 				entity.yRotO = oldRotVec.y;
 				
-				motion = VecMath.transform(motion, srcQuat, dstQuat, target.get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
+				motion = VecMath.transform(motion, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
 				double scl = motion.length();
 //				motion = motion.scale(-1);
 				motion = motion.normalize().scale(scl);
