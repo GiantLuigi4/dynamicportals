@@ -76,6 +76,8 @@ public abstract class AbstractPortal {
 	 */
 	public abstract void setupMatrix(PoseStack stack);
 	
+	public abstract void fullSetupMatrix(PoseStack stack);
+	
 	/**
 	 * more or less the opposite of setupMatrix
 	 * I'm not sure why, but currently a 180 degree rotation seems to be needed
