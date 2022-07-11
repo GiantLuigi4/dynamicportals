@@ -44,6 +44,8 @@ public class DynamicPortalsCommand {
 		portalCreators.put("end", BasicEndPortal::new);
 	}
 	
+	//TODO maybe refactor? I don't really know if it's possible or if this is the best-looking way of doing the command
+	//I should study command creation better to actually touch this class
 	public static LiteralArgumentBuilder<CommandSourceStack> build(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dynamicportals");
 		builder.executes(context -> {
@@ -121,7 +123,7 @@ public class DynamicPortalsCommand {
 					newPortal.computeNormal();
 			} catch (Throwable ignored) {
 			}
-
+			
 			int newId = Temp.addPortal(context.getSource().getLevel(), (CommandPortal) newPortal);
 //			ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.id", newId), log(context));
 			FullPortalFilter targetFilter = ctx.getArgument("target", FullPortalFilter.class);
@@ -166,7 +168,7 @@ public class DynamicPortalsCommand {
 					Temp.remove(commandPortal.myId());
 					count += 1;
 				}
-
+				
 				context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.delete", count), log(context));
 				return count;
 			};
@@ -181,13 +183,14 @@ public class DynamicPortalsCommand {
 	
 	//TODO: see if it can be removed
 	private static boolean log(CommandContext<CommandSourceStack> context) {
-		boolean log = true;
-		if (context.getSource().hasPermission(4)) {
-			if (context.getSource().getLevel().getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
-				log = false;
-			}
-		}
-		return log;
+//		boolean log = true;
+//		if (context.getSource().hasPermission(4)) {
+//			if (context.getSource().getLevel().getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
+//				log = false;
+//			}
+//		}
+//		return log;
+		return !context.getSource().hasPermission(4) || !context.getSource().getLevel().getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS);
 	}
 	
 	// jank hack to forward information to the redirects
