@@ -123,7 +123,7 @@ public class DynamicPortalsCommand {
 			}
 
 			int newId = Temp.addPortal(context.getSource().getLevel(), (CommandPortal) newPortal);
-			ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.id", newId), log(context));
+//			ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.id", newId), log(context));
 			FullPortalFilter targetFilter = ctx.getArgument("target", FullPortalFilter.class);
 			if (targetFilter != null) {
 				CommandPortal[] possibleTargets = Temp.filter(targetFilter, context);

@@ -29,12 +29,12 @@ public class StringArrayArgument implements ArgumentType<String> {
 		return new StringArrayArgument(possibilities);
 	}
 	
-	public String parse(StringReader p_120843_) throws CommandSyntaxException {
+	public String parse(StringReader reader) throws CommandSyntaxException {
 		// TODO: check
-		if (p_120843_.canRead()) {
-			String str = p_120843_.readString();
+		if (reader.canRead()) {
+			String str = reader.readString();
 			for (String option : options) {
-				if (str.equals(option)) return option;
+				if (str.equalsIgnoreCase(option)) return option;
 			}
 			throw new CommandSyntaxException(null, new LiteralMessage("Input stream must be one of: " + Arrays.toString(options)));
 		}
@@ -42,10 +42,10 @@ public class StringArrayArgument implements ArgumentType<String> {
 	}
 	
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> pContext, SuggestionsBuilder pBuilder) {
-		if (!(pContext.getSource() instanceof SharedSuggestionProvider)) {
-			return Suggestions.empty();
-		} else {
+		if (pContext.getSource() instanceof SharedSuggestionProvider) {
 			return SharedSuggestionProvider.suggest(options, pBuilder);
+		} else {
+			return Suggestions.empty();
 		}
 	}
 	

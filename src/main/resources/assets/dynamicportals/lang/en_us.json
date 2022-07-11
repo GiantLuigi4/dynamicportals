@@ -10,6 +10,7 @@
   "dynamicportals.command.cheese.comma": "Invalid Selector, selector likely ends with a comma that shouldn't be there.",
   "dynamicportals.command.cheese.equal": "Invalid Selector, all equal signs should have text to both the left and right.",
   "dynamicportals.command.cheese.invalid_target": "Didn't find any portal for the specified target.",
+  "dynamicportals.command.cheese.invalid_selector": "Invalid selector.",
   "dynamicportals.command.cheese.unknown": "In order to create a portal, you must supply an argument for the size of the portal.",
   "dynamicportals.command.cheese.maybe_empty": "Invalid Selector, likely empty?"
 }
