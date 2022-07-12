@@ -153,7 +153,7 @@ public class DynamicPortalsCommand {
 	
 	// give me something to work with, and I will butcher it until it works in a way which is easy to work with
 	// :GWchadThink: epic luigi
-	// I have built the ultimate building function
+	// I have created the ultimate building function
 	private static <T> void buildSubcommand(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> command, Command<CommandSourceStack> cmd) {
 		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> subCommand = LiteralArgumentBuilder.literal(name);
 		if (type != null) {

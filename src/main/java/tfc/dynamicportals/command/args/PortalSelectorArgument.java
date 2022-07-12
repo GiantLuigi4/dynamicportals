@@ -121,7 +121,6 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 		}
 	}
 	
-	//lorenzo: cleaned up a bit+added suggestions :D
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> pContext, SuggestionsBuilder pBuilder) {
 		if (pContext.getSource() instanceof SharedSuggestionProvider) {
 			String selector = pBuilder.getRemaining();

@@ -134,7 +134,7 @@ public class Temp {
 			for (CommandPortal cmdPortal : cmdPortals.toArray(new CommandPortal[0]))
 				allPortals.add((AbstractPortal) cmdPortal);
 			Collections.addAll(allPortals, portals);
-			return allPortals.toArray(new BasicPortal[0]);
+			return allPortals.toArray(new AbstractPortal[0]);
 		}
 	}
 	
