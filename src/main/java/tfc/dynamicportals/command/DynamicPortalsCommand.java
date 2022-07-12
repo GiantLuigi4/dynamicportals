@@ -2,11 +2,13 @@ package tfc.dynamicportals.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.UuidArgument;
@@ -41,7 +43,6 @@ public class DynamicPortalsCommand {
 		portalCreators.put("end", BasicEndPortal::new);
 	}
 	
-	//NOW it's at its best
 	public static LiteralArgumentBuilder<CommandSourceStack> build(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dynamicportals");
 		builder.executes(context -> {
@@ -49,7 +50,7 @@ public class DynamicPortalsCommand {
 			return 0;
 		});
 		CommandNode<CommandSourceStack> commandNode = dispatcher.register(builder);
-		buildSelfExecutingSubcommand("create", null, commandNode, context -> {
+		buildSubcommand("create", null, commandNode, context -> {
 			DynamicPortalsSourceStack ctx;
 			if (context.getSource() instanceof DynamicPortalsSourceStack)
 				ctx = (DynamicPortalsSourceStack) context.getSource();
@@ -94,7 +95,7 @@ public class DynamicPortalsCommand {
 			return 0;
 		});
 		
-		buildSelfExecutingSubcommand("delete", PortalSelectorArgument.create(), commandNode, context -> {
+		buildSubcommand("delete", PortalSelectorArgument.create(), commandNode, context -> {
 			FullPortalFilter i = null;
 			try {
 				i = context.getArgument("delete", FullPortalFilter.class);
@@ -116,14 +117,14 @@ public class DynamicPortalsCommand {
 			return count;
 		});
 		
-		buildRedirectedSubcommand("position", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource);
-		buildRedirectedSubcommand("rotation", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource);
-		buildRedirectedSubcommand("size", Vec2Argument.vec2(false), commandNode, DynamicPortalsCommand::toSource);
-		buildRedirectedSubcommand("normal", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource);
-		buildRedirectedSubcommand("type", StringArrayArgument.of(new String[]{"basic", "nether", "end"}), commandNode, DynamicPortalsCommand::toSource);
-		buildRedirectedSubcommand("frontonly", StringArrayArgument.of(new String[]{"true", "false"}), commandNode, DynamicPortalsCommand::toSource);
-		buildRedirectedSubcommand("uuid", UuidArgument.uuid(), commandNode, DynamicPortalsCommand::toSource);
-		buildRedirectedSubcommand("target", PortalSelectorArgument.create(), commandNode, DynamicPortalsCommand::toSource);
+		buildRedirectedSubcommand("position", Vec3Argument.vec3(false), commandNode);
+		buildRedirectedSubcommand("rotation", Vec3Argument.vec3(false), commandNode);
+		buildRedirectedSubcommand("size", Vec2Argument.vec2(false), commandNode);
+		buildRedirectedSubcommand("normal", Vec3Argument.vec3(false), commandNode);
+		buildRedirectedSubcommand("type", StringArrayArgument.of(new String[]{"basic", "nether", "end"}), commandNode);
+		buildRedirectedSubcommand("frontonly", StringArrayArgument.of(new String[]{"true", "false"}), commandNode);
+		buildRedirectedSubcommand("uuid", UuidArgument.uuid(), commandNode);
+		buildRedirectedSubcommand("target", PortalSelectorArgument.create(), commandNode);
 		return builder;
 	}
 	
@@ -151,24 +152,28 @@ public class DynamicPortalsCommand {
 	}
 	
 	// give me something to work with, and I will butcher it until it works in a way which is easy to work with
-	//:GWchadThink: epic luigi
-	private static <T> void buildRedirectedSubcommand(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> command, Function<CommandContext<CommandSourceStack>, CommandSourceStack> infoSupplier) {
-		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> subCommand = LiteralArgumentBuilder.literal(name);
-		ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, T>> argument = RequiredArgumentBuilder.argument(name, type);
-		argument.redirect(command, infoSupplier::apply);
-		subCommand.then(argument);
-		command.addChild(subCommand.build());
-	}
-	
-	private static <T> void buildSelfExecutingSubcommand(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> command, Command<CommandSourceStack> cmd) {
+	// :GWchadThink: epic luigi
+	// I have built the ultimate building function
+	private static <T> void buildSubcommand(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> command, Command<CommandSourceStack> cmd) {
 		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> subCommand = LiteralArgumentBuilder.literal(name);
 		if (type != null) {
 			ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, T>> argument = RequiredArgumentBuilder.argument(name, type);
+			if (cmd == null) {
+				argument.redirect(command, DynamicPortalsCommand::toSource);
+				cmd = context -> {
+					StringReader reader = new StringReader(context.getInput());
+					reader.setCursor(context.getInput().length());
+					throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(reader);
+				};
+			}
 			argument.executes(cmd);
 			subCommand.then(argument);
-		} else {
-			subCommand.executes(cmd);
 		}
+		subCommand.executes(cmd);
 		command.addChild(subCommand.build());
+	}
+	
+	private static <T> void buildRedirectedSubcommand(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> command) {
+		buildSubcommand(name, type, command, null);
 	}
 }
