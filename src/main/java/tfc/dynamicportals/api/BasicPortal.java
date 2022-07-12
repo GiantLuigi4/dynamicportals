@@ -43,8 +43,8 @@ public class BasicPortal extends AbstractPortal {
 		return this;
 	}
 	
-	public BasicPortal setPosition(Vector3d position) {
-		this.position = position;
+	public BasicPortal setPosition(Vec3 pos) {
+		setPosition(pos.x, pos.y, pos.z);
 		recomputePortal();
 		return this;
 	}
@@ -62,7 +62,7 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	public BasicPortal setRotation(Vec3 rotation) {
-		this.rotation = rotation;
+		setRotation(rotation.x, rotation.y, rotation.z);
 		recomputePortal();
 		return this;
 	}

@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.ParsedCommandNode;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -29,15 +30,27 @@ public class DynamicPortalsSourceStack extends CommandSourceStack {
 	}
 	
 	public <T> T getArgument(String name, Class<T> clazz) {
-		try {
-			return context.getArgument(name, clazz);
-		} catch (Throwable ignored) {
-			if (context.getSource() instanceof DynamicPortalsSourceStack) {
-				return ((DynamicPortalsSourceStack) context.getSource()).getArgument(name, clazz);
-			}
-		}
-		return null;
+		return getArgumentOrDefault(name, clazz, null);
 	}
 	
+	public <T> T getArgumentOrDefault(String name, Class<T> clazz, T def) {
+		T v = null;
+		try {
+			v = context.getArgument(name, clazz);
+		} catch (Throwable ignored) {
+			if (context.getSource() instanceof DynamicPortalsSourceStack) {
+				v = ((DynamicPortalsSourceStack) context.getSource()).getArgumentOrDefault(name, clazz, def);
+			}
+		}
+		return v == null ? def : v;
+	}
 	
+	public Vec3 getPositionFromWorldCoordinates(String name) {
+		return getPositionFromWorldCoordinatesOrDefault(name, null);
+	}
+	
+	public Vec3 getPositionFromWorldCoordinatesOrDefault(String name, Vec3 def) {
+		WorldCoordinates v = getArgument(name, WorldCoordinates.class);
+		return v == null ? def : v.getPosition(this);
+	}
 }

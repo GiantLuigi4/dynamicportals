@@ -12,10 +12,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.coordinates.Vec2Argument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
-import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.api.AbstractPortal;
@@ -26,7 +23,7 @@ import tfc.dynamicportals.command.portals.BasicCommandPortal;
 import tfc.dynamicportals.command.portals.BasicEndPortal;
 import tfc.dynamicportals.command.portals.BasicNetherPortal;
 import tfc.dynamicportals.util.DynamicPortalsSourceStack;
-import tfc.dynamicportals.util.Vec2d;
+import tfc.dynamicportals.util.VecMath;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,18 +41,15 @@ public class DynamicPortalsCommand {
 		portalCreators.put("end", BasicEndPortal::new);
 	}
 	
-	//TODO maybe refactor? I don't really know if it's possible or if this is the best-looking way of doing the command
-	//I should study command creation better to actually touch this class
+	//NOW it's at its best
 	public static LiteralArgumentBuilder<CommandSourceStack> build(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> builder = literal("dynamicportals");
 		builder.executes(context -> {
-			context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.help"), false);
+			context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.help"), true);
 			return 0;
 		});
-		
-		LiteralArgumentBuilder<CommandSourceStack> create = literal("create");
-		// the command execution function
-		Command<CommandSourceStack> cmd = context -> {
+		CommandNode<CommandSourceStack> commandNode = dispatcher.register(builder);
+		buildSelfExecutingSubcommand("create", null, commandNode, context -> {
 			DynamicPortalsSourceStack ctx;
 			if (context.getSource() instanceof DynamicPortalsSourceStack)
 				ctx = (DynamicPortalsSourceStack) context.getSource();
@@ -63,134 +57,74 @@ public class DynamicPortalsCommand {
 				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.missing_args"));
 				return -1;
 			}
-			WorldCoordinates size = ctx.getArgument("size", WorldCoordinates.class);
-			if (size == null) {
+			Vec3 sizeVec = ctx.getPositionFromWorldCoordinates("size");
+			if (sizeVec == null) {
 				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.missing_size"));
 				return -1;
 			}
-			WorldCoordinates pos = ctx.getArgument("position", WorldCoordinates.class);
-			WorldCoordinates rot = ctx.getArgument("rotation", WorldCoordinates.class);
-			WorldCoordinates norm = ctx.getArgument("normal", WorldCoordinates.class);
-			UUID uuid = new UUID(System.nanoTime(), context.getSource().getLevel().getGameTime());
-			try {
-				UUID cmdUUid = ctx.getArgument("uuid", UUID.class);
-				if (cmdUUid != null) uuid = cmdUUid;
-			} catch (Throwable ignored) {
-			}
-			String type = "basic";
-			try {
-				String cmdType = ctx.getArgument("type", String.class);
-				if (cmdType != null) type = cmdType;
-			} catch (Throwable ignored) {
-			}
-			BasicPortal newPortal = portalCreators.get(type).apply(uuid);
-			Vec3 vec;
-			try {
-				vec = pos.getPosition(ctx);
-			} catch (Throwable ignored) {
-				vec = context.getSource().getPosition();
-			}
-			Vec3 rotation;
-			try {
-				Vec3 ve = rot.getPosition(ctx);
-				rotation = new Vec3(Math.toRadians(ve.x), Math.toRadians(ve.y), Math.toRadians(ve.z));
-			} catch (Throwable ignored) {
-				Vec2 rotato = context.getSource().getRotation();
-				rotation = new Vec3(Math.toRadians(rotato.y), -Math.toRadians(rotato.x), 0);
-			}
-			Vec3 normal;
-			try {
-				normal = norm.getPosition(ctx);
-			} catch (Throwable ignored) {
-				normal = null;
-			}
-			newPortal.setPosition(vec.x, vec.y, vec.z);
-			Vec2d sizeVec;
-			try {
-				Vec3 vec1 = size.getPosition(ctx);
-				sizeVec = new Vec2d(vec1.x, vec1.z);
-			} catch (Throwable ignored) {
-				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.size_crab"));
-				return -1;
-			}
-			newPortal.setSize(sizeVec.x, sizeVec.y);
-			newPortal.setRotation(rotation.x, rotation.y, rotation.z);
-			if (normal != null) {
-				newPortal.setNormal(normal);
-			}
-			try {
-				if (ctx.getArgument("frontonly", String.class).equals("true"))
-					newPortal.computeNormal();
-			} catch (Throwable ignored) {
-			}
-			
-			int newId = Temp.addPortal(context.getSource().getLevel(), (CommandPortal) newPortal);
-//			ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.id", newId), log(context));
+			Vec3 normal = ctx.getPositionFromWorldCoordinates("normal");
 			FullPortalFilter targetFilter = ctx.getArgument("target", FullPortalFilter.class);
+			//noinspection SuspiciousNameCombination <- INTELLIJ
+			BasicPortal newPortal = portalCreators
+					.get(ctx.getArgumentOrDefault("type", String.class, "basic"))
+					.apply(ctx.getArgumentOrDefault("uuid", UUID.class, new UUID(System.nanoTime(), context.getSource().getLevel().getGameTime())))
+					.setPosition(ctx.getPositionFromWorldCoordinatesOrDefault("position", context.getSource().getPosition()))
+					.setSize(sizeVec.x, sizeVec.z)
+					.setRotation(VecMath.toRadians(ctx.getPositionFromWorldCoordinatesOrDefault("rotation", new Vec3(context.getSource().getRotation().y, -context.getSource().getRotation().x, 0))));
+			if (normal != null)
+				newPortal.setNormal(normal);
+			if (ctx.getArgumentOrDefault("frontonly", String.class, "false").equals("true"))
+				newPortal.computeNormal();
+			
 			if (targetFilter != null) {
 				CommandPortal[] possibleTargets = Temp.filter(targetFilter, context);
 				if (possibleTargets.length > 0) {
 					CommandPortal target = possibleTargets[0];
-					((AbstractPortal) target).target = newPortal;
-					newPortal.target = (AbstractPortal) target;
+					((AbstractPortal) target).setTarget(newPortal);
+					newPortal.setTarget((AbstractPortal) target);
 				} else {
 					ctx.sendFailure(new TranslatableComponent("dynamicportals.command.cheese.invalid_target"));
 				}
 			}
+			
+			int newId = Temp.addPortal(context.getSource().getLevel(), (CommandPortal) newPortal);
 			if (newPortal.target == newPortal)
-				ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.mirror", newId), log(context));
-			else ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.target", newId), log(context));
+				ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.mirror", newId), true);
+			else ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.target", newId), true);
 			return 0;
-		};
-		// TODO: provide help when command is executed with no arguments
-		create.executes(cmd);
-		CommandNode<CommandSourceStack> commandNode = dispatcher.register(builder);
-		// arguments
-		builderFork("position", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("rotation", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("size", Vec2Argument.vec2(false), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("normal", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("type", StringArrayArgument.of(new String[]{"basic", "nether", "end"}), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("frontonly", StringArrayArgument.of(new String[]{"true", "false"}), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("uuid", UuidArgument.uuid(), commandNode, DynamicPortalsCommand::toSource, cmd);
-		builderFork("target", PortalSelectorArgument.create(), commandNode, DynamicPortalsCommand::toSource, cmd);
-		commandNode.addChild(create.build());
+		});
 		
-		{
-			ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> deleteBuilder = LiteralArgumentBuilder.literal("delete");
-			ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, FullPortalFilter>> targetBuilder = RequiredArgumentBuilder.argument("target", PortalSelectorArgument.create());
-			Command<CommandSourceStack> exec = context -> {
-				FullPortalFilter i = context.getArgument("target", FullPortalFilter.class);
-				int count = 0;
-				for (CommandPortal commandPortal : Temp.filter(i, context)) {
-					if (((AbstractPortal) commandPortal).target != commandPortal)
-						((AbstractPortal) commandPortal).target.setTarget(((AbstractPortal) commandPortal).target);
-					Temp.remove(commandPortal.myId());
-					count += 1;
-				}
-				
-				context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.delete", count), log(context));
-				return count;
-			};
-			deleteBuilder.executes(exec);
-			targetBuilder.executes(exec);
-			deleteBuilder.then(targetBuilder);
-			commandNode.addChild(deleteBuilder.build());
-		}
+		buildSelfExecutingSubcommand("delete", PortalSelectorArgument.create(), commandNode, context -> {
+			FullPortalFilter i = null;
+			try {
+				i = context.getArgument("delete", FullPortalFilter.class);
+			} catch (Throwable ignored) {}
+			if (i == null) {
+				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.empty_argument"));
+				return -1;
+			}
+			
+			int count = 0;
+			for (CommandPortal commandPortal : Temp.filter(i, context)) {
+				if (((AbstractPortal) commandPortal).target != commandPortal)
+					((AbstractPortal) commandPortal).target.setTarget(((AbstractPortal) commandPortal).target);
+				Temp.remove(commandPortal.myId());
+				count += 1;
+			}
+			
+			context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.delete", count), true);
+			return count;
+		});
 		
+		buildRedirectedSubcommand("position", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource);
+		buildRedirectedSubcommand("rotation", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource);
+		buildRedirectedSubcommand("size", Vec2Argument.vec2(false), commandNode, DynamicPortalsCommand::toSource);
+		buildRedirectedSubcommand("normal", Vec3Argument.vec3(false), commandNode, DynamicPortalsCommand::toSource);
+		buildRedirectedSubcommand("type", StringArrayArgument.of(new String[]{"basic", "nether", "end"}), commandNode, DynamicPortalsCommand::toSource);
+		buildRedirectedSubcommand("frontonly", StringArrayArgument.of(new String[]{"true", "false"}), commandNode, DynamicPortalsCommand::toSource);
+		buildRedirectedSubcommand("uuid", UuidArgument.uuid(), commandNode, DynamicPortalsCommand::toSource);
+		buildRedirectedSubcommand("target", PortalSelectorArgument.create(), commandNode, DynamicPortalsCommand::toSource);
 		return builder;
-	}
-	
-	//TODO: see if it can be removed
-	private static boolean log(CommandContext<CommandSourceStack> context) {
-//		boolean log = true;
-//		if (context.getSource().hasPermission(4)) {
-//			if (context.getSource().getLevel().getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
-//				log = false;
-//			}
-//		}
-//		return log;
-		return !context.getSource().hasPermission(4) || !context.getSource().getLevel().getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS);
 	}
 	
 	// jank hack to forward information to the redirects
@@ -218,11 +152,23 @@ public class DynamicPortalsCommand {
 	
 	// give me something to work with, and I will butcher it until it works in a way which is easy to work with
 	//:GWchadThink: epic luigi
-	private static <T> void builderFork(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> root, Function<CommandContext<CommandSourceStack>, CommandSourceStack> infoSupplier, Command<CommandSourceStack> cmd) {
-		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> builder = LiteralArgumentBuilder.literal(name);
-		ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, T>> builder1 = RequiredArgumentBuilder.argument(name, type);
-		builder1.redirect(root, infoSupplier::apply);
-		builder.then(builder1);
-		root.addChild(builder.build());
+	private static <T> void buildRedirectedSubcommand(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> command, Function<CommandContext<CommandSourceStack>, CommandSourceStack> infoSupplier) {
+		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> subCommand = LiteralArgumentBuilder.literal(name);
+		ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, T>> argument = RequiredArgumentBuilder.argument(name, type);
+		argument.redirect(command, infoSupplier::apply);
+		subCommand.then(argument);
+		command.addChild(subCommand.build());
+	}
+	
+	private static <T> void buildSelfExecutingSubcommand(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> command, Command<CommandSourceStack> cmd) {
+		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> subCommand = LiteralArgumentBuilder.literal(name);
+		if (type != null) {
+			ArgumentBuilder<CommandSourceStack, RequiredArgumentBuilder<CommandSourceStack, T>> argument = RequiredArgumentBuilder.argument(name, type);
+			argument.executes(cmd);
+			subCommand.then(argument);
+		} else {
+			subCommand.executes(cmd);
+		}
+		command.addChild(subCommand.build());
 	}
 }

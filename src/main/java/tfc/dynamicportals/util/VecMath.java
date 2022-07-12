@@ -16,6 +16,10 @@ public class VecMath {
 		return start.add(end.subtract(start).scale(pct));
 	}
 	
+	public static Vec3 toRadians(Vec3 src) {
+		return new Vec3(Math.toRadians(src.x), Math.toRadians(src.y), Math.toRadians(src.z));
+	}
+	
 	public static Vec3 rotate(Vec3 src, Quaternion rotation) {
 		Quaternion point = new Quaternion((float) src.x, (float) src.y, (float) src.z, 0);
 		Quaternion newPoint = rotation.copy();

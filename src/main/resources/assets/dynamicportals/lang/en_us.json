@@ -8,7 +8,7 @@
   "dynamicportals.command.cheese.missing_args": "In order to create a portal, you must supply the following arguments: [size:Vec2]",
   "dynamicportals.command.cheese.missing_size": "In order to create a portal, you must supply an argument for the size of the portal.",
   "dynamicportals.command.cheese.missing_equal": "Missing equal sign.",
-  "dynamicportals.command.cheese.invalid_target": "Didn't find any portal for the specified target.",
+  "dynamicportals.command.cheese.invalid_target": "Didn't find any portal for the specified target. The portal will be a mirror.",
   "dynamicportals.command.cheese.invalid_argument": "Invalid argument.",
   "dynamicportals.command.cheese.invalid_simple_id": "Invalid portal id %s.",
   "dynamicportals.command.cheese.empty_option": "Empty option.",

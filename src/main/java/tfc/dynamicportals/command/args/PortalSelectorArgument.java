@@ -15,7 +15,6 @@ import tfc.dynamicportals.command.CommandPortal;
 import tfc.dynamicportals.command.FullPortalFilter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -45,7 +44,6 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 							selectors.add(parseSingleFilter(reader));
 							if (reader.canRead() && reader.peek() == ',') reader.skip();
 						}
-						System.out.println(Arrays.deepToString(selectors.toArray(new String[0][0])));
 						if (reader.canRead() && reader.peek() == ']') {
 							reader.skip();
 							FullPortalFilter filter = (portals, ctx) -> portals.toArray(new CommandPortal[0]);
@@ -116,7 +114,7 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 			reader.skip();
 			String argument = reader.readString();
 			if (argument.isEmpty())
-				throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.empty_option")).createWithContext(reader);
+				throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.empty_argument")).createWithContext(reader);
 			return new String[]{option, argument};
 		} else {
 			throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.missing_equal")).createWithContext(reader);
@@ -134,7 +132,7 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 				int selectorStart = Math.max(selector.indexOf("["), selector.lastIndexOf(","));
 				int selectorEnd = Math.max(selector.lastIndexOf(","), selector.lastIndexOf("="));
 				
-				String selectorType = selector.substring(selectorStart + 1); //, (selectorEnd >= 0 ? selectorEnd : selector.length())
+				String selectorType = selector.substring(selectorStart + 1);
 				String argument = selector.substring((selectorEnd >= 0 ? selectorEnd : selectorStart) + 1);
 				List<String> options = new ArrayList<>();
 				
