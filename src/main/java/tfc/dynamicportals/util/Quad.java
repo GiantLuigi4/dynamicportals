@@ -21,12 +21,6 @@ public class Quad {
 		return out;
 	}
 	
-	private static boolean bulkEq(double... values) {
-		double first = values[0];
-		for (int i = 1; i < values.length; i++) if (values[i] != first) return false;
-		return true;
-	}
-	
 	private static double bulkMax(double... values) {
 		double out = values[0];
 		for (int i = 1; i < values.length; i++) out = Math.max(out, values[i]);
@@ -52,11 +46,11 @@ public class Quad {
 		//The normal vector of this plane is (a,b,c)
 		//We calculate it by doing the cross product of two of the edges:
 		//Given two vectors, the third perpendicular to both of them is one and only one
-		Vec3 normal = (pt0.subtract(pt1)).cross(pt2.subtract(pt1));
+		Vec3 normal = normal();
 		//d represents the offset from the origin, since there is none we assume it's 0
 		
 		//Consider the matrix equation Ax=B, x=B/A=inv(A)*B
-		//"A" is the matrix of our plane, "B" is a 1x4 matrix containing (point.x,point.y,point.z,0)
+		//"A" is the matrix of our plane, "B" is a 1x4 matrix containing (point.x,point.y,point.z,d=0)
 		Matrix4f A = new Matrix4f(new float[]{
 				1, 0, 0, (float) -normal.x,
 				0, 1, 0, (float) -normal.y,
@@ -125,7 +119,10 @@ public class Quad {
 				bulkMax(pt0.y, pt1.y, pt2.y, pt3.y),
 				bulkMax(pt0.z, pt1.z, pt2.z, pt3.z)
 		);
-		Vec3 mid = bMin.add(bMax).scale(0.5);
-		return mid;
+		return bMin.add(bMax).scale(0.5);
+	}
+	
+	public Vec3 normal() {
+		return (pt1.subtract(pt0)).cross(pt2.subtract(pt1)).normalize();
 	}
 }

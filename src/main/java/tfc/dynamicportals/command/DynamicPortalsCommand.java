@@ -73,9 +73,9 @@ public class DynamicPortalsCommand {
 					.setSize(sizeVec.x, sizeVec.z)
 					.setRotation(VecMath.toRadians(ctx.getPositionFromWorldCoordinatesOrDefault("rotation", new Vec3(context.getSource().getRotation().y, -context.getSource().getRotation().x, 0))));
 			if (normal != null)
-				newPortal.setNormal(normal);
+				newPortal.setRenderNormal(normal);
 			if (ctx.getArgumentOrDefault("frontonly", String.class, "false").equals("true"))
-				newPortal.computeNormal();
+				newPortal.computeRenderNormal();
 			
 			if (targetFilter != null) {
 				CommandPortal[] possibleTargets = Temp.filter(targetFilter, context);

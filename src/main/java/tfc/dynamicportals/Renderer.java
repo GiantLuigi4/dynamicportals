@@ -6,7 +6,6 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -28,7 +27,6 @@ import tfc.dynamicportals.util.async.AsyncDispatcher;
 import tfc.dynamicportals.util.async.ReusableThread;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 public class Renderer {
 	private static final RenderTarget stencilTarget = new TextureTarget(
@@ -40,7 +38,6 @@ public class Renderer {
 			true, Minecraft.ON_OSX
 	);
 	private static final ArrayList<ReusableThread> threads = new ArrayList<>();
-	private static final Random rand = new Random();
 	private static boolean isStencilPresent = false;
 	private static boolean screenspaceTex = false;
 	private static int recursion = 0;
@@ -79,8 +76,8 @@ public class Renderer {
 		
 		// raytracing debug
 		{
+			Entity entity = Minecraft.getInstance().cameraEntity;
 			if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
-				Entity entity = Minecraft.getInstance().cameraEntity;
 				double reach = Minecraft.getInstance().gameMode.getPickRange();
 				Vec3 start = entity.getEyePosition(Minecraft.getInstance().getFrameTime());
 				Vec3 look = entity.getViewVector(1.0F);
@@ -88,11 +85,11 @@ public class Renderer {
 				Vec3 end = start.add(reachVec);
 				
 				double dist = portal.trace(start, end);
+				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 				
 				if (dist != 1) {
 					Vec3 interpStart = VecMath.lerp(dist, start, end);
 					Vec3 interpReach = VecMath.lerp(1 - dist, Vec3.ZERO, reachVec);
-					VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 					if (portal.requireTraceRotation()) {
 						Quaternion srcQuat = portal.raytraceRotation();
 						Quaternion dstQuat = portal.target.raytraceRotation();
@@ -109,11 +106,7 @@ public class Renderer {
 					Vec3 iend = istart.add(ireach);
 					double size = 0.01;
 					
-					Matrix4f matrix4f = stack.last().pose();
-					Matrix3f matrix3f = stack.last().normal();
-					consumer.vertex(matrix4f, (float) istart.x, (float) istart.y, (float) istart.z).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
-					consumer.vertex(matrix4f, (float) iend.x, (float) iend.y, (float) iend.z).color(0, 0, 255, 255).normal(matrix3f, 1, 0, 0).endVertex();
-					
+				    renderVector(stack, consumer, istart, iend, 0, 0, 1);
 					renderPoint(stack, consumer, istart, size, 1, 0, 1);
 					renderPoint(stack, consumer, iend, size, 1, 0, 0);
 					forceDraw(source);
@@ -373,10 +366,20 @@ public class Renderer {
 	public static void renderPoint(PoseStack stack, VertexConsumer consumer, Vec3 vec, double size, float r, float g, float b) {
 		LevelRenderer.renderLineBox(
 				stack, consumer,
-				vec.x, vec.y, vec.z,
+				vec.x - size, vec.y - size, vec.z - size,
 				vec.x + size, vec.y + size, vec.z + size,
 				r, g, b, 1
 		);
+	}
+	
+	public static void renderVector(PoseStack stack, VertexConsumer consumer, Vec3 start, Vec3 end, float r, float g, float b) {
+		Vec3 normal = end.subtract(start);
+		consumer.vertex(stack.last().pose(), (float) start.x(), (float) start.y(), (float) start.z()).color(r, g, b, 1).normal(stack.last().normal(), (float) normal.x(), (float) normal.y(), (float) normal.z()).endVertex();
+		consumer.vertex(stack.last().pose(), (float) end.x(), (float) end.y(), (float) end.z()).color(r, g, b, 1).normal(stack.last().normal(), (float) normal.x(), (float) normal.y(), (float) normal.z()).endVertex();
+	}
+	
+	public static void renderVector(PoseStack stack, VertexConsumer consumer, Vec3 end, float r, float g, float b) {
+		renderVector(stack, consumer, Vec3.ZERO, end, r, g, b);
 	}
 	
 	public static void refreshStencilBuffer(int framebufferWidth, int framebufferHeight) {
