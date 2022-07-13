@@ -2,7 +2,10 @@ package tfc.dynamicportals.api;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.*;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3d;
+import com.mojang.math.Vector4f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -28,9 +31,10 @@ public class BasicPortal extends AbstractPortal {
 	protected Vector3d position;
 	protected Vec2d size;
 	protected Vec3 rotation;
-	protected Vec3 normal;
+	protected Vec3 renderNormal;
+	protected Vec3 computedNormal;
 	protected PortalCamera cam;
-	protected Vec3 compNorm;
+	protected Quad portalQuad;
 	AABB box = null;
 	
 	public BasicPortal(UUID uuid) {
@@ -39,12 +43,6 @@ public class BasicPortal extends AbstractPortal {
 	
 	public BasicPortal setPosition(double x, double y, double z) {
 		this.position = new Vector3d(x, y, z);
-		recomputePortal();
-		return this;
-	}
-	
-	public BasicPortal setPosition(Vec3 pos) {
-		setPosition(pos.x, pos.y, pos.z);
 		recomputePortal();
 		return this;
 	}
@@ -61,20 +59,43 @@ public class BasicPortal extends AbstractPortal {
 		return this;
 	}
 	
-	public BasicPortal setRotation(Vec3 rotation) {
-		setRotation(rotation.x, rotation.y, rotation.z);
-		recomputePortal();
+	public BasicPortal setRenderNormal(Vec3 renderNormal) {
+		this.renderNormal = renderNormal;
 		return this;
+	}
+	
+	public BasicPortal setPosition(Vec3 pos) {
+		return this.setPosition(pos.x, pos.y, pos.z);
+	}
+	
+	public BasicPortal setSize(Vec2d size) {
+		return this.setSize(size.x, size.y);
+	}
+	
+	public BasicPortal setRotation(Vec3 rotation) {
+		return this.setRotation(rotation.x, rotation.y, rotation.z);
+	}
+	
+	public void computeRenderNormal() {
+		this.setRenderNormal(portalQuad.normal());
+	}
+	
+	protected void recalculateQuad() {
+		Quaternion rotation = getActualRotation();
+		Vec3 vec0 = VecMath.rotate(new Vec3(-size.x / 2, 0, 0), rotation);
+		Vec3 vec1 = VecMath.rotate(new Vec3(size.x / 2, 0, 0), rotation);
+		Vec3 vec2 = VecMath.rotate(new Vec3(size.x / 2, size.y, 0), rotation);
+		Vec3 vec3 = VecMath.rotate(new Vec3(-size.x / 2, size.y, 0), rotation);
+		this.portalQuad = new Quad(vec0, vec1, vec2, vec3);
 	}
 	
 	protected void recomputePortal() {
 		if (position != null && rotation != null) {
-			compNorm = _computeNormal();
+			recalculateQuad();
+			computedNormal = portalQuad.normal();
 			
 			if (size != null) {
-				Quad qd = makeQuad();
-				// easier to iterate over a list
-				Vec3[] vecs = new Vec3[]{qd.pt0, qd.pt1, qd.pt2, qd.pt3};
+				Vec3[] vertices = new Vec3[]{portalQuad.pt0, portalQuad.pt1, portalQuad.pt2, portalQuad.pt3};
 				double nx = Double.POSITIVE_INFINITY;
 				double ny = Double.POSITIVE_INFINITY;
 				double nz = Double.POSITIVE_INFINITY;
@@ -82,14 +103,14 @@ public class BasicPortal extends AbstractPortal {
 				double px = Double.NEGATIVE_INFINITY;
 				double py = Double.NEGATIVE_INFINITY;
 				double pz = Double.NEGATIVE_INFINITY;
-				for (Vec3 vec : vecs) {
-					nx = Math.min(vec.x, nx);
-					ny = Math.min(vec.y, ny);
-					nz = Math.min(vec.z, nz);
+				for (Vec3 vert : vertices) {
+					nx = Math.min(vert.x, nx);
+					ny = Math.min(vert.y, ny);
+					nz = Math.min(vert.z, nz);
 					
-					px = Math.max(vec.x, px);
-					py = Math.max(vec.y, py);
-					pz = Math.max(vec.z, pz);
+					px = Math.max(vert.x, px);
+					py = Math.max(vert.y, py);
+					pz = Math.max(vert.z, pz);
 				}
 				box = new AABB(
 						position.x + nx, position.y + ny, position.z + nz,
@@ -97,11 +118,6 @@ public class BasicPortal extends AbstractPortal {
 				);
 			}
 		}
-	}
-	
-	public BasicPortal setNormal(Vec3 normal) {
-		this.normal = normal;
-		return this;
 	}
 	
 	@Override
@@ -145,43 +161,12 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Vec3 getScaleRatio() {
-		if (this.target == this) {
-			return new Vec3(1, 1, 1);
-		} else {
-			return new Vec3(target.getSize().x / this.size.x, target.getSize().y / this.size.y, target.getSize().x / this.size.x);
-		}
+		return this.target == this ? new Vec3(1, 1, 1) : new Vec3(target.getSize().x / this.size.x, target.getSize().y / this.size.y, target.getSize().x / this.size.x);
 	}
 	
 	@Override
 	public Vec2d getSize() {
 		return size;
-	}
-	
-	public BasicPortal setSize(Vec2d size) {
-		this.size = size;
-		recomputePortal();
-		return this;
-	}
-	
-	protected Vec3 _computeNormal() {
-		Quad qd = makeQuad();
-		Vector3f a = new Vector3f((float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z);
-		Vector3f b = new Vector3f((float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z);
-		Vector3f c = new Vector3f((float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z);
-		Vector3f d = new Vector3f((float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z);
-		
-		Vector3f first = b.copy();
-		first.sub(d);
-		Vector3f second = c.copy();
-		second.sub(d);
-		
-		first.cross(second);
-		first.normalize();
-		return new Vec3(first.x(), first.y(), first.z());
-	}
-	
-	public void computeNormal() {
-		this.normal = _computeNormal();
 	}
 	
 	@Override
@@ -193,61 +178,51 @@ public class BasicPortal extends AbstractPortal {
 				// absolute position
 				stack.pushPose();
 				stack.translate(0, (float) size.y / 2, 0);
-				stack.mulPose(quadQuat());
+				stack.mulPose(getActualRotation());
 				
 				// draw normal vector
-				if (normal != null) {
-					consumer.vertex(stack.last().pose(), 0, 0, 0).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
-					consumer.vertex(stack.last().pose(), (float) normal.x(), (float) normal.y(), (float) normal.z()).color(0f, 1, 0, 1).normal(0, 0, 0).endVertex();
-				} else if (compNorm != null) {
-					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
-					consumer.vertex(stack.last().pose(), (float) compNorm.x(), (float) compNorm.y(), (float) compNorm.z()).color(1f, 0, 1, 1).normal(0, 0, 0).endVertex();
+				if (renderNormal != null) {
+					Renderer.renderVector(stack, consumer, renderNormal, 0, 1, 0);
+				} else if (computedNormal != null) {
+					Renderer.renderVector(stack, consumer, computedNormal, 1, 0, 1);
 				}
-				
 				stack.popPose();
 				
-				Vec3 norm = compNorm;
-				if (norm == null) norm = normal;
-				if (norm != null) {
-					stack.pushPose();
-					stack.translate(0, (float) size.y / 2, 1);
-					
-					Quaternion quaternion = quadQuat();
-					stack.mulPose(quaternion);
-					// luigi: lorenzo wanted this
-					
-					//WHAT DO YOU MEAN I DON'T EVEN KNOW WHAT THIS IS
-					// luigi: https://cdn.discordapp.com/attachments/988184753255624774/991124702196154419/unknown.png
-					// left vector
-					
-					// I don't need it anymore, you can remove it luigi
-					// luigi: nah, I'm keeping it
-					Vec3 vec = VecMath.rotate(new Vec3(1, 0, 0), quaternion);
-					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
-					consumer.vertex(stack.last().pose(), (float) vec.x, (float) vec.y, (float) vec.z).color(1f, 0.5f, 0, 1).normal(0, 0, 0).endVertex();
-					
-					stack.popPose();
-				}
+				//It's actually wrong
+//				Vec3 norm = computedNormal;
+//				if (norm == null) norm = normal;
+//				if (norm != null) {
+//					stack.pushPose();
+//					stack.translate(0, (float) size.y / 2, 1);
+//
+//					Quaternion quaternion = getActualRotation();
+//					stack.mulPose(quaternion);
+//					// luigi: lorenzo wanted this
+//
+//					//WHAT DO YOU MEAN I DON'T EVEN KNOW WHAT THIS IS
+//					// luigi: https://cdn.discordapp.com/attachments/988184753255624774/991124702196154419/unknown.png
+//					// left vector
+//
+//					// I don't need it anymore, you can remove it luigi
+//					// luigi: nah, I'm keeping it
+//					Vec3 vec = VecMath.rotate(new Vec3(1, 0, 0), quaternion);
+//					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0.5f, 0, 1).normal(1, 0, 0).endVertex();
+//					consumer.vertex(stack.last().pose(), (float) vec.x, (float) vec.y, (float) vec.z).color(1f, 0.5f, 0, 1).normal(1, 0, 0).endVertex();
+//
+//					stack.popPose();
+//				}
 			}
 			
 			/* debug frustum culling box */
 			stack.pushPose();
-			stack.mulPose(quadQuat());
+			stack.mulPose(getActualRotation());
 			
 			if (Minecraft.getInstance().options.renderDebug) {
-				Quad qd = makeQuad();
-				consumer.vertex(stack.last().pose(), (float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z).color(1f, 0, 0, 1).normal(1, 0, 0).endVertex();
-				consumer.vertex(stack.last().pose(), (float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z).color(1f, 0, 0, 1).normal(1, 0, 0).endVertex();
-				
-				consumer.vertex(stack.last().pose(), (float) qd.pt1.x, (float) qd.pt1.y, (float) qd.pt1.z).color(1f, 1, 0, 1).normal(0, 0, 1).endVertex();
-				consumer.vertex(stack.last().pose(), (float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z).color(1f, 1, 0, 1).normal(0, 0, 1).endVertex();
-				
-				consumer.vertex(stack.last().pose(), (float) qd.pt2.x, (float) qd.pt2.y, (float) qd.pt2.z).color(1f, 0, 1, 1).normal(1, 0, 0).endVertex();
-				consumer.vertex(stack.last().pose(), (float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z).color(1f, 0, 1, 1).normal(1, 0, 0).endVertex();
-				
-				consumer.vertex(stack.last().pose(), (float) qd.pt3.x, (float) qd.pt3.y, (float) qd.pt3.z).color(0f, 1, 1, 1).normal(0, 0, 1).endVertex();
-				consumer.vertex(stack.last().pose(), (float) qd.pt0.x, (float) qd.pt0.y, (float) qd.pt0.z).color(0f, 1, 1, 1).normal(0, 0, 1).endVertex();
-				
+				Quad qd = portalQuad;
+				Renderer.renderVector(stack, consumer, qd.pt0, qd.pt1, 1, 0, 0);
+				Renderer.renderVector(stack, consumer, qd.pt1, qd.pt2, 1, 1, 0);
+				Renderer.renderVector(stack, consumer, qd.pt2, qd.pt3, 1, 0, 1);
+				Renderer.renderVector(stack, consumer, qd.pt3, qd.pt0, 0, 1, 1);
 				{
 					Vec3 eye = Minecraft.getInstance().cameraEntity.getEyePosition();
 					eye = eye.subtract(position.x, position.y, position.z);
@@ -255,7 +230,7 @@ public class BasicPortal extends AbstractPortal {
 					Vec3 nearestOnEdge = qd.nearestOnEdge(eye);
 					Vec3 nearest = qd.nearest(eye);
 					Vec3 mid = qd.center();
-					double size = 0.01;
+					double size = 0.005;
 					Renderer.renderPoint(stack, consumer, mid, size, 1, 1, 1);
 					if (nearestOnEdge != null && nearest != null) {
 						if (nearestOnEdge.distanceToSqr(mid) <= nearest.distanceToSqr(mid)) {
@@ -291,7 +266,6 @@ public class BasicPortal extends AbstractPortal {
 					LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
 					center = box.getCenter();
 					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, Vec3.ZERO, Vec3.ZERO);
-					
 					stack.translate(center.x, center.y, center.z);
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(1, 0, 0).endVertex();
 					stack.scale(10, 10, 10);
@@ -357,14 +331,14 @@ public class BasicPortal extends AbstractPortal {
 			// I don't really know why mirrors need this rotation
 			stack.mulPose(new Quaternion(0, 180, 0, true));
 		}
-		stack.mulPose(quadQuat());
+		stack.mulPose(getActualRotation());
 		// translate
 		stack.translate(-position.x, -position.y, -position.z);
 	}
 	
 	@Override
 	public boolean shouldRender(Frustum frustum, double camX, double camY, double camZ) {
-		if (normal == null || normal.dot(new Vec3((camX - position.x), (camY - position.y), (camZ - position.z))) > 0) {
+		if (renderNormal == null || renderNormal.dot(new Vec3((camX - position.x), (camY - position.y), (camZ - position.z))) > 0) {
 			if (frustum == null) return true;
 			return frustum.isVisible(box);
 		}
@@ -388,7 +362,7 @@ public class BasicPortal extends AbstractPortal {
 	public double trace(Vec3 start, Vec3 end) {
 		// setup a matrix stack
 		PoseStack stack = new PoseStack();
-		stack.mulPose(quadQuat());
+		stack.mulPose(getActualRotation());
 		stack.translate(-position.x, -position.y, -position.z);
 		// copy to vec4
 		Vector4f startVec = new Vector4f((float) start.x, (float) start.y, (float) start.z, 1);
@@ -447,49 +421,20 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public boolean isInFront(Entity entity, Vec3 position) {
 		// TODO: get this to work with rotated portals
-		return _isInFront(position.x, position.y + entity.getEyeHeight(), position.z);
+		return isInFront(position.add(0, entity.getEyeHeight(), 0));
 	}
 	
-	public boolean isInFront(Vec3 cam) {
-		return _isInFront(cam.x, cam.y, cam.z);
+	public boolean isInFront(Vec3 vector) {
+		return _isInFront(vector.x, vector.y, vector.z);
 	}
 	
 	protected boolean _isInFront(double camX, double camY, double camZ) {
-		return compNorm == null || compNorm.dot(new Vec3((camX - position.x), (camY - position.y), (camZ - position.z))) > 0;
-	}
-	
-	Quaternion quadQuat() {
-//		Quaternion quaternion = Quaternion.ONE.copy();
-//		quaternion.mul(new Quaternion(0, 0, (float) rotation.z, false));
-//		quaternion.mul(new Quaternion((float) rotation.y, 0, 0, false));
-//		quaternion.mul(new Quaternion(0, (float) rotation.x, 0, false));
-		Quaternion quaternion = raytraceRotation();
-		if (target == this) quaternion.mul(new Quaternion(0, -90, 0, true));
-		quaternion.conj();
-		return quaternion;
-	}
-	
-	protected Quad makeQuad() {
-		Quaternion rotation = quadQuat();
-		Vec3 vec0 = new Vec3(-size.x / 2, 0, 0);
-		vec0 = VecMath.rotate(vec0, rotation);
-		Vec3 vec1 = new Vec3(size.x / 2, 0, 0);
-		vec1 = VecMath.rotate(vec1, rotation);
-		Vec3 vec2 = new Vec3(size.x / 2, size.y, 0);
-		vec2 = VecMath.rotate(vec2, rotation);
-		Vec3 vec3 = new Vec3(-size.x / 2, size.y, 0);
-		vec3 = VecMath.rotate(vec3, rotation);
-		Quad plane = new Quad(vec0, vec1, vec2, vec3);
-		return plane;
+		return computedNormal == null || computedNormal.dot(new Vec3((camX - position.x), (camY - position.y), (camZ - position.z))) > 0;
 	}
 	
 	@Override
 	public boolean overlaps(AABB box) {
-		Quad plane = makeQuad();
-//		Vec3 sizeVec = new Vec3(size.x / 2, 0, 0);
-//		sizeVec = VecMath.rotate(sizeVec, rotation);
-//		return plane.overlaps(box.move(-position.x + sizeVec.x, -position.y, -position.z + sizeVec.z));
-		return plane.overlaps(box.move(-position.x, -position.y, -position.z));
+		return portalQuad.overlaps(box.move(-position.x, -position.y, -position.z));
 	}
 	
 	// TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks

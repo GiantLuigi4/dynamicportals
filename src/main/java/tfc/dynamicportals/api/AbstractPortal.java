@@ -110,9 +110,27 @@ public abstract class AbstractPortal {
 	 */
 	public abstract Quaternion raytraceRotation();
 	
-	public abstract Vec3 getScaleRatio();
+	/**
+	 * @return ratio between target size and this size
+	 */
+	public Vec3 getScaleRatio() {
+		return new Vec3(1, 1, 1);
+	};
 	
+	/**
+	 * @return portal size vector
+	 */
 	public abstract Vec2d getSize();
+	
+	/**
+	 * @return quaternion defining the actual rotation of the portal
+	 */
+	public Quaternion getActualRotation() {
+		Quaternion quaternion = raytraceRotation();
+		if (target == this) quaternion.mul(new Quaternion(0, -90, 0, true));
+		quaternion.conj();
+		return quaternion;
+	}
 	
 	/**
 	 * @return a quaternion for rotating the look vector by 180 degrees around the vertical axis of the portal
@@ -188,17 +206,6 @@ public abstract class AbstractPortal {
 	 * @return if it overlaps the portal
 	 */
 	public abstract boolean overlaps(AABB box);
-
-//	public Vec2 adjustLook(Vec2 vector, boolean reverse) {
-//		Vec3 look = VecMath.getLookVec(vector);
-//		if (reverse)
-//			look = VecMath.transform(look, Quaternion.ONE, raytraceRotation(), get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
-//		else {
-//			look = VecMath.transform(look, raytraceRotation(), Quaternion.ONE, get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
-//		}
-//
-//		return VecMath.lookAngle(look);
-//	}
 	
 	/**
 	 * used for checking if the entity has crossed through the portal for sake of teleportation
