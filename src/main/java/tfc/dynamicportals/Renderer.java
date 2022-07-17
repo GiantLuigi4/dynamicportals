@@ -27,6 +27,7 @@ import tfc.dynamicportals.util.async.AsyncDispatcher;
 import tfc.dynamicportals.util.async.ReusableThread;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Renderer {
 	private static final RenderTarget stencilTarget = new TextureTarget(
@@ -37,7 +38,7 @@ public class Renderer {
 			1, 1,
 			true, Minecraft.ON_OSX
 	);
-	private static final ArrayList<ReusableThread> threads = new ArrayList<>();
+	private static final List<ReusableThread> threads = new ArrayList<>();
 	private static boolean isStencilPresent = false;
 	private static boolean screenspaceTex = false;
 	private static int recursion = 0;
@@ -204,8 +205,7 @@ public class Renderer {
 		stk.mulPose(new Quaternion(0, 180, 0, true));
 		portal.target.setupAsTarget(stk);
 		// TODO: fix smth here, not sure what?
-		Frustum frustum1 = new Frustum(stk.last().pose(), matr);
-		return frustum1;
+		return new Frustum(stk.last().pose(), matr);
 	}
 	
 	public static void updatePortal(AbstractPortal portal, Matrix4f mat, Matrix4f proj) {
