@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tfc.dynamicportals.access.IMaySkipPacket;
+import tfc.dynamicportals.access.ITeleportTroughPacket;
 
 @Mixin(ClientPacketListener.class)
 public class ClientNetworkingMixin {
@@ -24,7 +24,7 @@ public class ClientNetworkingMixin {
 	public void preTeleport(ClientboundPlayerPositionPacket pPacket, CallbackInfo ci) {
 		Entity e = Minecraft.getInstance().player;
 		if (e != null) {
-			if (((IMaySkipPacket) e).skip()) {
+			if (((ITeleportTroughPacket) e).hasTeleported()) {
 				double x = pPacket.getX();
 				double y = pPacket.getY();
 				double z = pPacket.getZ();

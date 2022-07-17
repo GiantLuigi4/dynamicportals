@@ -4,31 +4,30 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import tfc.dynamicportals.access.IMaySkipPacket;
+import tfc.dynamicportals.access.ITeleportTroughPacket;
 import tfc.dynamicportals.api.AbstractPortal;
 
 public class TeleportationHandler {
-	public static Vec3 handle(Entity entity, Vec3 motion) {
+	public static Vec3 getTeleportedMotion(Entity entity, Vec3 motion) {
 		// TODO: handle pre teleportation collision
-		boolean didMove = false;
+		boolean wentThrough = false;
 		AbstractPortal[] portals = Temp.getPortals(entity.level);
 		for (AbstractPortal portal : portals) {
 			Vec3 pos = entity.position();
 			if (portal.shouldRender(null, pos.x, pos.y + entity.getEyeHeight(), pos.z)) {
 				if (portal.moveEntity(entity, entity.getPosition(0), motion)) {
-					((IMaySkipPacket) entity).setSkipTeleportPacket();
-					didMove = true;
-					// TODO: better handling, deny teleporting through the pair
+					((ITeleportTroughPacket) entity).setTeleported();
+					wentThrough = true;
+					// EX_TODO: better handling, deny teleporting through the pair
+					// lorenzo: what do you mean :thonk4:
 					break;
 				}
 			}
 		}
-		if (!didMove) return null;
-//		return entity.getDeltaMovement().multiply(1, 0, 1);
-		return entity.getDeltaMovement();
+		return wentThrough ? entity.getDeltaMovement() : null;
 	}
 	
-	public static void handlePacket(ServerPlayer player, ServerboundMovePlayerPacket i) {
+	public static void handleServerMovePlayerPacket(ServerPlayer player, ServerboundMovePlayerPacket i) {
 		double x = i.getX(player.getX());
 		double y = i.getY(player.getY());
 		double z = i.getZ(player.getZ());
@@ -36,7 +35,7 @@ public class TeleportationHandler {
 		double dx = x - player.position().x;
 		double dy = y - player.position().y;
 		double dz = z - player.position().z;
-		handle(player,
+		getTeleportedMotion(player,
 //				motion
 				new Vec3(
 //					x - player.position().x,
@@ -45,9 +44,9 @@ public class TeleportationHandler {
 						dx, dy, dz
 				)
 		);
-		if (((IMaySkipPacket) player).skip()) {
+		if (((ITeleportTroughPacket) player).hasTeleported()) {
 //			player.setPosRaw(player.position().x + dx, player.position().y + dy, player.position().z + dz);
-			((IMaySkipPacket) player).setSkipTeleportPacket();
+			((ITeleportTroughPacket) player).setTeleported();
 		}
 	}
 }

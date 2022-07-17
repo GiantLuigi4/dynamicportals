@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
@@ -288,7 +287,7 @@ public class BasicPortal extends AbstractPortal {
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
 		float r = 1, b = r, g = b, a = g;
 		Matrix4f mat = stack.last().pose();
-		// TODO: use a custom vertex builder which automatically fills in missing elements
+		// Luigi's TODO: use a custom vertex builder which automatically fills in missing elements
 		builder.vertex(mat, -((float) size.x / 2), 0, 0).color(r, g, b, a).uv(0, 0).endVertex();
 		builder.vertex(mat, ((float) size.x / 2), 0, 0).color(r, g, b, a).uv(0, 0).endVertex();
 		builder.vertex(mat, ((float) size.x / 2), (float) size.y, 0).color(r, g, b, a).uv(0, 0).endVertex();
@@ -387,7 +386,8 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera) {
-		// TODO: this is a bit finicky
+		// EX_TODO: this is a bit finicky
+		// lorenzo: why is it luigi :thonk4:
 		// setup
 		if (cam == null || !cam.isInitialized() || cam.actualCamera != gameCamera) {
 			cam = new PortalCamera(gameCamera);
@@ -398,21 +398,23 @@ public class BasicPortal extends AbstractPortal {
 		position = position.subtract(raytraceOffset());
 		position = position.add(target.raytraceOffset());
 		cam.setPosition(position);
-		// TODO: rotation
+		// EX_TODO: rotation
+		// lorenzo: what
 		// block and fog
 		cam.cameraBlock = null;
 		cam.cameraFog = null;
 		cam.cameraBlock = gameCamera.getBlockAtCamera();
-		BlockPos.MutableBlockPos pos = (BlockPos.MutableBlockPos) cam.getBlockPosition();
+		// EX_TODO: center it in the portal
+		// lorenzo: what 2
 		// setup position
-		Vec3 traceOffset = target.raytraceOffset();
-		// TODO: center it in the portal
-		pos.set(traceOffset.x + 0.5, traceOffset.y + 1, traceOffset.z + 0.5);
+//		BlockPos.MutableBlockPos pos = (BlockPos.MutableBlockPos) cam.getBlockPosition();
+//		Vec3 traceOffset = target.raytraceOffset();
+//		pos.set(traceOffset.x + 0.5, traceOffset.y + 1, traceOffset.z + 0.5);
+		// correct position
+//		pos.set(position.x, position.y, position.z);
 		// setup fog type
 		FogType type = cam.getFluidInCamera();
 		if (type.equals(FogType.NONE)) cam.cameraFog = gameCamera.getFluidInCamera();
-		// correct position
-		pos.set(position.x, position.y, position.z);
 		// tick and return
 		cam.tick();
 		return cam;
@@ -420,15 +422,16 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public boolean isInFront(Entity entity, Vec3 position) {
-		// TODO: get this to work with rotated portals
+		// EX_TODO: get this to work with rotated portals
+		// lorenzo: seems working to me already?
 		return isInFront(position.add(0, entity.getEyeHeight(), 0));
 	}
 	
 	public boolean isInFront(Vec3 vector) {
-		return _isInFront(vector.x, vector.y, vector.z);
+		return isInFront(vector.x, vector.y, vector.z);
 	}
 	
-	protected boolean _isInFront(double camX, double camY, double camZ) {
+	protected boolean isInFront(double camX, double camY, double camZ) {
 		return computedNormal == null || computedNormal.dot(new Vec3((camX - position.x), (camY - position.y), (camZ - position.z))) > 0;
 	}
 	
@@ -476,10 +479,8 @@ public class BasicPortal extends AbstractPortal {
 				entity.yRotO = oldRotVec.y;
 				
 				motion = VecMath.transform(motion, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
-				double scl = motion.length();
-//				motion = motion.scale(-1);
-				motion = motion.normalize().scale(scl);
 				entity.setDeltaMovement(motion);
+				//TODO: useless if????
 				if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
 				else entity.absMoveTo(pos.x, pos.y, pos.z);
 				entity.setDeltaMovement(motion);

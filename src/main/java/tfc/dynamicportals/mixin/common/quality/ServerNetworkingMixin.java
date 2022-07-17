@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tfc.dynamicportals.TeleportationHandler;
-import tfc.dynamicportals.access.IMaySkipPacket;
+import tfc.dynamicportals.access.ITeleportTroughPacket;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -33,7 +33,7 @@ public abstract class ServerNetworkingMixin {
 	private double lastGoodY;
 	
 	@Unique
-	private boolean doSkip = false;
+	private boolean teleported = false;
 	@Shadow
 	private double lastGoodZ;
 	@Shadow
@@ -48,7 +48,7 @@ public abstract class ServerNetworkingMixin {
 	
 	@Inject(at = @At("HEAD"), method = "teleport(DDDFFLjava/util/Set;Z)V", cancellable = true)
 	public void postTeleport(double p_143618_, double p_143619_, double p_143620_, float p_143621_, float p_143622_, Set<ClientboundPlayerPositionPacket.RelativeArgument> p_143623_, boolean p_143624_, CallbackInfo ci) {
-		if (doSkip) {
+		if (teleported) {
 			this.lastGoodX = p_143618_;
 			this.lastGoodY = p_143619_;
 			this.lastGoodZ = p_143620_;
@@ -64,9 +64,9 @@ public abstract class ServerNetworkingMixin {
 	
 	@Inject(at = @At("HEAD"), method = "handleMovePlayer", cancellable = true)
 	public void preMove(ServerboundMovePlayerPacket packet, CallbackInfo ci) {
-		TeleportationHandler.handlePacket(player, packet);
-		if (((IMaySkipPacket) player).skip()) {
-			doSkip = true;
+		TeleportationHandler.handleServerMovePlayerPacket(player, packet);
+		if (((ITeleportTroughPacket) player).hasTeleported()) {
+			teleported = true;
 			lastGoodX = player.position().x;
 			lastGoodY = player.position().y;
 			lastGoodZ = player.position().z;
@@ -77,12 +77,11 @@ public abstract class ServerNetworkingMixin {
 			player.absMoveTo(lastGoodX, lastGoodY, lastGoodZ);
 			player.noPhysics = noPhys;
 			teleport(lastGoodX, lastGoodY, lastGoodZ, packet.getXRot(0), packet.getYRot(0));
-			doSkip = false;
+//			teleported = false;
 			++this.receivedMovePacketCount;
 			int i = this.receivedMovePacketCount - this.knownMovePacketCount;
 			if (i > 5) {
 				LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getName().getString(), i);
-				i = 1;
 			}
 			ci.cancel();
 		}
