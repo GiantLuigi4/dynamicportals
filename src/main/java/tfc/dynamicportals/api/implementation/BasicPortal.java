@@ -205,26 +205,20 @@ public class BasicPortal extends AbstractPortal {
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		boolean wasInFront = isInFront(entity, position);
 		boolean isInFront = isInFront(entity, position.add(motion));
-		double distanceEntityToPortal = position.add(motion).distanceTo(raytraceOffset());
-		if (wasInFront != isInFront && distanceEntityToPortal < 2) {
+		double distanceEntityToPortal = position.add(motion).distanceTo(portalQuad.center().add(raytraceOffset()));
+		// lorenzo: that "less than" check is a temporary hack to avoid calling this method for portals 20 blocks away
+		if (wasInFront != isInFront && distanceEntityToPortal < Math.max(size.x, size.y)) {
 			// TODO: this calculation can be drastically more reliable
-//
-//			double cosine = Mth.cos((float) rotation.x);
-//			if (cosine == 0 || cosine == -1 || cosine == 1) {
-//				cosine = Mth.cos((float)rotation.y);
-//				if (cosine == 0 || cosine == -1 || cosine == 1) {
-//					cosine = Mth.cos((float)rotation.z);
-//					if (cosine == 0 || cosine == -1 || cosine == 1) {
-//						System.out.println(raytraceOffset() + "multiple");
-//					}
-//				}
-//			}
+			Vec3 rot = VecMath.toDeegrees(rotation);
+			if ((((int) (rot.x * 3)) / 3) % 90 == 0 && (((int) (rot.y * 3)) / 3) % 90 == 0 && (((int) (rot.z * 3)) / 3) % 90 == 0) {
+				System.out.println(raytraceOffset() + "multiple");
+			}
 			double raytraceDistance = trace(position, position.add(motion));
 			if (raytraceDistance != -1 && distanceEntityToPortal < raytraceDistance || overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
-//				scale(entity, (float) (1 / size.y)); // TODO: individual scales for x and y
+				//scale(entity, (float) (1 / size.y)); // TODO: individual scales for x and y
 				
-				Quaternion srcQuat = raytraceRotation();
-				Quaternion dstQuat = target.raytraceRotation();
+				Quaternion srcRot = raytraceRotation();
+				Quaternion dstRot = target.raytraceRotation();
 				Vec3 srcOff = raytraceOffset();
 				Vec3 dstOff = target.raytraceOffset();
 				
@@ -232,17 +226,17 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 				Vec3 pos = position;
 				if (target != this) {
-					oldPos = VecMath.transform(oldPos, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
-					oPos = VecMath.transform(oPos, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
-					pos = VecMath.transform(pos, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					oldPos = VecMath.transform(oldPos, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					oPos = VecMath.transform(oPos, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					pos = VecMath.transform(pos, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
 				}
 				
 				Vec3 look = VecMath.getLookVec(entity.getRotationVector());
-				look = VecMath.transform(look, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
+				look = VecMath.transform(look, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
 				Vec2 rotVec = VecMath.lookAngle(look);
 				
 				Vec3 oldLook = VecMath.getLookVec(entity.getRotationVector());
-				oldLook = VecMath.transform(oldLook, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
+				oldLook = VecMath.transform(oldLook, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
 				Vec2 oldRotVec = VecMath.lookAngle(oldLook);
 				
 				entity.setXRot(rotVec.x);
@@ -250,7 +244,7 @@ public class BasicPortal extends AbstractPortal {
 				entity.setYRot(rotVec.y);
 				entity.yRotO = oldRotVec.y;
 				
-				motion = VecMath.transform(motion, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
+				motion = VecMath.transform(motion, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
 				entity.setDeltaMovement(motion);
 				// Luigi's TODO: check if this if is actually useful or not
 				if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);

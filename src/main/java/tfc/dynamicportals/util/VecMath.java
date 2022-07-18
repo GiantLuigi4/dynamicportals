@@ -20,6 +20,10 @@ public class VecMath {
 		return new Vec3(Math.toRadians(src.x), Math.toRadians(src.y), Math.toRadians(src.z));
 	}
 	
+	public static Vec3 toDeegrees(Vec3 src) {
+		return new Vec3(Math.toDegrees(src.x), Math.toDegrees(src.y), Math.toDegrees(src.z));
+	}
+	
 	public static Vec3 rotate(Vec3 src, Quaternion rotation) {
 		Quaternion point = new Quaternion((float) src.x, (float) src.y, (float) src.z, 0);
 		Quaternion newPoint = rotation.copy();
