@@ -16,9 +16,10 @@ public class TeleportationHandler {
 			Vec3 pos = entity.position();
 			if (portal.shouldRender(null, pos.x, pos.y + entity.getEyeHeight(), pos.z)) {
 				if (portal.moveEntity(entity, entity.getPosition(0), motion)) {
+					portal.target.finishMove(entity, entity.getPosition(0), motion);
 					((ITeleportTroughPacket) entity).setTeleported();
 					wentThrough = true;
-					// EX_TODO: better handling, deny teleporting through the pair
+					// Luigi TODO: better handling, deny teleporting through the pair
 					// lorenzo: what do you mean :thonk4:
 					break;
 				}

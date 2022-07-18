@@ -124,7 +124,7 @@ public class Temp {
 		portal.setRotation(Math.toRadians(time), Math.toRadians(0), Math.toRadians(0));
 		portal = (BasicPortal) portals[0];
 //		portal.setRotation(Math.toRadians(time), Math.toRadians(time), Math.toRadians(0)); //(System.currentTimeMillis() / 30.) % 360)
-		portal.setRotation(Math.toRadians(0), Math.toRadians(90), 0);
+		portal.setRotation(Math.toRadians(180), Math.toRadians(90), 0);
 		portal.setPosition(-5.5, 4.75, -2);
 		portal.setSize(3, 3);
 		portal.computeRenderNormal();
