@@ -79,37 +79,29 @@ public class Renderer {
 		{
 			Entity entity = Minecraft.getInstance().cameraEntity;
 			if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
-				double reach = Minecraft.getInstance().gameMode.getPickRange();
 				Vec3 start = entity.getEyePosition(Minecraft.getInstance().getFrameTime());
-				Vec3 look = entity.getViewVector(1.0F);
-				Vec3 reachVec = new Vec3(look.x * reach, look.y * reach, look.z * reach);
-				Vec3 end = start.add(reachVec);
+				Vec3 reach = entity.getViewVector(1.0F).scale(Minecraft.getInstance().gameMode.getPickRange());
+				Vec3 end = start.add(reach);
 				
 				double dist = portal.trace(start, end);
-				VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 				
 				if (dist != 1) {
-					Vec3 interpStart = VecMath.lerp(dist, start, end);
-					Vec3 interpReach = VecMath.lerp(1 - dist, Vec3.ZERO, reachVec);
-					if (portal.requireTraceRotation()) {
-						Quaternion srcQuat = portal.raytraceRotation();
-						Quaternion dstQuat = portal.target.raytraceRotation();
-						Vec3 srcOff = portal.raytraceOffset();
-						Vec3 dstOff = portal.target.raytraceOffset();
-						interpStart = VecMath.transform(interpStart, srcQuat, dstQuat, portal.getScaleRatio(), portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, srcOff, dstOff);
-						interpReach = VecMath.transform(interpReach, srcQuat, dstQuat, portal.getScaleRatio(), portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, Vec3.ZERO, Vec3.ZERO);
-					} else {
-						Vec3 offset = portal.target.raytraceOffset().subtract(portal.raytraceOffset());
-						interpStart = interpStart.add(offset);
-					}
-					Vec3 istart = interpStart;
-					Vec3 ireach = interpReach;
-					Vec3 iend = istart.add(ireach);
+					Vec3 iStart = VecMath.lerp(dist, start, end);
+					Vec3 iReach = VecMath.lerp(dist, reach, Vec3.ZERO);
+					
+					Vec3 srcOff = portal.raytraceOffset();
+					Vec3 dstOff = portal.target.raytraceOffset();
+					Quaternion srcRot = portal.raytraceRotation();
+					Quaternion dstRot = portal.target.raytraceRotation();
+					iStart = VecMath.transform(iStart, srcRot, dstRot, portal.getScaleRatio(), portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, srcOff, dstOff);
+					iReach = VecMath.transform(iReach, srcRot, dstRot, portal.getScaleRatio(), portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, Vec3.ZERO, Vec3.ZERO);
+					
 					double size = 0.01;
 					
-				    renderVector(stack, consumer, istart, iend, 0, 0, 1);
-					renderPoint(stack, consumer, istart, size, 1, 0, 1);
-					renderPoint(stack, consumer, iend, size, 1, 0, 0);
+					VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+					renderVector(stack, consumer, iStart, iStart.add(iReach), 0, 0, 1);
+					renderPoint(stack, consumer, iStart, size, 1, 0, 1);
+					renderPoint(stack, consumer, iStart.add(iReach), size, 1, 0, 0);
 					forceDraw(source);
 				}
 			}

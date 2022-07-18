@@ -123,33 +123,6 @@ public class BasicPortal extends AbstractPortal {
 	public Vec3 raytraceOffset() {
 		return new Vec3(position.x, position.y, position.z);
 	}
-
-//	public boolean requiresTraceRotation() {
-//		// TODO: I'm not really sure if this is more expensive then just always rotating the look vector
-//		if (target instanceof BasicPortal) {
-//			//Rounding because doubles are bad in binary
-//			double pairXRot = Math.round((Math.toDegrees(((BasicPortal) target).rotation.x) % 360) * 1000.0) / 1000.0;
-//			double thisXR = Math.round((Math.toDegrees(rotation.x) % 360) * 1000.0) / 1000.0;
-//			if (pairXRot < 0) pairXRot += 360;
-//			if (thisXR < 0) thisXR += 360;
-//
-////			pairXRot += Math.toRadians(180);
-////			pairXRot %= Math.PI * 2;
-////			thisXR %= Math.PI * 2;
-//			if ((thisXR % 180) == (pairXRot % 180) && (thisXR != pairXRot)) {
-//				double yRot = ((BasicPortal) target).rotation.y;
-//				if (yRot < 0) yRot = -(-yRot % Math.PI);
-//				else yRot %= Math.PI;
-//
-//				double yr = rotation.y;
-//				if (yr < 0) yr = -(-yr % Math.PI);
-//				else yr %= Math.PI;
-//
-//				return yRot != -yr;
-//			}
-//		}
-//		return true;
-//	}
 	
 	@Override
 	public Quaternion raytraceRotation() {
@@ -245,9 +218,6 @@ public class BasicPortal extends AbstractPortal {
 				if (this != target) {
 					//  entity bounding box
 					AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
-					Vec3 center = box.getCenter();
-//					center = center.subtract(position.x, position.y, position.z);
-					
 					// all the vars
 					Quaternion srcQuat = raytraceRotation();
 					Quaternion dstQuat = target.raytraceRotation();
@@ -263,7 +233,7 @@ public class BasicPortal extends AbstractPortal {
 					stack.pushPose();
 					stack.translate(-position.x, -position.y, -position.z);
 					LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
-					center = box.getCenter();
+					Vec3 center = box.getCenter();
 					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, Vec3.ZERO, Vec3.ZERO);
 					stack.translate(center.x, center.y, center.z);
 					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(1, 0, 0).endVertex();
@@ -346,7 +316,7 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public void setupRenderState() {
-		// TODO: check if this works well enough
+		// Luigi's TODO: check if this works well enough
 		if (this == target)
 			GLUtils.swapBackface(true);
 	}
@@ -445,12 +415,22 @@ public class BasicPortal extends AbstractPortal {
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		boolean wasInFront = isInFront(entity, position);
 		boolean isInFront = isInFront(entity, position.add(motion));
-		if (wasInFront != isInFront) {
-//			double angle = rotation.x * 180 / Math.PI;
-//			if (angle % 90 == 0) {
-//				// TODO: this calculation can be drastically more reliable
+		double distanceEntityToPortal = position.add(motion).distanceTo(raytraceOffset());
+		if (wasInFront != isInFront && distanceEntityToPortal < 2) {
+			// TODO: this calculation can be drastically more reliable
+//
+//			double cosine = Mth.cos((float) rotation.x);
+//			if (cosine == 0 || cosine == -1 || cosine == 1) {
+//				cosine = Mth.cos((float)rotation.y);
+//				if (cosine == 0 || cosine == -1 || cosine == 1) {
+//					cosine = Mth.cos((float)rotation.z);
+//					if (cosine == 0 || cosine == -1 || cosine == 1) {
+//						System.out.println(raytraceOffset() + "multiple");
+//					}
+//				}
 //			}
-			if (overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
+			double raytraceDistance = trace(position, position.add(motion));
+			if (raytraceDistance != -1 && distanceEntityToPortal < raytraceDistance || overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
 				Quaternion srcQuat = raytraceRotation();
 				Quaternion dstQuat = target.raytraceRotation();
 				Vec3 srcOff = raytraceOffset();
@@ -480,7 +460,7 @@ public class BasicPortal extends AbstractPortal {
 				
 				motion = VecMath.transform(motion, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
 				entity.setDeltaMovement(motion);
-				//TODO: useless if????
+				// Luigi's TODO: check if this if is actually useful or not
 				if (entity.level.isClientSide) entity.absMoveTo(pos.x, pos.y, pos.z);
 				else entity.absMoveTo(pos.x, pos.y, pos.z);
 				entity.setDeltaMovement(motion);
@@ -494,8 +474,7 @@ public class BasicPortal extends AbstractPortal {
 				
 				if (entity.level.isClientSide) {
 					if (FMLEnvironment.dist.isClient()) {
-						// TODO: check if it's an instance of a client world
-						// TODO: shift call out of "common" code
+						// Luigi's TODO: check if it's an instance of a client world and shift call out of "common" code
 						if (entity == Minecraft.getInstance().cameraEntity) {
 							if (graph != null)
 								graph.nudgeRenderer();

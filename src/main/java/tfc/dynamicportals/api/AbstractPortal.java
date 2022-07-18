@@ -115,7 +115,7 @@ public abstract class AbstractPortal {
 	 */
 	public Vec3 getScaleRatio() {
 		return new Vec3(1, 1, 1);
-	};
+	}
 	
 	/**
 	 * @return portal size vector
@@ -143,14 +143,6 @@ public abstract class AbstractPortal {
 		q.conj();
 		rot.mul(new Vector3f(VecMath.rotate(new Vec3(0, 1, 0), q)).rotationDegrees(180));
 		return rot;
-	}
-	
-	/**
-	 * @return whether or not the raytrace rotation needs to be rotated
-	 * if the portal is rotated to face the opposite direction of the target portal, the look vector does not need rotation
-	 */
-	public boolean requireTraceRotation() {
-		return true;
 	}
 	
 	/**
