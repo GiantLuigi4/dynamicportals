@@ -223,6 +223,9 @@ public abstract class AbstractPortal {
 		return false;
 	}
 	
+	public void finishMove(Entity entity, Vec3 position, Vec3 motion) {
+	}
+	
 	/**
 	 * the render type for the stencil
 	 * this is used if you want to, for example, use a texture for the multiplicative overlay

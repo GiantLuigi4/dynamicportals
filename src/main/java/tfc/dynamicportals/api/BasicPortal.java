@@ -17,12 +17,15 @@ import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.Renderer;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
+import tfc.dynamicportals.util.support.PehkuiSupport;
+import virtuoel.pehkui.api.ScaleData;
 
 import java.util.UUID;
 
@@ -410,6 +413,20 @@ public class BasicPortal extends AbstractPortal {
 		return portalQuad.overlaps(box.move(-position.x, -position.y, -position.z));
 	}
 	
+	@Override
+	public void finishMove(Entity entity, Vec3 position, Vec3 motion) {
+//		scale(entity, (float) size.y);
+	}
+	
+	public static void scale(Entity entity, float amt) {
+		if (ModList.get().isLoaded("pehkui")) {
+			ScaleData data = PehkuiSupport.scaleType.get().getScaleData(entity); // TODO: individual scales for x and y
+			data.setScale(data.getScale(1) * amt);
+			data.setTargetScale(data.getScale());
+			data.setScaleTickDelay(0);
+		}
+	}
+	
 	// TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
@@ -431,6 +448,8 @@ public class BasicPortal extends AbstractPortal {
 //			}
 			double raytraceDistance = trace(position, position.add(motion));
 			if (raytraceDistance != -1 && distanceEntityToPortal < raytraceDistance || overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
+//				scale(entity, (float) (1 / size.y)); // TODO: individual scales for x and y
+				
 				Quaternion srcQuat = raytraceRotation();
 				Quaternion dstQuat = target.raytraceRotation();
 				Vec3 srcOff = raytraceOffset();
