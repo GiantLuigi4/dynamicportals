@@ -3,16 +3,19 @@ package tfc.dynamicportals.api;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.util.RenderTypes;
 
 public abstract class PortalRenderer {
 	protected PortalVisibilityGraph graph;
 	protected AbstractPortal portal;
+	protected PortalCamera cam;
 	
 	public PortalRenderer(AbstractPortal portal) {
 		this.portal = portal;
@@ -70,7 +73,7 @@ public abstract class PortalRenderer {
 	 * @param builder the vertex consumer, which is currently either:
 	 *                POSITION_COLOR or POSITION_TEX
 	 *                when it's POSITION_TEX, the texture coords don't matter, so you can just do 0,0
-	 * @param stack   the pose stack, already transformed based off {@link AbstractPortal#setupMatrix(PoseStack)}
+	 * @param stack   the pose stack, already transformed based off {@link PortalRenderer#setupMatrix(PoseStack)}
 	 */
 	public abstract void drawStencil(VertexConsumer builder, PoseStack stack);
 	
@@ -140,4 +143,39 @@ public abstract class PortalRenderer {
 	 * @return if the portal should render
 	 */
 	public abstract boolean shouldRender(Frustum frustum, double camX, double camY, double camZ);
+	
+	public Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera) {
+		// EX_TODO: this is a bit finicky
+		// lorenzo: why is it luigi :thonk4:
+		// setup
+		if (cam == null || !cam.isInitialized() || cam.actualCamera != gameCamera) {
+			cam = new PortalCamera(gameCamera);
+			cam.setup(cameraEntity.level, cameraEntity, true, false, 0);
+		}
+		// position
+		Vec3 position = gameCamera.getPosition();
+		position = position.subtract(portal.raytraceOffset());
+		position = position.add(portal.target.raytraceOffset());
+		cam.setPosition(position);
+		// EX_TODO: rotation
+		// lorenzo: what
+		// block and fog
+		cam.cameraBlock = null;
+		cam.cameraFog = null;
+		cam.cameraBlock = gameCamera.getBlockAtCamera();
+		// EX_TODO: center it in the portal
+		// lorenzo: what 2
+		// setup position
+//		BlockPos.MutableBlockPos pos = (BlockPos.MutableBlockPos) cam.getBlockPosition();
+//		Vec3 traceOffset = target.raytraceOffset();
+//		pos.set(traceOffset.x + 0.5, traceOffset.y + 1, traceOffset.z + 0.5);
+		// correct position
+//		pos.set(position.x, position.y, position.z);
+		// setup fog type
+		FogType type = cam.getFluidInCamera();
+		if (type.equals(FogType.NONE)) cam.cameraFog = gameCamera.getFluidInCamera();
+		// tick and return
+		cam.tick();
+		return cam;
+	}
 }

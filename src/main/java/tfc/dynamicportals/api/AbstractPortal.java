@@ -2,7 +2,6 @@ package tfc.dynamicportals.api;
 
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
-import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -91,18 +90,6 @@ public abstract class AbstractPortal {
 	 * if it does not hit the portal, it should return 1
 	 */
 	public abstract double trace(Vec3 start, Vec3 end);
-	
-	/**
-	 * Sets up the camera for the render info
-	 *
-	 * @param cameraEntity the entity the player is spectating, or the actual player
-	 * @param camX         camera position
-	 * @param camY         camera position
-	 * @param camZ         camera position
-	 * @param gameCamera   the actual camera
-	 * @return a dummy camera to use for rendering
-	 */
-	public abstract Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera);
 	
 	/**
 	 * checks if the entity's bounding box is overlapping the portal

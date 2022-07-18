@@ -137,7 +137,7 @@ public class Renderer {
 		// setup state
 		RenderSystem.enableCull();
 		double camX = Renderer.camX, camY = Renderer.camY, camZ = Renderer.camZ;
-		Camera camera = portal.setupCamera(Minecraft.getInstance().gameRenderer.getMainCamera().getEntity(), camX, camY, camZ, Minecraft.getInstance().gameRenderer.getMainCamera());
+		Camera camera = portal.renderer.setupCamera(Minecraft.getInstance().gameRenderer.getMainCamera().getEntity(), camX, camY, camZ, Minecraft.getInstance().gameRenderer.getMainCamera());
 		Matrix4f matr = stk.last().pose().copy();
 		stk.translate(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
 		// draw

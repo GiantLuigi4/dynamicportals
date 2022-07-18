@@ -4,16 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
 import com.mojang.math.Vector4f;
-import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import tfc.dynamicportals.api.AbstractPortal;
-import tfc.dynamicportals.api.PortalCamera;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
@@ -28,7 +25,6 @@ public class BasicPortal extends AbstractPortal {
 	protected Vec3 rotation;
 	protected Vec3 renderNormal;
 	protected Vec3 computedNormal;
-	protected PortalCamera cam;
 	protected Quad portalQuad;
 	AABB box = null;
 	
@@ -168,42 +164,6 @@ public class BasicPortal extends AbstractPortal {
 				null, dx, dy, dz
 		);
 		return dist[0];
-	}
-	
-	@Override
-	public Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera) {
-		// EX_TODO: this is a bit finicky
-		// lorenzo: why is it luigi :thonk4:
-		// setup
-		if (cam == null || !cam.isInitialized() || cam.actualCamera != gameCamera) {
-			cam = new PortalCamera(gameCamera);
-			cam.setup(cameraEntity.level, cameraEntity, true, false, 0);
-		}
-		// position
-		Vec3 position = gameCamera.getPosition();
-		position = position.subtract(raytraceOffset());
-		position = position.add(target.raytraceOffset());
-		cam.setPosition(position);
-		// EX_TODO: rotation
-		// lorenzo: what
-		// block and fog
-		cam.cameraBlock = null;
-		cam.cameraFog = null;
-		cam.cameraBlock = gameCamera.getBlockAtCamera();
-		// EX_TODO: center it in the portal
-		// lorenzo: what 2
-		// setup position
-//		BlockPos.MutableBlockPos pos = (BlockPos.MutableBlockPos) cam.getBlockPosition();
-//		Vec3 traceOffset = target.raytraceOffset();
-//		pos.set(traceOffset.x + 0.5, traceOffset.y + 1, traceOffset.z + 0.5);
-		// correct position
-//		pos.set(position.x, position.y, position.z);
-		// setup fog type
-		FogType type = cam.getFluidInCamera();
-		if (type.equals(FogType.NONE)) cam.cameraFog = gameCamera.getFluidInCamera();
-		// tick and return
-		cam.tick();
-		return cam;
 	}
 	
 	@Override
