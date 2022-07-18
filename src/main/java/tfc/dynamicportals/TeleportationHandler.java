@@ -19,7 +19,7 @@ public class TeleportationHandler {
 					portal.target.finishMove(entity, entity.getPosition(0), motion);
 					((ITeleportTroughPacket) entity).setTeleported();
 					wentThrough = true;
-					// Luigi TODO: better handling, deny teleporting through the pair
+					// Luigi's TODO: better handling, deny teleporting through the pair
 					// lorenzo: what do you mean :thonk4:
 					break;
 				}

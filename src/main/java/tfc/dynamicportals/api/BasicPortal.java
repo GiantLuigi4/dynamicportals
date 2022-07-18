@@ -442,7 +442,7 @@ public class BasicPortal extends AbstractPortal {
 			}
 			double raytraceDistance = trace(position, position.add(motion));
 			if (raytraceDistance != -1 && distanceEntityToPortal < raytraceDistance || overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
-				//				scale(entity, (float) (1 / size.y)); // TODO: individual scales for x and y
+				//scale(entity, (float) (1 / size.y)); // TODO: individual scales for x and y
 				
 				Quaternion srcRot = raytraceRotation();
 				Quaternion dstRot = target.raytraceRotation();
