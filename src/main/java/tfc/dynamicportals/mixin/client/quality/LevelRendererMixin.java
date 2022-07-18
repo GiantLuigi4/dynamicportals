@@ -53,8 +53,8 @@ public abstract class LevelRendererMixin {
 	public boolean denyRefresh(boolean src) {
 		if (!recentlyCompiledChunks.isEmpty()) {
 			for (AbstractPortal portal : Temp.getPortals(level)) {
-				if (portal.getGraph() != null) {
-					portal.getGraph().addAll(recentlyCompiledChunks);
+				if (portal.renderer.getGraph() != null) {
+					portal.renderer.getGraph().addAll(recentlyCompiledChunks);
 				}
 			}
 		}

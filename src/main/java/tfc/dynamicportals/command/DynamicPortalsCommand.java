@@ -18,7 +18,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.api.AbstractPortal;
-import tfc.dynamicportals.api.BasicPortal;
+import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.command.args.PortalSelectorArgument;
 import tfc.dynamicportals.command.args.StringArrayArgument;
 import tfc.dynamicportals.command.portals.BasicCommandPortal;

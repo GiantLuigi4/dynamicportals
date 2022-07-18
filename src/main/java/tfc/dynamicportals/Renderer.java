@@ -108,14 +108,14 @@ public class Renderer {
 		}
 		
 		// setup matrix
-		portal.setupMatrix(stack);
+		portal.renderer.setupMatrix(stack);
 		
 		// setup stencil
 		RenderTarget target = GLUtils.boundTarget();
 		stencilTarget.setClearColor(0, 0, 0, 0);
 		stencilTarget.clear(Minecraft.ON_OSX);
 		GLUtils.switchFBO(stencilTarget);
-		portal.drawStencil(source.getBuffer(portal.getRenderType()), stack);
+		portal.renderer.drawStencil(source.getBuffer(portal.renderer.getRenderType()), stack);
 		forceDraw(source);
 		GLUtils.boundTarget().unbindWrite();
 		
@@ -129,11 +129,11 @@ public class Renderer {
 		stk.last().pose().load(a.last().pose());
 		stk.last().normal().load(a.last().normal());
 		// setup transform
-		portal.fullSetupMatrix(stk);
+		portal.renderer.fullSetupMatrix(stk);
 		stk.mulPose(new Quaternion(0, 180, 0, true));
-		portal.target.setupAsTarget(stk);
+		portal.target.renderer.setupAsTarget(stk);
 //		if (DynamicPortals.isRotate180Needed()) stk.mulPose(new Quaternion(0, 180, 0, true));
-		portal.setupRenderState();
+		portal.renderer.setupRenderState();
 		// setup state
 		RenderSystem.enableCull();
 		double camX = Renderer.camX, camY = Renderer.camY, camZ = Renderer.camZ;
@@ -143,12 +143,12 @@ public class Renderer {
 		// draw
 //		Minecraft.getInstance().levelRenderer.capturedFrustum = portal.getGraph().getFrustum();
 		ObjectArrayList<LevelRenderer.RenderChunkInfo> chunkInfoList = Minecraft.getInstance().levelRenderer.renderChunksInFrustum;
-		if (portal.getGraph() != null) {
+		if (portal.renderer.getGraph() != null) {
 			PoseStack sysStk = RenderSystem.getModelViewStack();
 //			RenderSystem.modelViewStack = stk;
 //			RenderSystem.applyModelViewMatrix();
 			MinecraftForge.EVENT_BUS.post(new BeginFrameEvent(Minecraft.getInstance().level, camera, frustum));// 51
-			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.getGraph().getChunks();
+			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.renderer.getGraph().getChunks();
 			Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 			RenderSystem.modelViewStack = sysStk;
 			RenderSystem.applyModelViewMatrix();
@@ -160,28 +160,28 @@ public class Renderer {
 		Renderer.camY = camY;
 		Renderer.camZ = camZ;
 		
-		portal.teardownRenderState();
+		portal.renderer.teardownRenderState();
 		isStencilPresent = false;
 		GLUtils.switchFBO(target);
 		
 		// setup shader
 		screenspaceTex = true;
-		shaderInstance = portal.blitShader();
+		shaderInstance = portal.renderer.blitShader();
 //		RenderSystem.setShaderTexture(1, stencilTarget.getColorTextureId());
 		shaderInstance.setSampler("Sampler0", portalTarget.getColorTextureId());
 		shaderInstance.setSampler("DiffuseSampler", portalTarget.getColorTextureId());
 		shaderInstance.apply();
 		// more setup
-		BufferBuilder builder = setupTesselator(shaderInstance, portal.blitFormat());
+		BufferBuilder builder = setupTesselator(shaderInstance, portal.renderer.blitFormat());
 		// draw the portal's stencil
-		portal.drawStencil(builder, stack);
+		portal.renderer.drawStencil(builder, stack);
 		// finish draw
 		RenderSystem.disableCull();
 		finishTesselator(builder, shaderInstance);
 		screenspaceTex = false;
 		
 		// draw portal frame (if there is one)
-		portal.drawFrame(source, stack);
+		portal.renderer.drawFrame(source, stack);
 		forceDraw(source);
 		
 		// attempt to reset gl state
@@ -193,28 +193,28 @@ public class Renderer {
 	private static Frustum getFrustum(AbstractPortal portal, Matrix4f mat, Matrix4f matr) {
 		PoseStack stk = new PoseStack();
 		stk.last().pose().load(mat);
-		portal.setupMatrix(stk);
+		portal.renderer.setupMatrix(stk);
 		stk.mulPose(new Quaternion(0, 180, 0, true));
-		portal.target.setupAsTarget(stk);
+		portal.target.renderer.setupAsTarget(stk);
 		// TODO: fix smth here, not sure what?
 		return new Frustum(stk.last().pose(), matr);
 	}
 	
 	public static void updatePortal(AbstractPortal portal, Matrix4f mat, Matrix4f proj) {
 		// frustum culling
-		if (portal.getGraph() == null) {
-			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
-			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
-			portal.getGraph().update();
+		if (portal.renderer.getGraph() == null) {
+			portal.renderer.setupVisGraph(Minecraft.getInstance().levelRenderer);
+			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
+			portal.renderer.getGraph().update();
 		} else if (
-				       (int) orx != (int) rx || (int) ory != (int) ry ||
-						       (int) oldPos.x != (int) camVec.x ||
-						       (int) oldPos.y != (int) camVec.y ||
-						       (int) oldPos.z != (int) camVec.z
+				(int) orx != (int) rx || (int) ory != (int) ry ||
+						(int) oldPos.x != (int) camVec.x ||
+						(int) oldPos.y != (int) camVec.y ||
+						(int) oldPos.z != (int) camVec.z
 		) {
-			portal.setupVisGraph(Minecraft.getInstance().levelRenderer);
-			portal.getGraph().setFrustum(getFrustum(portal, mat, proj));
-			portal.getGraph().update();
+			portal.renderer.setupVisGraph(Minecraft.getInstance().levelRenderer);
+			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
+			portal.renderer.getGraph().update();
 		}
 	}
 	
@@ -291,7 +291,7 @@ public class Renderer {
 		AsyncDispatcher.await();
 		
 		for (AbstractPortal portal1 : portals) {
-			if (portal1.shouldRender(frustum, camX, camY, camZ)) {
+			if (portal1.renderer.shouldRender(frustum, camX, camY, camZ)) {
 				renderPortal(stack, type, buffers, portal1, frustum);
 			}
 		}

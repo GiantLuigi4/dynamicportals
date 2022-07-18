@@ -1,17 +1,10 @@
-package tfc.dynamicportals.api;
+package tfc.dynamicportals.api.implementation;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
 import com.mojang.math.Vector4f;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
@@ -19,8 +12,8 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import tfc.dynamicportals.GLUtils;
-import tfc.dynamicportals.Renderer;
+import tfc.dynamicportals.api.AbstractPortal;
+import tfc.dynamicportals.api.PortalCamera;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
@@ -41,6 +34,12 @@ public class BasicPortal extends AbstractPortal {
 	
 	public BasicPortal(UUID uuid) {
 		super(uuid);
+		if (FMLEnvironment.dist.isClient())
+			this.renderer = new BasicPortalRenderer(this);
+	}
+	
+	public Vector3d getPosition() {
+		return position;
 	}
 	
 	public BasicPortal setPosition(double x, double y, double z) {
@@ -142,192 +141,6 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public Vec2d getSize() {
 		return size;
-	}
-	
-	@Override
-	public void drawFrame(MultiBufferSource source, PoseStack stack) {
-		VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-		
-		if (Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) {
-			if (Minecraft.getInstance().options.renderDebug) {                    /* normal vec debug */
-				// absolute position
-				stack.pushPose();
-				stack.translate(0, (float) size.y / 2, 0);
-				stack.mulPose(getActualRotation());
-				
-				// draw normal vector
-				if (renderNormal != null) {
-					Renderer.renderVector(stack, consumer, renderNormal, 0, 1, 0);
-				} else if (computedNormal != null) {
-					Renderer.renderVector(stack, consumer, computedNormal, 1, 0, 1);
-				}
-				stack.popPose();
-				
-				//It's actually wrong
-//				Vec3 norm = computedNormal;
-//				if (norm == null) norm = normal;
-//				if (norm != null) {
-//					stack.pushPose();
-//					stack.translate(0, (float) size.y / 2, 1);
-//
-//					Quaternion quaternion = getActualRotation();
-//					stack.mulPose(quaternion);
-//					// luigi: lorenzo wanted this
-//
-//					//WHAT DO YOU MEAN I DON'T EVEN KNOW WHAT THIS IS
-//					// luigi: https://cdn.discordapp.com/attachments/988184753255624774/991124702196154419/unknown.png
-//					// left vector
-//
-//					// I don't need it anymore, you can remove it luigi
-//					// luigi: nah, I'm keeping it
-//					Vec3 vec = VecMath.rotate(new Vec3(1, 0, 0), quaternion);
-//					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 0.5f, 0, 1).normal(1, 0, 0).endVertex();
-//					consumer.vertex(stack.last().pose(), (float) vec.x, (float) vec.y, (float) vec.z).color(1f, 0.5f, 0, 1).normal(1, 0, 0).endVertex();
-//
-//					stack.popPose();
-//				}
-			}
-			
-			/* debug frustum culling box */
-			stack.pushPose();
-			stack.mulPose(getActualRotation());
-			
-			if (Minecraft.getInstance().options.renderDebug) {
-				Quad qd = portalQuad;
-				Renderer.renderVector(stack, consumer, qd.pt0, qd.pt1, 1, 0, 0);
-				Renderer.renderVector(stack, consumer, qd.pt1, qd.pt2, 1, 1, 0);
-				Renderer.renderVector(stack, consumer, qd.pt2, qd.pt3, 1, 0, 1);
-				Renderer.renderVector(stack, consumer, qd.pt3, qd.pt0, 0, 1, 1);
-				{
-					Vec3 eye = Minecraft.getInstance().cameraEntity.getEyePosition();
-					eye = eye.subtract(position.x, position.y, position.z);
-					Vec3 nearestInQuad = qd.nearestInQuad(eye);
-					Vec3 nearestOnEdge = qd.nearestOnEdge(eye);
-					Vec3 nearest = qd.nearest(eye);
-					Vec3 mid = qd.center();
-					double size = 0.005;
-					Renderer.renderPoint(stack, consumer, mid, size, 1, 1, 1);
-					if (nearestOnEdge != null && nearest != null) {
-						if (nearestOnEdge.distanceToSqr(mid) <= nearest.distanceToSqr(mid)) {
-							Renderer.renderPoint(stack, consumer, nearestOnEdge, size, 1, 0, nearestInQuad != null ? 1 : 0);
-						} else {
-							Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInQuad != null ? 1 : 0, nearestInQuad == null ? 1 : 0);
-						}
-					} else if (nearest != null) {
-						Renderer.renderPoint(stack, consumer, nearest, size, 0, nearestInQuad != null ? 1 : 0, nearestInQuad == null ? 1 : 0);
-					}
-				}
-				
-				if (this != target) {
-					//  entity bounding box
-					AABB box = Minecraft.getInstance().cameraEntity.getBoundingBox();
-					// all the vars
-					Quaternion srcQuat = raytraceRotation();
-					Quaternion dstQuat = target.raytraceRotation();
-					Vec3 srcOff = raytraceOffset();
-					Vec3 dstOff = target.raytraceOffset();
-					Vec3 pos1 = Minecraft.getInstance().cameraEntity.getPosition(1);
-					Vec3 srcPos = pos1;
-					pos1 = VecMath.transform(pos1, srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this != target, srcOff, dstOff);
-					
-					box = box.move(-srcPos.x, -srcPos.y, -srcPos.z);
-					box = box.move(pos1.x, pos1.y, pos1.z);
-					
-					stack.pushPose();
-					stack.translate(-position.x, -position.y, -position.z);
-					LevelRenderer.renderLineBox(stack, consumer, box, 0, 0, 1, 1);
-					Vec3 center = box.getCenter();
-					Vec3 motion = VecMath.transform(Minecraft.getInstance().cameraEntity.getDeltaMovement(), srcQuat, dstQuat, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, Vec3.ZERO, Vec3.ZERO);
-					stack.translate(center.x, center.y, center.z);
-					consumer.vertex(stack.last().pose(), 0, 0, 0).color(1f, 1, 1, 1).normal(1, 0, 0).endVertex();
-					stack.scale(10, 10, 10);
-					consumer.vertex(stack.last().pose(), (float) motion.x, (float) motion.y, (float) motion.z).color(0, 0, 0, 1).normal(1, 0, 0).endVertex();
-					
-					stack.popPose();
-				}
-			}
-			
-			stack.translate(-position.x, -position.y, -position.z);
-			
-			// draw
-			if (box != null)
-				LevelRenderer.renderLineBox(stack, consumer, box.inflate(Minecraft.getInstance().options.renderDebug ? 0.01 : 0), 1, 0, 0, 1);
-			stack.popPose();
-		}
-	}
-	
-	@Override
-	public void drawStencil(VertexConsumer builder, PoseStack stack) {
-		float r = 1, b = r, g = b, a = g;
-		Matrix4f mat = stack.last().pose();
-		// Luigi's TODO: use a custom vertex builder which automatically fills in missing elements
-		builder.vertex(mat, -((float) size.x / 2), 0, 0).color(r, g, b, a).uv(0, 0).endVertex();
-		builder.vertex(mat, ((float) size.x / 2), 0, 0).color(r, g, b, a).uv(0, 0).endVertex();
-		builder.vertex(mat, ((float) size.x / 2), (float) size.y, 0).color(r, g, b, a).uv(0, 0).endVertex();
-		builder.vertex(mat, -((float) size.x / 2), (float) size.y, 0).color(r, g, b, a).uv(0, 0).endVertex();
-	}
-	
-	@Override
-	public void setupMatrix(PoseStack stack) {
-		// translate
-		stack.translate(position.x, position.y, position.z);
-		// rotate
-		Quaternion quaternion = raytraceRotation();
-		if (target == this) quaternion.mul(new Quaternion(0, -90, 0, true));
-		stack.mulPose(quaternion);
-	}
-	
-	@Override
-	public void fullSetupMatrix(PoseStack stack) {
-		this.setupMatrix(stack);
-		
-		float xScl = (float) size.x;
-		float yScl = (float) size.y;
-		stack.scale(xScl, yScl, xScl);
-	}
-	
-	@Override
-	public void setupAsTarget(PoseStack stack) {
-		float xScl = 1f / (float) size.x;
-		float yScl = 1f / (float) size.y;
-		
-		stack.scale(xScl, yScl, xScl);
-		
-		boolean isMirror = target == this;
-		Vector3d position = this.position;
-		// rotate
-		
-		if (isMirror) {
-			// mirror
-			stack.scale(1, 1, -1);
-			// I don't really know why mirrors need this rotation
-			stack.mulPose(new Quaternion(0, 180, 0, true));
-		}
-		stack.mulPose(getActualRotation());
-		// translate
-		stack.translate(-position.x, -position.y, -position.z);
-	}
-	
-	@Override
-	public boolean shouldRender(Frustum frustum, double camX, double camY, double camZ) {
-		if (renderNormal == null || renderNormal.dot(new Vec3((camX - position.x), (camY - position.y), (camZ - position.z))) > 0) {
-			if (frustum == null) return true;
-			return frustum.isVisible(box);
-		}
-		return false;
-	}
-	
-	@Override
-	public void setupRenderState() {
-		// Luigi's TODO: check if this works well enough
-		if (this == target)
-			GLUtils.swapBackface(true);
-	}
-	
-	@Override
-	public void teardownRenderState() {
-		if (this == target)
-			GLUtils.swapBackface(false);
 	}
 	
 	@Override
@@ -493,11 +306,7 @@ public class BasicPortal extends AbstractPortal {
 				
 				if (entity.level.isClientSide) {
 					if (FMLEnvironment.dist.isClient()) {
-						// Luigi's TODO: check if it's an instance of a client world and shift call out of "common" code
-						if (entity == Minecraft.getInstance().cameraEntity) {
-							if (graph != null)
-								graph.nudgeRenderer();
-						}
+						renderer.teleportEntity(entity);
 					}
 				}
 				return true;

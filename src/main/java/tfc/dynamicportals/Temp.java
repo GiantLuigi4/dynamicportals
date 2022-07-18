@@ -3,7 +3,7 @@ package tfc.dynamicportals;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.world.level.Level;
 import tfc.dynamicportals.api.AbstractPortal;
-import tfc.dynamicportals.api.BasicPortal;
+import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.command.CommandPortal;
 import tfc.dynamicportals.command.FullPortalFilter;
 import tfc.dynamicportals.vanilla.EndPortal;

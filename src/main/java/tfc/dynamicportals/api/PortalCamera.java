@@ -7,8 +7,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class PortalCamera extends Camera {
 	public final Camera actualCamera;
-	BlockState cameraBlock = null;
-	FogType cameraFog = null;
+	public BlockState cameraBlock = null;
+	public FogType cameraFog = null;
 	
 	public PortalCamera(Camera actualCamera) {
 		this.actualCamera = actualCamera;

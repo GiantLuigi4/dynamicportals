@@ -1,6 +1,6 @@
 package tfc.dynamicportals.command.portals;
 
-import tfc.dynamicportals.api.BasicPortal;
+import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.command.CommandPortal;
 
 import java.util.UUID;
