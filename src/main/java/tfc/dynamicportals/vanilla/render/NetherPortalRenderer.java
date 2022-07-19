@@ -45,7 +45,7 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 	@Override
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		super.drawFrame(source, stack);
-
+		
 		Vec2d size = portal.getSize();
 		Vector3d position = portal.getPosition();
 		

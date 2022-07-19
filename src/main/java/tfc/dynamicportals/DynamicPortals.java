@@ -7,22 +7,15 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import tfc.dynamicportals.command.DynamicPortalsCommand;
 import tfc.dynamicportals.util.support.PehkuiSupport;
 
-// The value here should match an entry in the META-INF/mods.toml file
 @Mod("dynamicportals")
 public class DynamicPortals {
-	
-	// Directly reference a log4j logger.
-	private static final Logger LOGGER = LogManager.getLogger();
+	// lorenzo: who needs LogManager.getLogger() when you have System.out :sunglasses:
+	//private static final Logger LOGGER = LogManager.getLogger();
 	
 	public DynamicPortals() {
-//		FMLJavaModLoadingContext.get().getModEventBus().addListener();
-//		MinecraftForge.EVENT_BUS.addListener();
-		
 		if (FMLEnvironment.dist.isClient()) {
 			MinecraftForge.EVENT_BUS.addListener(Renderer::onRenderEvent);
 		}

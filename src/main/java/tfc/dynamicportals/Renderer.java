@@ -207,10 +207,10 @@ public class Renderer {
 			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
 			portal.renderer.getGraph().update();
 		} else if (
-				(int) orx != (int) rx || (int) ory != (int) ry ||
-						(int) oldPos.x != (int) camVec.x ||
-						(int) oldPos.y != (int) camVec.y ||
-						(int) oldPos.z != (int) camVec.z
+				       (int) orx != (int) rx || (int) ory != (int) ry ||
+						       (int) oldPos.x != (int) camVec.x ||
+						       (int) oldPos.y != (int) camVec.y ||
+						       (int) oldPos.z != (int) camVec.z
 		) {
 			portal.renderer.setupVisGraph(Minecraft.getInstance().levelRenderer);
 			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));

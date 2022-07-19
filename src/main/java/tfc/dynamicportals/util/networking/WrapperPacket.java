@@ -6,9 +6,10 @@ import net.minecraft.network.protocol.Packet;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.List;
 
 public class WrapperPacket implements Packet {
-	ArrayList<PacketProcessor> processors = new ArrayList<>();
+	List<PacketProcessor> processors = new ArrayList<>();
 	Packet wrapped;
 	
 	public WrapperPacket(Packet wrapped) {
@@ -45,7 +46,5 @@ public class WrapperPacket implements Packet {
 	}
 	
 	@Override
-	public void handle(PacketListener pHandler) {
-	
-	}
+	public void handle(PacketListener pHandler) {}
 }

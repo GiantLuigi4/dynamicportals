@@ -12,14 +12,10 @@ import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class StringArrayArgument implements ArgumentType<String> {
-	private final String[] options;
-	
-	public StringArrayArgument(String[] options) {
-		this.options = options;
-	}
+public record StringArrayArgument(String[] options) implements ArgumentType<String> {
 	
 	public static StringArrayArgument of(String[] possibilities) {
 		return new StringArrayArgument(possibilities);
@@ -37,12 +33,10 @@ public class StringArrayArgument implements ArgumentType<String> {
 	}
 	
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> pContext, SuggestionsBuilder pBuilder) {
-		if (pContext.getSource() instanceof SharedSuggestionProvider)
-			return SharedSuggestionProvider.suggest(options, pBuilder);
-		else return Suggestions.empty();
+		return pContext.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggest(options, pBuilder) : Suggestions.empty();
 	}
 	
 	public Collection<String> getExamples() {
-		return java.util.List.of(options);
+		return List.of(options);
 	}
 }

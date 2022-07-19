@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import net.minecraft.core.Vec3i;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class VecMap<T> {
 	public final int level;
@@ -58,10 +59,10 @@ public class VecMap<T> {
 	}
 	
 	public Iterable<? extends Vec3i> keySet() {
-		ArrayList<Vec3i> vecs = new ArrayList<>();
-		for (Integer integer : map.keySet()) {
+		List<Vec3i> vecs = new ArrayList<>();
+		for (int integer : map.keySet()) {
 			VecMap<T> mp = map.get(integer);
-			for (Integer integer1 : mp.map.keySet()) {
+			for (int integer1 : mp.map.keySet()) {
 				VecMap<T> mp1 = mp.map.get(integer1);
 				for (Integer integer2 : mp1.trueMap.keySet()) {
 					vecs.add(new Vec3i(integer, integer1, integer2));
@@ -75,7 +76,7 @@ public class VecMap<T> {
 		if (level == 0) {
 			return trueMap.values();
 		}
-		ArrayList<T> out = new ArrayList<>();
+		List<T> out = new ArrayList<>();
 		for (VecMap<T> value : map.values()) {
 			for (T t : value.values()) {
 				out.add(t);

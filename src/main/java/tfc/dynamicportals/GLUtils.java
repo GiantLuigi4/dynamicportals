@@ -66,7 +66,7 @@ public class GLUtils {
 	}
 	
 	public static void clearDepth() {
-		// TODO
+		// Luigi's TODO
 		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 //		float pWidth = Minecraft.getInstance().getMainRenderTarget().width;
 //		float pHeight = Minecraft.getInstance().getMainRenderTarget().height;
