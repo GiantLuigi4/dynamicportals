@@ -10,6 +10,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import tfc.dynamicportals.RaytraceHelper;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.Vec2d;
@@ -34,8 +35,22 @@ public class BasicPortal extends AbstractPortal {
 			this.renderer = new BasicPortalRenderer(this);
 	}
 	
+	public static void scale(Entity entity, float amt) {
+		if (ModList.get().isLoaded("pehkui")) {
+			// Luigi's TODO: individual scales for x and y
+			ScaleData data = PehkuiSupport.scaleType.get().getScaleData(entity);
+			data.setScale(data.getScale(1) * amt);
+			data.setTargetScale(data.getScale());
+			data.setScaleTickDelay(0);
+		}
+	}
+	
 	public Vector3d getPosition() {
 		return position;
+	}
+	
+	public BasicPortal setPosition(Vec3 pos) {
+		return this.setPosition(pos.x, pos.y, pos.z);
 	}
 	
 	public BasicPortal setPosition(double x, double y, double z) {
@@ -59,14 +74,6 @@ public class BasicPortal extends AbstractPortal {
 	public BasicPortal setRenderNormal(Vec3 renderNormal) {
 		this.renderNormal = renderNormal;
 		return this;
-	}
-	
-	public BasicPortal setPosition(Vec3 pos) {
-		return this.setPosition(pos.x, pos.y, pos.z);
-	}
-	
-	public BasicPortal setSize(Vec2d size) {
-		return this.setSize(size.x, size.y);
 	}
 	
 	public BasicPortal setRotation(Vec3 rotation) {
@@ -139,6 +146,10 @@ public class BasicPortal extends AbstractPortal {
 		return size;
 	}
 	
+	public BasicPortal setSize(Vec2d size) {
+		return this.setSize(size.x, size.y);
+	}
+	
 	@Override
 	public double trace(Vec3 start, Vec3 end) {
 		// setup a matrix stack
@@ -191,16 +202,7 @@ public class BasicPortal extends AbstractPortal {
 //		scale(entity, (float) size.y);
 	}
 	
-	public static void scale(Entity entity, float amt) {
-		if (ModList.get().isLoaded("pehkui")) {
-			ScaleData data = PehkuiSupport.scaleType.get().getScaleData(entity); // TODO: individual scales for x and y
-			data.setScale(data.getScale(1) * amt);
-			data.setTargetScale(data.getScale());
-			data.setScaleTickDelay(0);
-		}
-	}
-	
-	// TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks
+	// Luigi's TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		boolean wasInFront = isInFront(entity, position);
@@ -208,20 +210,25 @@ public class BasicPortal extends AbstractPortal {
 		double distanceEntityToPortal = position.add(motion).distanceTo(portalQuad.center().add(raytraceOffset()));
 		// lorenzo: that "less than" check is a temporary hack to avoid calling this method for portals 20 blocks away
 		if (wasInFront != isInFront && distanceEntityToPortal < Math.max(size.x, size.y)) {
-			// TODO: this calculation can be drastically more reliable
 			Vec3 rot = VecMath.toDeegrees(rotation);
 			if ((((int) (rot.x * 3)) / 3) % 90 == 0 && (((int) (rot.y * 3)) / 3) % 90 == 0 && (((int) (rot.z * 3)) / 3) % 90 == 0) {
-				System.out.println(raytraceOffset() + "multiple");
+				// TODO: understand why luigi wants this
+				double x = RaytraceHelper.calculateXOffset(box, entity.getBoundingBox(), motion.x);
+				double y = RaytraceHelper.calculateYOffset(box, entity.getBoundingBox(), motion.y);
+				double z = RaytraceHelper.calculateZOffset(box, entity.getBoundingBox(), motion.z);
+				if (x != motion.x || y != motion.y || z != motion.z)
+					System.out.println(raytraceOffset() + "multiple");
 			}
 			double raytraceDistance = trace(position, position.add(motion));
 			if (raytraceDistance != -1 && distanceEntityToPortal < raytraceDistance || overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
-				//scale(entity, (float) (1 / size.y)); // TODO: individual scales for x and y
-				
+				// Luigi's TODO: individual scales for x and y
+				//scale(entity, (float) (1 / size.y));
 				Quaternion srcRot = raytraceRotation();
 				Quaternion dstRot = target.raytraceRotation();
 				Vec3 srcOff = raytraceOffset();
 				Vec3 dstOff = target.raytraceOffset();
 				
+				//TODO: check if position and motion have to be multiplied by this scaleRatio or target's or none
 				Vec3 oldPos = new Vec3(entity.xOld, entity.yOld, entity.zOld);
 				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 				Vec3 pos = position;

@@ -1,6 +1,7 @@
 package tfc.dynamicportals.command;
 
 import com.mojang.brigadier.context.CommandContext;
+import tfc.dynamicportals.command.portals.CommandPortal;
 
 import java.util.List;
 

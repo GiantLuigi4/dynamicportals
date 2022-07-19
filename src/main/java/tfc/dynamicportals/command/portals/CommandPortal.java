@@ -1,4 +1,4 @@
-package tfc.dynamicportals.command;
+package tfc.dynamicportals.command.portals;
 
 public interface CommandPortal {
 	int myId();

@@ -37,8 +37,6 @@ public class PehkuiSupport {
 	
 	// using optional to prevent accidental class loading
 	public static Optional<ScaleType> getType(String name) {
-		if (name.contains(":"))
-			return Optional.of(ScaleRegistries.getEntry(ScaleRegistries.SCALE_TYPES, new ResourceLocation(name)));
-		return Optional.of(ScaleRegistries.getEntry(ScaleRegistries.SCALE_TYPES, new ResourceLocation("pehkui", name)));
+		return Optional.of(ScaleRegistries.getEntry(ScaleRegistries.SCALE_TYPES, name.contains(":") ? new ResourceLocation(name) : new ResourceLocation("pehkui", name)));
 	}
 }

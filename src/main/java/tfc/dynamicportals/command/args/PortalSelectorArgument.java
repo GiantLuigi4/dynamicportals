@@ -11,8 +11,8 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.TranslatableComponent;
 import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.api.AbstractPortal;
-import tfc.dynamicportals.command.CommandPortal;
 import tfc.dynamicportals.command.FullPortalFilter;
+import tfc.dynamicportals.command.portals.CommandPortal;
 
 import java.util.ArrayList;
 import java.util.Collection;

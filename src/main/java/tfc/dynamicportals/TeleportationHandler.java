@@ -20,7 +20,6 @@ public class TeleportationHandler {
 					((ITeleportTroughPacket) entity).setTeleported();
 					wentThrough = true;
 					// Luigi's TODO: better handling, deny teleporting through the pair
-					// lorenzo: what do you mean :thonk4:
 					break;
 				}
 			}

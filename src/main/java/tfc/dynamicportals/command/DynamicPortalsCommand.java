@@ -24,6 +24,7 @@ import tfc.dynamicportals.command.args.StringArrayArgument;
 import tfc.dynamicportals.command.portals.BasicCommandPortal;
 import tfc.dynamicportals.command.portals.BasicEndPortal;
 import tfc.dynamicportals.command.portals.BasicNetherPortal;
+import tfc.dynamicportals.command.portals.CommandPortal;
 import tfc.dynamicportals.util.DynamicPortalsSourceStack;
 import tfc.dynamicportals.util.VecMath;
 
@@ -99,7 +100,8 @@ public class DynamicPortalsCommand {
 			FullPortalFilter i = null;
 			try {
 				i = context.getArgument("delete", FullPortalFilter.class);
-			} catch (Throwable ignored) {}
+			} catch (Throwable ignored) {
+			}
 			if (i == null) {
 				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.empty_argument"));
 				return -1;
@@ -153,7 +155,7 @@ public class DynamicPortalsCommand {
 	
 	// give me something to work with, and I will butcher it until it works in a way which is easy to work with
 	// :GWchadThink: epic luigi
-	// I have created the ultimate building function
+	// lorenzo: I have created the ultimate building function
 	private static <T> void buildSubcommand(String name, ArgumentType<T> type, CommandNode<CommandSourceStack> command, Command<CommandSourceStack> cmd) {
 		ArgumentBuilder<CommandSourceStack, LiteralArgumentBuilder<CommandSourceStack>> subCommand = LiteralArgumentBuilder.literal(name);
 		if (type != null) {

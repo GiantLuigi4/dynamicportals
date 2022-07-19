@@ -4,11 +4,66 @@ import com.mojang.math.Quaternion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.VecMath;
 
 public class RaytraceHelper {
+	//lorenzo: I hate this copy-paste-type code
+	public static double calculateXOffset(AABB first, AABB other, double offsetX) {
+		if (other.maxY > first.minY && other.minY < first.maxY && other.maxZ > first.minZ && other.minZ < first.maxZ) {
+			if (offsetX > 0.0D && other.maxX <= first.minX) {
+				double deltaX = first.minX - other.maxX;
+				
+				if (deltaX < offsetX) offsetX = deltaX;
+			} else if (offsetX < 0.0D && other.minX >= first.maxX) {
+				double deltaX = first.maxX - other.minX;
+				
+				if (deltaX > offsetX) offsetX = deltaX;
+			}
+		}
+		return offsetX;
+	}
+	
+	public static double calculateYOffset(AABB first, AABB other, double offsetY) {
+		if (other.maxX > first.minX && other.minX < first.maxX && other.maxZ > first.minZ && other.minZ < first.maxZ) {
+			if (offsetY > 0.0D && other.maxY <= first.minY) {
+				double d1 = first.minY - other.maxY;
+				
+				if (d1 < offsetY) {
+					offsetY = d1;
+				}
+			} else if (offsetY < 0.0D && other.minY >= first.maxY) {
+				double d0 = first.maxY - other.minY;
+				
+				if (d0 > offsetY) {
+					offsetY = d0;
+				}
+			}
+		}
+		return offsetY;
+	}
+	
+	public static double calculateZOffset(AABB first, AABB other, double offsetZ) {
+		if (other.maxX > first.minX && other.minX < first.maxX && other.maxY > first.minY && other.minY < first.maxY) {
+			if (offsetZ > 0.0D && other.maxZ <= first.minZ) {
+				double d1 = first.minZ - other.maxZ;
+				
+				if (d1 < offsetZ) {
+					offsetZ = d1;
+				}
+			} else if (offsetZ < 0.0D && other.minZ >= first.maxZ) {
+				double d0 = first.maxZ - other.minZ;
+				
+				if (d0 > offsetZ) {
+					offsetZ = d0;
+				}
+			}
+		}
+		return offsetZ;
+	}
+	
 	public static void trace(Minecraft minecraft, float pPartialTicks) {
 		Entity entity = minecraft.getCameraEntity();
 		if (entity != null && minecraft.level != null) {
@@ -33,7 +88,7 @@ public class RaytraceHelper {
 				Quaternion dstRot = portal.target.raytraceRotation();
 				iStart = VecMath.transform(iStart, srcRot, dstRot, portal.getScaleRatio(), portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, srcOff, dstOff);
 				iReach = VecMath.transform(iReach, srcRot, dstRot, portal.getScaleRatio(), portal.target.get180DegreesRotationAroundVerticalAxis(), portal == portal.target, Vec3.ZERO, Vec3.ZERO);
-
+				
 				minecraft.hitResult = entity.level.clip(
 						new ClipContext(
 								iStart, iStart.add(iReach),
