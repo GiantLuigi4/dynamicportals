@@ -47,7 +47,7 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		super.drawFrame(source, stack);
 		
 		Vec2d size = portal.getSize();
-		Vector3d position = portal.getPosition();
+		Vec3 position = portal.raytraceOffset();
 		
 		float r = 1, b = r, g = b, a = g;
 		Matrix4f mat = stack.last().pose();
@@ -58,7 +58,7 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		float minV = texture.getV(0);
 		float maxV = texture.getV(texture.getHeight());
 		// compute an offset between each layer so that z fighting isn't noticeable
-		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
+		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(position);
 		// makes z fighting drastically less noticeable
 		distance = Math.min(distance, 0.1);
 		if (!portal.isInFront(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {

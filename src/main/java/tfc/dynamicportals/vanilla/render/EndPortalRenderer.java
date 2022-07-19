@@ -32,8 +32,8 @@ public class EndPortalRenderer extends BasicPortalRenderer {
 		RenderTarget targ = RenderTypes.targ.get();
 		
 		Vec2d size = portal.getSize();
-		Vector3d position = portal.getPosition();
-		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(new Vec3(position.x, position.y, position.z));
+		Vec3 position = portal.raytraceOffset();
+		double distance = 0.0001 * Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(position);
 		distance = Math.min(distance, 0.1);
 		if (!portal.isInFront(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition())) {
 			stack.scale(-1, 1, -1);

@@ -45,10 +45,6 @@ public class BasicPortal extends AbstractPortal {
 		}
 	}
 	
-	public Vector3d getPosition() {
-		return position;
-	}
-	
 	public BasicPortal setPosition(Vec3 pos) {
 		return this.setPosition(pos.x, pos.y, pos.z);
 	}
@@ -228,7 +224,6 @@ public class BasicPortal extends AbstractPortal {
 				Vec3 srcOff = raytraceOffset();
 				Vec3 dstOff = target.raytraceOffset();
 				
-				//TODO: check if position and motion have to be multiplied by this scaleRatio or target's or none
 				Vec3 oldPos = new Vec3(entity.xOld, entity.yOld, entity.zOld);
 				Vec3 oPos = new Vec3(entity.xo, entity.yo, entity.zo);
 				Vec3 pos = position;
