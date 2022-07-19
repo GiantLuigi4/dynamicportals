@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tfc.dynamicportals.access.IClosable;
 
-// TODO: the fact that I need this is dumb
+// Luigi's TODO: the fact that I need this is dumb
 @Mixin(VertexBuffer.class)
 public class VBOMixin implements IClosable {
 	@Unique

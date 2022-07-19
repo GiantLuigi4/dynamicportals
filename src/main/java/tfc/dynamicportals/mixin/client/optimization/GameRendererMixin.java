@@ -52,9 +52,8 @@ public class GameRendererMixin {
 	
 	@Inject(at = @At("HEAD"), method = "resetProjectionMatrix")
 	public void preSetProjMat(Matrix4f pMatrix, CallbackInfo ci) {
-		// TODO: get this working
+		// Luigi's TODO: get this working, can be made even less blocking
 //		projection = RenderSystem.getProjectionMatrix();
-//		// TODO: this can be made even less blocking
 //		Matrix4f mat = stack.last().pose();
 //		AbstractPortal[] portals = Temp.getPortals(minecraft.level);
 //		for (AbstractPortal portal : portals) {

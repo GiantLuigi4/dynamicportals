@@ -39,7 +39,7 @@ public class ShaderInjections {
 						"\t\treturn;\n";
 		if (!hasTexCoord) yes = "";
 		return
-				// TODO: something needs to change when sodium is present
+				// Luigi's TODO: something needs to change when sodium is present
 				"\n\t/* Dynamic Portals injection */\n" +
 						"\tvec2 dynamicPortalsPos;\n" +
 						"\tvec4 dynamicPortalsColor;\n" +
@@ -56,7 +56,7 @@ public class ShaderInjections {
 						"\t\t\treturn;\n" +
 						"\t\t}\n" +
 						"\t\tdynamicPortalsDepth = texture(dynamicPortalsStencilDepth, dynamicPortalsPos);\n" +
-						// TODO: figure out how to make a more lenient depth test
+						// Luigi's TODO: figure out how to make a more lenient depth test
 //						"\t\tdynamicPortalsRoundingVar0 = dynamicPortalsDepth.r;\n" +
 //						"\t\tdynamicPortalsRoundingVar1 = gl_FragCoord.z;\n" +
 //						"\t\tdynamicPortalsRoundingVar0 *= 1000.;\n" +

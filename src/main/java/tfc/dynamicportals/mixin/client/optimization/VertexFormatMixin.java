@@ -12,7 +12,7 @@ import tfc.dynamicportals.opt.StateReduction;
 public class VertexFormatMixin {
 	private static VertexFormat bound = null;
 	
-	// TODO: for some reason, vbos
+	// Luigi's TODO: for some reason, vbos
 	@Inject(at = @At("HEAD"), method = "_setupBufferState", cancellable = true)
 	public void preSetupBufferState(CallbackInfo ci) {
 		if (Renderer.isStencilPresent()) {

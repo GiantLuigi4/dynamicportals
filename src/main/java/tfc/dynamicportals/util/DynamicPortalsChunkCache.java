@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
-// TODO: attempt better compatibility, maybe?
+// Luigi's TODO: attempt better compatibility, maybe?
 public class DynamicPortalsChunkCache extends ClientChunkCache {
 	HashMap<ChunkPos, LevelChunk> chunks = new HashMap<>();
 	

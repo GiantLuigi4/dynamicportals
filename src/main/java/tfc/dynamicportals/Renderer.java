@@ -61,7 +61,7 @@ public class Renderer {
 	// TODO: this should be cleaned up at some point
 	public static void renderPortal(PoseStack a, RenderType type, RenderBuffers buffers, AbstractPortal portal, Frustum frustum) {
 		if (recursion == 2) {
-			// TODO: do stuff with this
+			// Luigi's TODO: do stuff with this
 			return;
 		}
 		
@@ -187,7 +187,7 @@ public class Renderer {
 		// attempt to reset gl state
 		RenderSystem.enableCull();
 		Lighting.setupFor3DItems();
-		// TODO: fix the lighting
+		// Luigi's TODO: fix the lighting
 	}
 	
 	private static Frustum getFrustum(AbstractPortal portal, Matrix4f mat, Matrix4f matr) {
@@ -196,7 +196,7 @@ public class Renderer {
 		portal.renderer.setupMatrix(stk);
 		stk.mulPose(new Quaternion(0, 180, 0, true));
 		portal.target.renderer.setupAsTarget(stk);
-		// TODO: fix smth here, not sure what?
+		// Luigi's TODO: fix smth here, not sure what?
 		return new Frustum(stk.last().pose(), matr);
 	}
 	
@@ -395,7 +395,7 @@ public class Renderer {
 		return stencilTarget.height;
 	}
 	
-	// TODO: this is a bodge
+	// Luigi's TODO: this is a bodge
 	public static boolean bindPortalFBO(boolean pSetViewport) {
 		if (isStencilPresent) {
 			portalTarget.bindWrite(pSetViewport);

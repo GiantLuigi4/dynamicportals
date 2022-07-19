@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tfc.dynamicportals.Renderer;
 
-// TODO: sodium level renderer mixin when sodium is present
+// Luigi's TODO: sodium level renderer mixin when sodium is present
 @Mixin(LevelRenderer.class)
 // I noticed this way later than I should've, and honestly, at this point, I'm leaving it
 public class LevenRendererMixin {

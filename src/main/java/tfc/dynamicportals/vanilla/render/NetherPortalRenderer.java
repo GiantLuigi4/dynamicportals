@@ -211,7 +211,7 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
 		float r = 1, b = r, g = b, a = g;
 		Matrix4f mat = stack.last().pose();
-		// TODO: use a custom vertex builder which automatically fills in missing elements
+		// Luigi's TODO: use a custom vertex builder which automatically fills in missing elements
 		TextureAtlasSprite texture = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(new ResourceLocation("block/ice"));
 //		float minU = texture.getU(0);
 //		float maxU = texture.getU(texture.getWidth());

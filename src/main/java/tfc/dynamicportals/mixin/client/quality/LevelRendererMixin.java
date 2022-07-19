@@ -26,7 +26,7 @@ import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
-// TODO: get this working with sodium/rubidium
+// Luigi's TODO: get this working with sodium/rubidium
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
 	@Shadow
@@ -65,7 +65,7 @@ public abstract class LevelRendererMixin {
 	
 	@Inject(at = @At("HEAD"), method = "setupRender", cancellable = true)
 	public void preSetupRender(Camera pCamera, Frustum pFrustrum, boolean pHasCapturedFrustrum, boolean pIsSpectator, CallbackInfo ci) {
-		// TODO: check if this breaks compat
+		// Luigi's TODO: check if this breaks compat
 		if (Renderer.isStencilPresent())
 			ci.cancel();
 //		else {

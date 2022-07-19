@@ -18,7 +18,7 @@ public class PortalVisibilityGraph {
 		this.renderer = renderer;
 	}
 	
-	// TODO: improve this
+	// Luigi's TODO: improve this
 	public void update() {
 		renderChunksInFrustum.clear();
 //		int dist = Minecraft.getInstance().options.renderDistance;
@@ -39,7 +39,7 @@ public class PortalVisibilityGraph {
 //			}
 //		}
 		for (LevelRenderer.RenderChunkInfo renderChunk : renderer.renderChunkStorage.get().renderChunks) {
-			// TODO: side checking
+			// Luigi's TODO: side checking
 			if (renderChunk == null) continue;
 			AABB box = renderChunk.chunk.getBoundingBox();
 			if (frustum.isVisible(box)) {
@@ -70,7 +70,7 @@ public class PortalVisibilityGraph {
 	}
 	
 	public void addAll(BlockingQueue<ChunkRenderDispatcher.RenderChunk> recentlyCompiledChunks) {
-		// TODO: get this working properly
+		// Luigi's TODO: get this working properly
 ////		AsyncIterator.forEach(recentlyCompiledChunks, (chunk) -> {
 //		ArrayList<ChunkRenderDispatcher.RenderChunk> chunks = new ArrayList<>();
 //		while (!recentlyCompiledChunks.isEmpty()) {

@@ -15,7 +15,7 @@ public class RenderSystemMixin {
 	private static void onClear(int pMask, boolean pCheckError, CallbackInfo ci) {
 		if (Renderer.isStencilPresent()) {
 			if (GLUtils.clear(pMask)) {
-				ci.cancel(); // TODO: do this properly, or smth
+				ci.cancel(); // Luigi's TODO: do this properly, or smth
 			}
 		}
 	}
