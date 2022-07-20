@@ -7,14 +7,18 @@ import org.lwjgl.opengl.GL13;
 
 public class ShaderInjections {
 	public static String tailVertex() {
-		return "\n\t/* Dynamic Portals injection */\n" +
-				       "if (float(dynamicPortalsHasStencilTextureSet) > 1.5f) {\n" +
-				       // Luigi's TODO: get this working
-//				"\t\tif (gl_Position.z < 0.01) {\n" +
-//				"\t\t\tgl_Position.z = 0.01;\n" +
-//				"\t\t}\n" +
-				       "\t}\n" +
-				       "\t/* end Dynamic Portals injection */\n";
+		return "";
+		// Luigi's TODO: get this working
+//		return """
+//
+//				\t/* Dynamic Portals injection */
+//				if (float(dynamicPortalsHasStencilTextureSet) > 1.5f) {
+//				\t\tif (gl_Position.z < 0.01) {
+//				\t\t\tgl_Position.z = 0.01;
+//				\t\t}
+//				\t}
+//				\t/* end Dynamic Portals injection */
+//				""";
 	}
 	
 	// about iris/oculus/OF
