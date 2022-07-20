@@ -12,11 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tfc.dynamicportals.ShaderInjections;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // I'm not even gonna attempt to explain what's happening here
+// lorenzo: I'll destroy this class anyway
 @Mixin(GlStateManager.class)
 public class GlStateManagerMixin {
 	@Unique
@@ -43,18 +45,10 @@ public class GlStateManagerMixin {
 	private static void preGlShaderSource(int s, List<String> pointerBuffer, CallbackInfo ci) {
 		int type = shaderToTypeMap.get(s);
 		
-		StringBuilder str = new StringBuilder();
-		for (String s1 : pointerBuffer) {
-			str.append(s1).append("\n");
-		}
-		
-		if (str.toString().contains("#dynportals skip_inject")) {
-			String str1 = str.toString().replace("#dynportals skip_inject", "");
-			String[] list = str1.split("\n");
+		String shaderFile = String.join("\n", pointerBuffer);
+		if (shaderFile.contains("#dynportals skip_inject")) {
 			pointerBuffer.clear();
-			for (String s1 : list) {
-				pointerBuffer.add(s1 + "\n");
-			}
+			Arrays.stream(shaderFile.replace("#dynportals skip_inject", "").split("\n")).forEach((str) -> pointerBuffer.add(str + "\n"));
 		}
 		
 		AtomicInteger lCC = new AtomicInteger();
@@ -67,52 +61,59 @@ public class GlStateManagerMixin {
 		String samplerName = null;
 		
 		StringBuilder output = new StringBuilder();
-		for (String s1 : str.toString().split("\n")) {
-			String srcStr = s1;
-			int len = s1.length();
-			s1 = s1.replace("  ", " ");
-			while (len != s1.length()) {
-				s1 = s1.replace("  ", " ");
-				s1 = s1.replace("( ", " ");
-				s1 = s1.replace(" (", " ");
-				s1 = s1.replace(" )", " ");
-				s1 = s1.replace(") ", " ");
-				s1 = s1.replace("\t", "");
-				len = s1.length();
+		for (String line : shaderFile.split("\n")) {
+			String injected = line;
+			int len = line.length();
+			line = line.replace("  ", " ");
+			while (len != line.length()) {
+				len = line.length();
+				line = line
+						.replace("  ", " ")
+						.replace("( ", " ")
+						.replace(" (", " ")
+						.replace(" )", " ")
+						.replace(") ", " ")
+						.replace("\t", "")
+						.trim();
 			}
 			// TODO: make this stuff more reliable
-			if (s1.startsWith("out vec4 fragColor")) hasTexCoordInput = true;
-			if (s1.startsWith("uniform sampler2D")) {
-				String str1 = s1.replace("uniform sampler2D ", "").trim();
+			// Well actually, I don't know what you mean by "reliable", I tried to make it "optimized"
+			// I'll leave this as "myTODO" but I won't touch it for a bit
+			hasTexCoordInput = hasTexCoordInput || line.startsWith("out vec4 fragColor");
+			hasColorInput = hasColorInput || line.startsWith("in vec4 vertexColor");
+
+			if (line.startsWith("uniform sampler2D")) {
+				String str1 = line.replace("uniform sampler2D ", "").trim();
 				if (str1.startsWith("Sampler0") || str1.startsWith("DiffuseSampler"))
 					samplerName = str1.substring(0, str1.length() - 1);
 			}
-			if (s1.startsWith("in vec4 vertexColor")) hasColorInput = true;
-			if (!hitUniforms && s1.trim().startsWith("uniform")) {
-				srcStr = injectUniforms(type, srcStr);
+			if (!hitUniforms && line/*.trim()*/.startsWith("uniform")) {
+				injected = injectUniforms(type, injected);
 				hitUniforms = true;
 			}
-			if (!hitOuts && s1.trim().startsWith("out")) {
-				srcStr = injectOuts(type, srcStr);
+			if (!hitOuts && line/*.trim()*/.startsWith("out")) {
+				injected = injectOuts(type, injected);
 				hitOuts = true;
 			}
-			if (!hitInputs && s1.trim().startsWith("in")) {
-				srcStr = injectIns(type, srcStr);
+			if (!hitInputs && line/*.trim()*/.startsWith("in")) {
+				injected = injectIns(type, injected);
 				hitInputs = true;
 			}
-			if (hitUniforms && hitOuts && hitInputs) {
-				if (inMain) {
-					srcStr = checkLineAndInject(type, srcStr, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
-					if (lCC.get() == 0) inMain = false;
-				}
-				if (s1.contains("void main()")) {
-					inMain = true;
-					srcStr = checkLineAndInject(type, srcStr, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
-				}
+			if (hitUniforms && hitOuts && hitInputs && (inMain || line.contains("void main()"))) {
+				injected = checkLineAndInject(type, injected, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
+				inMain = (!inMain || lCC.get() != 0) && (line.contains("void main()") || inMain);
+//				if (inMain) {
+//					injected = checkLineAndInject(type, injected, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
+//					if (lCC.get() == 0) inMain = false;
+//				}
+//				if (line.contains("void main()")) {
+//					injected = checkLineAndInject(type, injected, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
+//					inMain = true;
+//				}
 			}
-			output.append(srcStr).append("\n");
+			output.append(injected).append("\n");
 		}
-//		System.out.println(output.toString());
+//		System.out.println(output);
 //		if (output.toString().contains("iris")) {
 //			String path =
 //					"shader/" +
@@ -133,29 +134,30 @@ public class GlStateManagerMixin {
 //			}
 //		}
 		pointerBuffer.clear();
-		for (String s1 : output.toString().split("\n")) {
-			pointerBuffer.add(s1 + "\n");
-		}
+		Arrays.stream(output.toString().split("\n")).forEach((str)->pointerBuffer.add(str + "\n"));
 	}
 	
 	private static String injectUniforms(int type, String srcStr) {
+		String str = "";
 		if (type == GL42.GL_FRAGMENT_SHADER) {
-			String str =
-					"/* Dynamic Portals injection */\n" +
-							"uniform int dynamicPortalsHasStencilTextureSet;\n" +
-							"uniform sampler2D dynamicPortalsStencilTexture;\n" +
-							"uniform sampler2D dynamicPortalsStencilDepth;\n" +
-							"uniform vec2 dynamicPortalsFBOSize;\n" +
-							"/* end Dynamic Portals injection */\n";
-			srcStr = str + srcStr;
+			str =
+					"""
+					/* Dynamic Portals injection */
+					uniform int dynamicPortalsHasStencilTextureSet;
+					uniform sampler2D dynamicPortalsStencilTexture;
+					uniform sampler2D dynamicPortalsStencilDepth;
+					uniform vec2 dynamicPortalsFBOSize;
+					/* end Dynamic Portals injection */
+					""";
 		} else if (type == GL42.GL_VERTEX_SHADER) {
-			String str =
-					"/* Dynamic Portals injection */\n" +
-							"uniform int dynamicPortalsHasStencilTextureSet;\n" +
-							"/* end Dynamic Portals injection */\n";
-			srcStr = str + srcStr;
+			str =
+					"""
+					/* Dynamic Portals injection */
+					uniform int dynamicPortalsHasStencilTextureSet;
+					/* end Dynamic Portals injection */
+					""";
 		}
-		return srcStr;
+		return srcStr + str;
 	}
 	
 	private static String injectOuts(int type, String srcStr) {
