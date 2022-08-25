@@ -3,10 +3,13 @@ package tfc.dynamicportals;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import tfc.dynamicportals.api.DynamicPortalsConfig;
 import tfc.dynamicportals.command.DynamicPortalsCommand;
 import tfc.dynamicportals.util.support.PehkuiSupport;
 
@@ -16,6 +19,8 @@ public class DynamicPortals {
 	//private static final Logger LOGGER = LogManager.getLogger();
 	
 	public DynamicPortals() {
+		MinecraftForge.EVENT_BUS.register(DynamicPortalsConfig.class);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, DynamicPortalsConfig.clientSpec);
 		if (FMLEnvironment.dist.isClient()) {
 			MinecraftForge.EVENT_BUS.addListener(Renderer::onRenderEvent);
 		}
