@@ -3,7 +3,6 @@ package tfc.dynamicportals.vanilla.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3d;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -14,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 import net.minecraft.world.phys.Vec3;
+import tfc.dynamicportals.api.DynamicPortalsConfig;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.api.implementation.BasicPortalRenderer;
 import tfc.dynamicportals.util.Vec2d;
@@ -89,8 +89,7 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 			for (int y = 0; y < size.y; y++) {
 				float a0 = min;
 				float a1 = a0, a2 = a0, a3 = a0;
-				// TODO: config
-				if (true) {
+				if (DynamicPortalsConfig.CLIENT.netherAnimation.get()) {
 					// animate transparency
 					a0 = (float) simplexNoise.getValue((x + xOff) / 16f, (y + yOff) / 16f, shaderTime) + add;
 					a1 = (float) simplexNoise.getValue((x + 1 + xOff) / 16f, (y + yOff) / 16f, shaderTime) + add;

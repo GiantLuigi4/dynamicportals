@@ -62,8 +62,8 @@ public class Renderer {
 		}
 		
 		// declare variables
+		//		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		ShaderInstance shaderInstance;
-		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
 		
 		// copy stack (easier to work with, as I don't need to reset the stack's state)
