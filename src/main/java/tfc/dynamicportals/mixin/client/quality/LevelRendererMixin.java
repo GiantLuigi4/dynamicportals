@@ -79,26 +79,4 @@ public abstract class LevelRendererMixin {
 		if (Renderer.isStencilPresent())
 			ci.cancel();
 	}
-
-//	@Inject(at = @At("HEAD"), method = "updateRenderChunks")
-//	public void preUpdateRenderChunks(LinkedHashSet<LevelRenderer.RenderChunkInfo> pChunkInfos, LevelRenderer.RenderInfoMap pInfoMap, Vec3 pViewVector, Queue<LevelRenderer.RenderChunkInfo> pInfoQueue, boolean pShouldCull, CallbackInfo ci) {
-//		VecMap<ChunkRenderDispatcher.RenderChunk> chunks = ((ExtendedView) viewArea).extraView();
-//		for (ChunkRenderDispatcher.RenderChunk value : chunks.values()) {
-//			if (value.isDirty()) {
-//				LevelRenderer.RenderChunkInfo inf = new LevelRenderer.RenderChunkInfo(value, null, 0);
-////				pChunkInfos.remove(inf);
-//				pInfoQueue.add(inf);
-////				value.setNotDirty();
-//			}
-//		}
-//	}
-//
-//	@Inject(at = @At("HEAD"), method = "initializeQueueForFullUpdate")
-//	public void preInitQueue(Camera pCamera, Queue<LevelRenderer.RenderChunkInfo> pInfoQueue, CallbackInfo ci) {
-////		VecMap<ChunkRenderDispatcher.RenderChunk> chunks = ((ExtendedView) viewArea).extraView();
-////		for (ChunkRenderDispatcher.RenderChunk value : chunks.values()) {
-////			LevelRenderer.RenderChunkInfo inf = new LevelRenderer.RenderChunkInfo(value, null, 0);
-////			pInfoQueue.add(inf);
-////		}
-//	}
 }

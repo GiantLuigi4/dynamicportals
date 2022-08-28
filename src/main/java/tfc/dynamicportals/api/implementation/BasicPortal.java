@@ -4,20 +4,25 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
 import com.mojang.math.Vector4f;
+import com.tracky.TrackyAccessor;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import tfc.dynamicportals.RaytraceHelper;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.Quad;
+import tfc.dynamicportals.util.TrackyTools;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.support.PehkuiSupport;
 import virtuoel.pehkui.api.ScaleData;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class BasicPortal extends AbstractPortal {
@@ -205,16 +210,16 @@ public class BasicPortal extends AbstractPortal {
 		boolean isInFront = isInFront(entity, position.add(motion));
 		double distanceEntityToPortal = position.add(motion).distanceTo(portalQuad.center().add(raytraceOffset()));
 		// lorenzo: that "less than" check is a temporary hack to avoid calling this method for portals 20 blocks away
-		if (wasInFront != isInFront && distanceEntityToPortal < Math.max(size.x, size.y)) {
-			Vec3 rot = VecMath.toDeegrees(rotation);
-			if ((((int) (rot.x * 3)) / 3) % 90 == 0 && (((int) (rot.y * 3)) / 3) % 90 == 0 && (((int) (rot.z * 3)) / 3) % 90 == 0) {
-				// TODO: understand why luigi wants this
-				double x = RaytraceHelper.calculateXOffset(box, entity.getBoundingBox(), motion.x);
-				double y = RaytraceHelper.calculateYOffset(box, entity.getBoundingBox(), motion.y);
-				double z = RaytraceHelper.calculateZOffset(box, entity.getBoundingBox(), motion.z);
-				if (x != motion.x || y != motion.y || z != motion.z)
-					System.out.println(raytraceOffset() + "multiple");
-			}
+		if (wasInFront != isInFront && distanceEntityToPortal < Math.pow(Math.max(size.x, size.y), 2)) {
+//			// TODO: do stuff with this
+//			Vec3 rot = VecMath.toDeegrees(rotation);
+//			if ((((int) (rot.x * 3)) / 3) % 90 == 0 && (((int) (rot.y * 3)) / 3) % 90 == 0 && (((int) (rot.z * 3)) / 3) % 90 == 0) {
+//				double x = RaytraceHelper.calculateXOffset(box, entity.getBoundingBox(), motion.x);
+//				double y = RaytraceHelper.calculateYOffset(box, entity.getBoundingBox(), motion.y);
+//				double z = RaytraceHelper.calculateZOffset(box, entity.getBoundingBox(), motion.z);
+//				if (x != motion.x || y != motion.y || z != motion.z)
+//					System.out.println(raytraceOffset() + "multiple");
+//			}
 			double raytraceDistance = trace(position, position.add(motion));
 			if (raytraceDistance != -1 && distanceEntityToPortal < raytraceDistance || overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
 				// Luigi's TODO: individual scales for x and y
@@ -269,5 +274,32 @@ public class BasicPortal extends AbstractPortal {
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	public void tickChunkTracking(Player player) {
+		// TODO: do level properly, maybe?
+		ArrayList<ChunkPos> positions = TrackyTools.getChunksForPortal(player.level, player, this);
+		ChunkPos center = new ChunkPos(new BlockPos(position.x, position.y, position.z));
+		// TODO: optimize
+		// TODO: don't redundantly do this
+		// TODO: offset this to be centered around the translated player camera
+		// TODO: frontface cull this to be only portals on the opposite side of the portal than the player's on
+		ArrayList<ChunkPos> current = new ArrayList<>();
+		
+		for (int x = -8; x <= 8; x++) {
+			for (int z = -8; z <= 8; z++) {
+				ChunkPos ps = new ChunkPos(center.x + x, center.z + z);
+				boolean pz = positions.remove(ps);
+				if (!pz) TrackyAccessor.markForRetracking(player);
+				current.add(ps);
+			}
+		}
+		
+		if (!positions.isEmpty())
+			TrackyAccessor.markForRetracking(player);
+		
+		positions.clear();
+		positions.addAll(current);
 	}
 }

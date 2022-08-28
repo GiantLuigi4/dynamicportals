@@ -10,14 +10,19 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.Renderer;
 import tfc.dynamicportals.api.PortalRenderer;
 import tfc.dynamicportals.util.Quad;
+import tfc.dynamicportals.util.TrackyToolsClient;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
+
+import java.util.ArrayList;
 
 public class BasicPortalRenderer extends PortalRenderer {
 	protected BasicPortal portal;
@@ -213,5 +218,29 @@ public class BasicPortalRenderer extends PortalRenderer {
 			return frustum.isVisible(portal.box);
 		}
 		return false;
+	}
+	
+	@Override
+	public void tickForceRendering() {
+		// TODO: do level properly, maybe?
+		ArrayList<ChunkPos> positions = TrackyToolsClient.getChunksForPortal(Minecraft.getInstance().level, portal);
+		ChunkPos center = new ChunkPos(new BlockPos(portal.position.x, portal.position.y, portal.position.z));
+		
+		ArrayList<ChunkPos> current = new ArrayList<>();
+		
+		for (int x = -8; x <= 8; x++) {
+			for (int z = -8; z <= 8; z++) {
+				ChunkPos ps = new ChunkPos(center.x + x, center.z + z);
+				boolean pz = positions.remove(ps);
+				if (!pz) TrackyToolsClient.markDirty();
+				current.add(ps);
+			}
+		}
+		
+		if (!positions.isEmpty())
+			TrackyToolsClient.markDirty();
+		
+		positions.clear();
+		positions.addAll(current);
 	}
 }

@@ -3,6 +3,7 @@ package tfc.dynamicportals.api;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.implementation.BasicPortal;
@@ -126,4 +127,6 @@ public abstract class AbstractPortal {
 	
 	public void finishMove(Entity entity, Vec3 position, Vec3 motion) {
 	}
+	
+	public abstract void tickChunkTracking(Player player);
 }

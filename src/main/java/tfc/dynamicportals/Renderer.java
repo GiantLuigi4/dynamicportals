@@ -11,16 +11,12 @@ import com.mojang.math.Quaternion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import tfc.dynamicportals.access.IAmAChunkMap;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.async.AsyncDispatcher;
@@ -280,68 +276,71 @@ public class Renderer {
 		Matrix4f matr = RenderSystem.getProjectionMatrix();
 		boolean useAsync = portals.length > 30;
 		for (AbstractPortal portal : portals) {
-			if (useAsync) {
-				AsyncDispatcher.dispatch(() -> {
+			if (portal.renderer.shouldRender(frustum, camX, camY, camZ)) {
+				if (useAsync) {
+					AsyncDispatcher.dispatch(() -> {
+						updatePortal(portal, event.getPoseStack().last().pose(), matr);
+					});
+				} else {
 					updatePortal(portal, event.getPoseStack().last().pose(), matr);
-				});
-			} else {
-				updatePortal(portal, event.getPoseStack().last().pose(), matr);
+				}
 			}
 		}
 		AsyncDispatcher.await();
 		
 		for (AbstractPortal portal1 : portals) {
 			if (portal1.renderer.shouldRender(frustum, camX, camY, camZ)) {
+				portal1.renderer.tickForceRendering();
 				renderPortal(stack, type, buffers, portal1, frustum);
 			}
 		}
 		
-		if (!FMLEnvironment.production) {
-			if (Minecraft.getInstance().debugRenderer.renderChunkborder) {
-				if (Minecraft.getInstance().options.renderDebug) {
-//					ViewArea area = ((LevelRendererAccessor)Minecraft.getInstance().levelRenderer).getViewArea();
-//					ExtendedView extendedView = (ExtendedView) area;
+//		if (!FMLEnvironment.production) {
+//			if (Minecraft.getInstance().debugRenderer.renderChunkborder) {
+//				if (Minecraft.getInstance().options.renderDebug) {
+////					ViewArea area = ((LevelRendererAccessor)Minecraft.getInstance().levelRenderer).getViewArea();
+////					ExtendedView extendedView = (ExtendedView) area;
+////					VertexConsumer consumer = buffers.bufferSource().getBuffer(RenderType.LINES);
+////					for (ChunkRenderDispatcher.RenderChunk value : extendedView.extraView().values()) {
+////						LevelRenderer.renderLineBox(
+////								stack, consumer,
+////								value.getBoundingBox(),
+////								1, 0.5f, 0, 1
+////						);
+////					}
+////					forceDraw(buffers.bufferSource());
+//				} else {
 //					VertexConsumer consumer = buffers.bufferSource().getBuffer(RenderType.LINES);
-//					for (ChunkRenderDispatcher.RenderChunk value : extendedView.extraView().values()) {
+//					ClientChunkCache cache = Minecraft.getInstance().level.getChunkSource();
+//					for (LevelChunk chunk : ((IAmAChunkMap) cache).forcedChunks()) {
 //						LevelRenderer.renderLineBox(
 //								stack, consumer,
-//								value.getBoundingBox(),
-//								1, 0.5f, 0, 1
+//								chunk.getPos().getMinBlockX(),
+//								chunk.getMinBuildHeight(),
+//								chunk.getPos().getMinBlockZ(),
+//								chunk.getPos().getMaxBlockX() + 1,
+//								chunk.getMaxBuildHeight(),
+//								chunk.getPos().getMaxBlockZ() + 1,
+//								1, 0, 1, 1
+//						);
+//					}
+//					for (LevelChunk chunk : ((IAmAChunkMap) cache).regularChunks()) {
+//						if (chunk == null) continue;
+//						LevelRenderer.renderLineBox(
+//								stack, consumer,
+//								chunk.getPos().getMinBlockX(),
+//								chunk.getMinBuildHeight(),
+//								chunk.getPos().getMinBlockZ(),
+//								chunk.getPos().getMaxBlockX() + 1,
+//								chunk.getMaxBuildHeight(),
+//								chunk.getPos().getMaxBlockZ() + 1,
+//								0, 1, 1, 1
 //						);
 //					}
 //					forceDraw(buffers.bufferSource());
-				} else {
-					VertexConsumer consumer = buffers.bufferSource().getBuffer(RenderType.LINES);
-					ClientChunkCache cache = Minecraft.getInstance().level.getChunkSource();
-					for (LevelChunk chunk : ((IAmAChunkMap) cache).forcedChunks()) {
-						LevelRenderer.renderLineBox(
-								stack, consumer,
-								chunk.getPos().getMinBlockX(),
-								chunk.getMinBuildHeight(),
-								chunk.getPos().getMinBlockZ(),
-								chunk.getPos().getMaxBlockX() + 1,
-								chunk.getMaxBuildHeight(),
-								chunk.getPos().getMaxBlockZ() + 1,
-								1, 0, 1, 1
-						);
-					}
-					for (LevelChunk chunk : ((IAmAChunkMap) cache).regularChunks()) {
-						if (chunk == null) continue;
-						LevelRenderer.renderLineBox(
-								stack, consumer,
-								chunk.getPos().getMinBlockX(),
-								chunk.getMinBuildHeight(),
-								chunk.getPos().getMinBlockZ(),
-								chunk.getPos().getMaxBlockX() + 1,
-								chunk.getMaxBuildHeight(),
-								chunk.getPos().getMaxBlockZ() + 1,
-								0, 1, 1, 1
-						);
-					}
-					forceDraw(buffers.bufferSource());
-				}
-			}
-		}
+//				}
+//			}
+//		}
 		
 		stack.popPose();
 		recursion = recursion - 1;

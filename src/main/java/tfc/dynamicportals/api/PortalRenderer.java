@@ -178,4 +178,6 @@ public abstract class PortalRenderer {
 		cam.tick();
 		return cam;
 	}
+	
+	public abstract void tickForceRendering();
 }

@@ -7,7 +7,6 @@
   "mixins": [
     "common.access.ConnectionMixin",
     "common.collision.EntityMixin",
-    "common.quality.ChunkMapMixin",
     "common.quality.ServerNetworkingMixin",
     "common.quality.ServerPlayerMixin"
   ],
@@ -21,14 +20,12 @@
     "client.core.LevenRendererMixin",
     "client.core.ShaderMixin",
     "client.core.WindowMixin",
-    "client.fixes.VBOMixin",
     "client.hackery.ClientLevelMixin",
     "client.hackery.RenderSystemMixin",
     "client.hackery.RenderTargetMixin",
     "client.optimization.GameRendererMixin",
     "client.optimization.VBOMixin",
     "client.optimization.VertexFormatMixin",
-    "client.quality.ClientChunkCacheMixin",
     "client.quality.ClientNetworkingMixin",
     "client.quality.LevelRendererMixin",
     "client.selection.GameRendererMixin"
