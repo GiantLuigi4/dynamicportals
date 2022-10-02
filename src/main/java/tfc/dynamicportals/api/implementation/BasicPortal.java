@@ -4,11 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
 import com.mojang.math.Vector4f;
-import com.tracky.TrackyAccessor;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -16,13 +13,11 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.Quad;
-import tfc.dynamicportals.util.TrackyTools;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.support.PehkuiSupport;
 import virtuoel.pehkui.api.ScaleData;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 public class BasicPortal extends AbstractPortal {
@@ -180,9 +175,20 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public boolean isInFront(Entity entity, Vec3 position) {
-		// EX_TODO: get this to work with rotated portals
-		// lorenzo: seems working to me already?
 		return isInFront(position.add(0, entity.getEyeHeight(), 0));
+	}
+	
+	@Override
+	public boolean canTeleport(Entity entity, Vec3 position) {
+		double distanceEntityToPortal = position.distanceTo(portalQuad.center().add(raytraceOffset()));
+		// lorenzo: that "less than" check is a temporary hack to avoid calling this method for portals 20 blocks away
+		// luigi: not really temporary, actually
+		if (distanceEntityToPortal < Math.pow(Math.max(size.x, size.y), 2) * 2) {
+			if (renderNormal != null)
+				return isInFront(entity, position);
+			return true;
+		}
+		return false;
 	}
 	
 	public boolean isInFront(Vec3 vector) {
@@ -208,9 +214,7 @@ public class BasicPortal extends AbstractPortal {
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		boolean wasInFront = isInFront(entity, position);
 		boolean isInFront = isInFront(entity, position.add(motion));
-		double distanceEntityToPortal = position.add(motion).distanceTo(portalQuad.center().add(raytraceOffset()));
-		// lorenzo: that "less than" check is a temporary hack to avoid calling this method for portals 20 blocks away
-		if (wasInFront != isInFront && distanceEntityToPortal < Math.pow(Math.max(size.x, size.y), 2)) {
+		if (wasInFront != isInFront) {
 //			// TODO: do stuff with this
 //			Vec3 rot = VecMath.toDeegrees(rotation);
 //			if ((((int) (rot.x * 3)) / 3) % 90 == 0 && (((int) (rot.y * 3)) / 3) % 90 == 0 && (((int) (rot.z * 3)) / 3) % 90 == 0) {
@@ -220,7 +224,10 @@ public class BasicPortal extends AbstractPortal {
 //				if (x != motion.x || y != motion.y || z != motion.z)
 //					System.out.println(raytraceOffset() + "multiple");
 //			}
+			
 			double raytraceDistance = trace(position, position.add(motion));
+			// luigi: not sure if this comparison between raytrace distance and distance from entity to portal is a good idea or not
+			double distanceEntityToPortal = position.distanceTo(portalQuad.center().add(raytraceOffset()));
 			if (raytraceDistance != -1 && distanceEntityToPortal < raytraceDistance || overlaps(entity.getBoundingBox()) || overlaps(entity.getBoundingBox().move(motion))) {
 				// Luigi's TODO: individual scales for x and y
 				//scale(entity, (float) (1 / size.y));
@@ -278,28 +285,28 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public void tickChunkTracking(Player player) {
-		// TODO: do level properly, maybe?
-		ArrayList<ChunkPos> positions = TrackyTools.getChunksForPortal(player.level, player, this);
-		ChunkPos center = new ChunkPos(new BlockPos(position.x, position.y, position.z));
-		// TODO: optimize
-		// TODO: don't redundantly do this
-		// TODO: offset this to be centered around the translated player camera
-		// TODO: frontface cull this to be only portals on the opposite side of the portal than the player's on
-		ArrayList<ChunkPos> current = new ArrayList<>();
-		
-		for (int x = -8; x <= 8; x++) {
-			for (int z = -8; z <= 8; z++) {
-				ChunkPos ps = new ChunkPos(center.x + x, center.z + z);
-				boolean pz = positions.remove(ps);
-				if (!pz) TrackyAccessor.markForRetracking(player);
-				current.add(ps);
-			}
-		}
-		
-		if (!positions.isEmpty())
-			TrackyAccessor.markForRetracking(player);
-		
-		positions.clear();
-		positions.addAll(current);
+//		// TODO: do level properly, maybe?
+//		ArrayList<ChunkPos> positions = TrackyTools.getChunksForPortal(player.level, player, this);
+//		ChunkPos center = new ChunkPos(new BlockPos(position.x, position.y, position.z));
+//		// TODO: optimize
+//		// TODO: don't redundantly do this
+//		// TODO: offset this to be centered around the translated player camera
+//		// TODO: frontface cull this to be only portals on the opposite side of the portal than the player's on
+//		ArrayList<ChunkPos> current = new ArrayList<>();
+//
+//		for (int x = -8; x <= 8; x++) {
+//			for (int z = -8; z <= 8; z++) {
+//				ChunkPos ps = new ChunkPos(center.x + x, center.z + z);
+//				boolean pz = positions.remove(ps);
+//				if (!pz) TrackyAccessor.markForRetracking(player);
+//				current.add(ps);
+//			}
+//		}
+//
+//		if (!positions.isEmpty())
+//			TrackyAccessor.markForRetracking(player);
+//
+//		positions.clear();
+//		positions.addAll(current);
 	}
 }

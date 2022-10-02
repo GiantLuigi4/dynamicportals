@@ -42,6 +42,19 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		simplexNoise = new SimplexNoise(new XoroshiroRandomSource(uuid.getLeastSignificantBits(), uuid.getMostSignificantBits()));
 	}
 	
+	public static float smoothstep(float edge0, float edge1, float x) {
+		if (x < edge0)
+			return 0;
+		
+		if (x >= edge1)
+			return 1;
+		
+		// Scale/bias into [0..1] range
+		x = (x - edge0) / (edge1 - edge0);
+		
+		return x * x * (3 - 2 * x);
+	}
+	
 	@Override
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		super.drawFrame(source, stack);
@@ -85,6 +98,9 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		// if the value is less than 0.05, it's essentially completely not noticeable
 		// therefore, set it to 0 this way the quads don't get rendered if they're basically invisible
 		if (min < 0.05) min = 0;
+		// TODO: make this more of a spiral on larger portals
+		float cx = (float) (size.x / 2);
+		float cy = (float) (size.y / 2);
 		for (int x = 0; x < size.x; x++) {
 			for (int y = 0; y < size.y; y++) {
 				float a0 = min;
@@ -112,7 +128,7 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 				if (a3 > 1) a3 = 1;
 				
 				// no reason to render it if it's invisible
-				if (a0 == 0 && a1 == 0 && a2 == 0 && a3 == 0) continue;
+				if (a0 <= 0.03 && a1 <= 0.03 && a2 <= 0.03 && a3 <= 0.03) continue;
 				
 				builder
 						.vertex(mat, x, y, 0).color(r, g, b, a0)

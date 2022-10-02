@@ -90,21 +90,21 @@ dependencies {
 
 //    implementation fg.deobf("curse.maven:sodium-574856:3749094")
 //    implementation fg.deobf("curse.maven:iris-581495:3821406")
+    implementation fg.deobf("curse.maven:flywheel-486392:3864518")
     runtimeOnly fg.deobf("curse.maven:spark-361579:3670050")
 
-    runtimeOnly fg.deobf("curse.maven:chisel_and_bits-231095:3775218")
-//    runtimeOnly fg.deobf("curse.maven:flywheel-486392:3737402")
-//    runtimeOnly fg.deobf("curse.maven:create-328085:3737418")
-    implementation fg.deobf("curse.maven:flywheel-486392:3864518")
+//    runtimeOnly fg.deobf("curse.maven:chisel_and_bits-231095:3775218")
+////    runtimeOnly fg.deobf("curse.maven:flywheel-486392:3737402")
+////    runtimeOnly fg.deobf("curse.maven:create-328085:3737418")
     implementation fg.deobf("curse.maven:create-328085:3864525")
 
-    implementation fg.deobf("curse.maven:pehkui-319596:3808012")
+//    runtimeOnly fg.deobf("curse.maven:curios-309927:3748873")
+//    runtimeOnly fg.deobf("curse.maven:botania-225643:3789677")
+//    runtimeOnly fg.deobf("curse.maven:patchouli-306770:3809545")
 
-    runtimeOnly fg.deobf("curse.maven:curios-309927:3748873")
-    runtimeOnly fg.deobf("curse.maven:botania-225643:3789677")
-    runtimeOnly fg.deobf("curse.maven:patchouli-306770:3809545")
+    compileOnly fg.deobf("curse.maven:pehkui-319596:3808012")
 
-    implementation files("tracky-1.1.jar")
+    compileOnly files("tracky-1.1.jar")
 //    implementation fg.deobf("tracky:tracky:1.3") {
 //        transitive(false)
 //    }

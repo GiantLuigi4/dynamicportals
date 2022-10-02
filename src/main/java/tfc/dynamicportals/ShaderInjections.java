@@ -6,19 +6,23 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.opengl.GL13;
 
 public class ShaderInjections {
-	public static String tailVertex() {
-		return "";
-		// Luigi's TODO: get this working
-//		return """
-//
-//				\t/* Dynamic Portals injection */
-//				if (float(dynamicPortalsHasStencilTextureSet) > 1.5f) {
-//				\t\tif (gl_Position.z < 0.01) {
-//				\t\t\tgl_Position.z = 0.01;
-//				\t\t}
-//				\t}
-//				\t/* end Dynamic Portals injection */
-//				""";
+	public static String tailVertex(boolean hasViewMat, boolean hasProjMat, boolean isBlock) {
+		String str =
+				"""
+						
+						\t/* Dynamic Portals injection */
+						\tvec4 dynamic_portals_pos = %matrixMath% gl_Position;
+						\tdynamicPortalsWorldPos = dynamic_portals_pos.xyzw;
+						\t/* end Dynamic Portals injection */
+						""";
+		// thanks to Khlorghaal
+		// TODO: entities are a special butterfly, and need to be treated as such
+		if (hasProjMat && hasViewMat)
+			str = str.replace("%matrixMath%", "inverse(ProjMat * ModelViewMat) * %matrixMath%");
+		else if (hasProjMat) str = str.replace("%matrixMath%", "inverse(ProjMat) %matrixMath% * ");
+		else if (hasViewMat) str = str.replace("%matrixMath%", "inverse(ModelViewMat) * %matrixMath%");
+		str = str.replace(" %matrixMath%", "");
+		return str;
 	}
 	
 	// about iris/oculus/OF
@@ -31,27 +35,31 @@ public class ShaderInjections {
 	public static String headInjection(boolean hasTexCoord, String samplerName, boolean hasColorAttrib) {
 		// Luigi's TODO: checking of stuff, this should only really be done for the POSITION_TEX shader
 		// lorenzo: LUIGI WHY ARE YOU CALLING VARIABLES "yes1" AND "yes" WHAT
-		String yes1 = "";
-		if (hasColorAttrib) {
-			yes1 = " * vertexColor";
-		}
-		String yes =
+		// luigi: didn't know what to call them
+		String colorModulate = hasColorAttrib ? " * vertexColor" : "";
+		String worldSpace =
 				"\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
 						"\t\tdynamicPortalsColor = texture(" + samplerName + ", dynamicPortalsPos);\n" +
-//						"\t\tfragColor = vec4(dynamicPortalsPos, 0, 1);\n" +
-						"\t\tfragColor = dynamicPortalsColor" + yes1 + ";\n" +
+						"\t\tfragColor = dynamicPortalsColor" + colorModulate + ";\n" +
 						"\t\treturn;\n";
-		if (!hasTexCoord) yes = "";
+		if (!hasTexCoord) worldSpace = "";
+		String clipping = """
+				if (1 == 1) {
+				  fragColor = vec4(
+				    (dynamicPortalsWorldPos.xyz / dynamicPortalsWorldPos.www) / vec3(dynamicPortalsFBOSize.xy, 100.),
+				    1
+				  );
+				  return;
+				}""";
+		clipping = "";
 		return
 				// Luigi's TODO: something needs to change when sodium is present
 				"\n\t/* Dynamic Portals injection */\n" +
 						"\tvec2 dynamicPortalsPos;\n" +
 						"\tvec4 dynamicPortalsColor;\n" +
 						"\tvec4 dynamicPortalsDepth;\n" +
-//						"\tfloat dynamicPortalsRoundingVar0;\n" +
-//						"\tfloat dynamicPortalsRoundingVar1;\n" +
 						"\tif (float(dynamicPortalsHasStencilTextureSet) > 1.5f) { // gotta love glsl, yk?\n" +
-						yes +
+						worldSpace +
 						"\t} else if (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {\n" +
 						"\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
 						"\t\tdynamicPortalsColor = texture(dynamicPortalsStencilTexture, dynamicPortalsPos);\n" +
@@ -60,18 +68,11 @@ public class ShaderInjections {
 						"\t\t\treturn;\n" +
 						"\t\t}\n" +
 						"\t\tdynamicPortalsDepth = texture(dynamicPortalsStencilDepth, dynamicPortalsPos);\n" +
-						// Luigi's TODO: figure out how to make a more lenient depth test
-//						"\t\tdynamicPortalsRoundingVar0 = dynamicPortalsDepth.r;\n" +
-//						"\t\tdynamicPortalsRoundingVar1 = gl_FragCoord.z;\n" +
-//						"\t\tdynamicPortalsRoundingVar0 *= 1000.;\n" +
-//						"\t\tdynamicPortalsRoundingVar1 *= 1000.;\n" +
-//						"\t\tdynamicPortalsRoundingVar0 = floor(dynamicPortalsRoundingVar0);\n" +
-//						"\t\tdynamicPortalsRoundingVar1 = floor(dynamicPortalsRoundingVar1);\n" +
-//						"\t\tif (dynamicPortalsRoundingVar0 > dynamicPortalsRoundingVar1) {\n" +
 						"\t\tif (dynamicPortalsDepth.r > gl_FragCoord.z) {\n" +
 						"\t\t\tdiscard;\n" +
 						"\t\t\treturn;\n" +
 						"\t\t}\n" +
+						"\t\t" + clipping + "\n" +
 						"\t}\n" +
 						"\t/* end Dynamic Portals injection */";
 	}
@@ -100,5 +101,17 @@ public class ShaderInjections {
 		RenderSystem.enableTexture();
 		STENCIL_DEPTH.set(11);
 		if (STENCIL_DEPTH instanceof Uniform) ((Uniform) STENCIL_DEPTH).upload();
+	}
+	
+	public static String getMethods() {
+		return """
+				// https://github.com/glslify/glsl-transpose/blob/master/index.glsl
+				mat4 dynamic_portals_transpose(mat4 m) {
+					return mat4(m[0][0], m[1][0], m[2][0], m[3][0],
+								m[0][1], m[1][1], m[2][1], m[3][1],
+								m[0][2], m[1][2], m[2][2], m[3][2],
+								m[0][3], m[1][3], m[2][3], m[3][3]);
+				}
+				""";
 	}
 }

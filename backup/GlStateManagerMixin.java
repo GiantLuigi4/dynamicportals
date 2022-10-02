@@ -1,7 +1,6 @@
 package tfc.dynamicportals.mixin.client.core;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL42;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -61,8 +60,6 @@ public class GlStateManagerMixin {
 		boolean hasColorInput = false;
 		boolean hasModelViewMat = false;
 		boolean hasProjMat = false;
-		
-		boolean isBlock = false;
 		String samplerName = null;
 		
 		StringBuilder output = new StringBuilder();
@@ -86,11 +83,8 @@ public class GlStateManagerMixin {
 			// I'll leave this as "myTODO" but I won't touch it for a bit
 			hasTexCoordInput = hasTexCoordInput || line.startsWith("out vec4 fragColor");
 			hasColorInput = hasColorInput || line.startsWith("in vec4 vertexColor");
-			
 			hasModelViewMat = hasModelViewMat || line.startsWith("uniform mat4 ModelViewMat");
 			hasProjMat = hasProjMat || line.startsWith("uniform mat4 ProjMat");
-			
-			isBlock = isBlock || line.startsWith("uniform vec3 ChunkOffset");
 
 			if (line.startsWith("uniform sampler2D")) {
 				String str1 = line.replace("uniform sampler2D ", "").trim();
@@ -110,7 +104,7 @@ public class GlStateManagerMixin {
 				hitInputs = true;
 			}
 			if (hitUniforms && hitOuts && hitInputs && (inMain || line.contains("void main()"))) {
-				injected = checkLineAndInject(type, injected, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput, hasProjMat, hasModelViewMat, isBlock);
+				injected = checkLineAndInject(type, injected, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput, hasProjMat, hasModelViewMat);
 				inMain = (!inMain || lCC.get() != 0) && (line.contains("void main()") || inMain);
 //				if (inMain) {
 //					injected = checkLineAndInject(type, injected, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
@@ -145,7 +139,6 @@ public class GlStateManagerMixin {
 //		}
 		pointerBuffer.clear();
 		Arrays.stream(output.toString().split("\n")).forEach((str)->pointerBuffer.add(str + "\n"));
-		System.out.println(output);
 	}
 	
 	private static String injectUniforms(int type, String srcStr) {
@@ -172,30 +165,14 @@ public class GlStateManagerMixin {
 	}
 	
 	private static String injectOuts(int type, String srcStr) {
-		if (type == GL20.GL_VERTEX_SHADER)  {
-			srcStr = srcStr +
-					"""
-					/* Dynamic Portals injection */
-					out vec4 dynamicPortalsWorldPos;
-					/* end Dynamic Portals injection */
-					""";
-		}
 		return srcStr;
 	}
 	
 	private static String injectIns(int type, String srcStr) {
-		if (type == GL20.GL_FRAGMENT_SHADER)  {
-			srcStr = srcStr +
-					"""
-					/* Dynamic Portals injection */
-					in vec4 dynamicPortalsWorldPos;
-					/* end Dynamic Portals injection */
-					""";
-		}
 		return srcStr;
 	}
 	
-	private static String checkLineAndInject(int type, String line, AtomicInteger lCC, boolean hasTexCoordInput, String samplerName, boolean hasColorInput, boolean hasProjMat, boolean hasModelViewMat, boolean isBlock) {
+	private static String checkLineAndInject(int type, String line, AtomicInteger lCC, boolean hasTexCoordInput, String samplerName, boolean hasColorInput, boolean hasProjMat, boolean hasModelViewMat) {
 		String[] split = split(line, "{}");
 		StringBuilder builder = new StringBuilder();
 		for (String str : split) {
@@ -215,7 +192,7 @@ public class GlStateManagerMixin {
 						String injection = ShaderInjections.tailInjection();
 						builder.append(injection);
 					} else if (type == GL42.GL_VERTEX_SHADER) {
-						String injection = ShaderInjections.tailVertex(hasModelViewMat, hasProjMat, isBlock);
+						String injection = ShaderInjections.tailVertex(hasModelViewMat, hasProjMat);
 						builder.append(injection);
 					}
 				}

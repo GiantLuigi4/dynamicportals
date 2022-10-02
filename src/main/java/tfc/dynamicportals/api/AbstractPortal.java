@@ -114,6 +114,17 @@ public abstract class AbstractPortal {
 	}
 	
 	/**
+	 * whether or not the portal can teleport the entity from where the entity is standing
+	 * EX, for a portal which only has a front face, it would be if the entity is infront and within x distance of the portal
+	 * @param entity the entity in question
+	 * @param position the position of the entity
+	 * @return if the entity can be teleported
+	 */
+	public boolean canTeleport(Entity entity, Vec3 position) {
+		return isInFront(entity, position.add(0, entity.getEyeHeight(), 0));
+	}
+	
+	/**
 	 * here is where you handle teleporting an entity
 	 *
 	 * @param entity   the entity to teleport

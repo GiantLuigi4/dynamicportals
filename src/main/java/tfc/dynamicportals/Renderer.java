@@ -1,6 +1,7 @@
 package tfc.dynamicportals;
 
-import com.jozufozu.flywheel.event.BeginFrameEvent;
+//import com.jozufozu.flywheel.event.BeginFrameEvent;
+
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
@@ -16,7 +17,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
-import net.minecraftforge.common.MinecraftForge;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.async.AsyncDispatcher;
@@ -70,7 +70,6 @@ public class Renderer {
 		PoseStack stack = new PoseStack();
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
-		
 		// raytracing debug
 		{
 			Entity entity = Minecraft.getInstance().cameraEntity;
@@ -128,13 +127,11 @@ public class Renderer {
 		portal.renderer.fullSetupMatrix(stk);
 		stk.mulPose(new Quaternion(0, 180, 0, true));
 		portal.target.renderer.setupAsTarget(stk);
-//		if (DynamicPortals.isRotate180Needed()) stk.mulPose(new Quaternion(0, 180, 0, true));
 		portal.renderer.setupRenderState();
 		// setup state
 		RenderSystem.enableCull();
 		double camX = Renderer.camX, camY = Renderer.camY, camZ = Renderer.camZ;
 		Camera camera = portal.renderer.setupCamera(Minecraft.getInstance().gameRenderer.getMainCamera().getEntity(), camX, camY, camZ, Minecraft.getInstance().gameRenderer.getMainCamera());
-		Matrix4f matr = stk.last().pose().copy();
 		stk.translate(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
 		// draw
 //		Minecraft.getInstance().levelRenderer.capturedFrustum = portal.getGraph().getFrustum();
@@ -143,7 +140,8 @@ public class Renderer {
 			PoseStack sysStk = RenderSystem.getModelViewStack();
 //			RenderSystem.modelViewStack = stk;
 //			RenderSystem.applyModelViewMatrix();
-			MinecraftForge.EVENT_BUS.post(new BeginFrameEvent(Minecraft.getInstance().level, camera, frustum));// 51
+//			if (ModList.get().isLoaded("flywheel"))
+//			MinecraftForge.EVENT_BUS.post(new BeginFrameEvent(Minecraft.getInstance().level, camera, frustum));
 			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.renderer.getGraph().getChunks();
 			Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 			RenderSystem.modelViewStack = sysStk;
@@ -203,10 +201,10 @@ public class Renderer {
 			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
 			portal.renderer.getGraph().update();
 		} else if (
-				       (int) orx != (int) rx || (int) ory != (int) ry ||
-						       (int) oldPos.x != (int) camVec.x ||
-						       (int) oldPos.y != (int) camVec.y ||
-						       (int) oldPos.z != (int) camVec.z
+				(int) orx != (int) rx || (int) ory != (int) ry ||
+						(int) oldPos.x != (int) camVec.x ||
+						(int) oldPos.y != (int) camVec.y ||
+						(int) oldPos.z != (int) camVec.z
 		) {
 			portal.renderer.setupVisGraph(Minecraft.getInstance().levelRenderer);
 			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
@@ -294,7 +292,7 @@ public class Renderer {
 				renderPortal(stack, type, buffers, portal1, frustum);
 			}
 		}
-		
+
 //		if (!FMLEnvironment.production) {
 //			if (Minecraft.getInstance().debugRenderer.renderChunkborder) {
 //				if (Minecraft.getInstance().options.renderDebug) {

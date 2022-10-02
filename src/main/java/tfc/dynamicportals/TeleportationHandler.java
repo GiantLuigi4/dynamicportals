@@ -14,7 +14,7 @@ public class TeleportationHandler {
 		AbstractPortal[] portals = Temp.getPortals(entity.level);
 		for (AbstractPortal portal : portals) {
 			Vec3 pos = entity.position();
-			if (portal.isInFront(entity, new Vec3(pos.x, pos.y + entity.getEyeHeight(), pos.z))) {
+			if (portal.canTeleport(entity, new Vec3(pos.x, pos.y + entity.getEyeHeight(), pos.z))) {
 				if (portal.moveEntity(entity, entity.getPosition(0), motion)) {
 					portal.target.finishMove(entity, entity.getPosition(0), motion);
 					((ITeleportTroughPacket) entity).setTeleported();
@@ -35,6 +35,7 @@ public class TeleportationHandler {
 		double dx = x - player.position().x;
 		double dy = y - player.position().y;
 		double dz = z - player.position().z;
+		
 		getTeleportedMotion(player,
 //				motion
 				new Vec3(

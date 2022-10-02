@@ -73,7 +73,7 @@ public class RaytraceHelper {
 			
 			AbstractPortal[] portals = Temp.getPortals(minecraft.level);
 			for (AbstractPortal portal : portals) {
-				if (!portal.isInFront(entity, new Vec3(start.x, start.y, start.z))) continue;
+				if (!portal.canTeleport(entity, new Vec3(start.x, start.y, start.z))) continue;
 				double dist = portal.trace(start, end);
 				if (dist == 1) continue;
 				double distance = reach.scale(dist).length();

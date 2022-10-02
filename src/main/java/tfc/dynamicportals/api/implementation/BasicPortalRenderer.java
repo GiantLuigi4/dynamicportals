@@ -2,6 +2,7 @@ package tfc.dynamicportals.api.implementation;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
@@ -10,19 +11,14 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.Renderer;
 import tfc.dynamicportals.api.PortalRenderer;
 import tfc.dynamicportals.util.Quad;
-import tfc.dynamicportals.util.TrackyToolsClient;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
-
-import java.util.ArrayList;
 
 public class BasicPortalRenderer extends PortalRenderer {
 	protected BasicPortal portal;
@@ -165,6 +161,9 @@ public class BasicPortalRenderer extends PortalRenderer {
 		Quaternion quaternion = portal.raytraceRotation();
 		if (portal.target == portal) quaternion.mul(new Quaternion(0, -90, 0, true));
 		stack.mulPose(quaternion);
+//		// adjust normals
+//		quaternion.normalize();
+//		stack.last().normal().mul(quaternion);
 	}
 	
 	@Override
@@ -185,15 +184,26 @@ public class BasicPortalRenderer extends PortalRenderer {
 		
 		boolean isMirror = portal.target == portal;
 		Vector3d position = portal.position;
-		// rotate
 		
+		// rotate
 		if (isMirror) {
 			// mirror
 			stack.scale(1, 1, -1);
+			stack.last().normal().mul(Matrix3f.createScaleMatrix(1, 1, -1));
 			// I don't really know why mirrors need this rotation
-			stack.mulPose(new Quaternion(0, 180, 0, true));
+			Quaternion quaternion = new Quaternion(0, 180, 0, true);
+			stack.mulPose(quaternion);
+//			// adjust normals
+//			quaternion.normalize();
+//			stack.last().normal().mul(quaternion);
 		}
-		stack.mulPose(portal.getActualRotation());
+		
+		Quaternion quaternion = portal.getActualRotation();
+		stack.mulPose(quaternion);
+//		// adjust normals
+//		quaternion.normalize();
+//		stack.last().normal().mul(quaternion);
+		
 		// translate
 		stack.translate(-position.x, -position.y, -position.z);
 	}
@@ -222,25 +232,25 @@ public class BasicPortalRenderer extends PortalRenderer {
 	
 	@Override
 	public void tickForceRendering() {
-		// TODO: do level properly, maybe?
-		ArrayList<ChunkPos> positions = TrackyToolsClient.getChunksForPortal(Minecraft.getInstance().level, portal);
-		ChunkPos center = new ChunkPos(new BlockPos(portal.position.x, portal.position.y, portal.position.z));
-		
-		ArrayList<ChunkPos> current = new ArrayList<>();
-		
-		for (int x = -8; x <= 8; x++) {
-			for (int z = -8; z <= 8; z++) {
-				ChunkPos ps = new ChunkPos(center.x + x, center.z + z);
-				boolean pz = positions.remove(ps);
-				if (!pz) TrackyToolsClient.markDirty();
-				current.add(ps);
-			}
-		}
-		
-		if (!positions.isEmpty())
-			TrackyToolsClient.markDirty();
-		
-		positions.clear();
-		positions.addAll(current);
+//		// TODO: do level properly, maybe?
+//		ArrayList<ChunkPos> positions = TrackyToolsClient.getChunksForPortal(Minecraft.getInstance().level, portal);
+//		ChunkPos center = new ChunkPos(new BlockPos(portal.position.x, portal.position.y, portal.position.z));
+//
+//		ArrayList<ChunkPos> current = new ArrayList<>();
+//
+//		for (int x = -8; x <= 8; x++) {
+//			for (int z = -8; z <= 8; z++) {
+//				ChunkPos ps = new ChunkPos(center.x + x, center.z + z);
+//				boolean pz = positions.remove(ps);
+//				if (!pz) TrackyToolsClient.markDirty();
+//				current.add(ps);
+//			}
+//		}
+//
+//		if (!positions.isEmpty())
+//			TrackyToolsClient.markDirty();
+//
+//		positions.clear();
+//		positions.addAll(current);
 	}
 }
