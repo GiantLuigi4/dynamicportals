@@ -1,4 +1,4 @@
-package tfc.dynamicportals.mixin.common.quality;
+package tfc.dynamicportals.mixin.common.core;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.MinecraftServer;
@@ -22,6 +22,8 @@ import java.util.ArrayList;
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin implements ITrackChunks {
+	// not sure that this section is needed, considering tracky exists
+	/* */
 	@Shadow
 	public abstract Level getLevel();
 	
@@ -53,6 +55,7 @@ public abstract class ServerPlayerMixin implements ITrackChunks {
 	public ArrayList<ChunkPos> trackedChunks() {
 		return chunksBeingTracked;
 	}
+	/* */
 	
 	@Override
 	public boolean setDoUpdate(boolean val) {

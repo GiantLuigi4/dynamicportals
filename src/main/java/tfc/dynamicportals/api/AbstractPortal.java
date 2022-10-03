@@ -140,4 +140,6 @@ public abstract class AbstractPortal {
 	}
 	
 	public abstract void tickChunkTracking(Player player);
+	
+	public abstract Vec3 nearestPoint(Vec3 targetSpot);
 }

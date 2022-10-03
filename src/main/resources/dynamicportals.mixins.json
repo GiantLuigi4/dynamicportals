@@ -5,30 +5,16 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "dynamicportals.refmap.json",
   "mixins": [
-    "common.access.ConnectionMixin",
-    "common.collision.EntityMixin",
-    "common.quality.ServerNetworkingMixin",
-    "common.quality.ServerPlayerMixin"
+    "common.access.ConnectionMixin", "common.access.ServerGameListenerAccessor", "common.collision.EntityMixin",
+    "common.core.MotionPacketMixin", "common.core.PosPacketMixin", "common.core.ServerPlayerMixin"
   ],
   "client": [
-    "client.MojangWhy",
-    "client.access.ChunkStorageAccessor",
-    "client.access.LevelRendererAccessor",
-    "client.access.StorageAccessor",
-    "client.access.VertexFormatAccessor",
-    "client.core.GlStateManagerMixin",
-    "client.core.LevenRendererMixin",
-    "client.core.ShaderMixin",
-    "client.core.WindowMixin",
-    "client.hackery.ClientLevelMixin",
-    "client.hackery.RenderSystemMixin",
-    "client.hackery.RenderTargetMixin",
-    "client.optimization.GameRendererMixin",
-    "client.optimization.VBOMixin",
-    "client.optimization.VertexFormatMixin",
-    "client.quality.ClientNetworkingMixin",
-    "client.quality.LevelRendererMixin",
-    "client.selection.GameRendererMixin"
+    "client.MojangWhy", "client.access.ChunkStorageAccessor", "client.access.LevelRendererAccessor",
+    "client.access.StorageAccessor", "client.access.VertexFormatAccessor", "client.core.GlStateManagerMixin",
+    "client.core.LevenRendererMixin", "client.core.LocalPlayerMixin", "client.core.ShaderMixin",
+    "client.core.WindowMixin", "client.hackery.ClientLevelMixin", "client.hackery.RenderSystemMixin",
+    "client.hackery.RenderTargetMixin", "client.optimization.GameRendererMixin", "client.optimization.VBOMixin",
+    "client.optimization.VertexFormatMixin", "client.quality.LevelRendererMixin", "client.selection.GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
