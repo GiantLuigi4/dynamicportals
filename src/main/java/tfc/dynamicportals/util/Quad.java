@@ -97,6 +97,16 @@ public class Quad {
 				}
 			}
 		}
+		// luigi: the code above doesn't account for corners, so I've strapped this on
+		if (actualNearest == null) {
+			for (Vec3 vec3 : vert) {
+				double d = vec3.distanceTo(point);
+				if (d < minDistance) {
+					minDistance = d;
+					actualNearest = vec3;
+				}
+			}
+		}
 		return actualNearest;
 	}
 	

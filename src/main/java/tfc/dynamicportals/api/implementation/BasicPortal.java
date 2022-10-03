@@ -312,6 +312,7 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public Vec3 nearestPoint(Vec3 targetSpot) {
-		return portalQuad.nearest(targetSpot);
+		targetSpot = targetSpot.subtract(position.x, position.y, position.z);
+		return portalQuad.nearest(targetSpot).add(position.x, position.y, position.z);
 	}
 }
