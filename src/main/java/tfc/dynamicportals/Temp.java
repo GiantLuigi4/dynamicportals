@@ -8,7 +8,6 @@ import tfc.dynamicportals.command.FullPortalFilter;
 import tfc.dynamicportals.command.portals.CommandPortal;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -106,7 +105,7 @@ public class Temp {
 			ArrayList<AbstractPortal> allPortals = new ArrayList<>();
 			for (CommandPortal cmdPortal : cmdPortals.toArray(new CommandPortal[0]))
 				allPortals.add((AbstractPortal) cmdPortal);
-			Collections.addAll(allPortals, portals);
+//			Collections.addAll(allPortals, portals);
 			return allPortals.toArray(new AbstractPortal[0]);
 		}
 	}

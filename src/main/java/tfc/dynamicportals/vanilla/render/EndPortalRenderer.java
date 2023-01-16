@@ -17,6 +17,7 @@ import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.api.implementation.BasicPortalRenderer;
 import tfc.dynamicportals.util.RenderTypes;
 import tfc.dynamicportals.util.Vec2d;
+import tfc.dynamicportals.util.gl.GlStateFunctions;
 
 public class EndPortalRenderer extends BasicPortalRenderer {
 	public EndPortalRenderer(BasicPortal portal) {
@@ -88,6 +89,10 @@ public class EndPortalRenderer extends BasicPortalRenderer {
 	
 	@Override
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
+		if (portal.overlaps(Minecraft.getInstance().player.getBoundingBox())) {
+			GlStateFunctions.enableDepthClamp();
+		}
+		
 		float r = 1, b = r, g = b, a = g;
 		Matrix4f mat = stack.last().pose();
 		// Luigi's TODO: use a custom vertex builder which automatically fills in missing elements

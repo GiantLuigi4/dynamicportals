@@ -6,8 +6,8 @@ import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
-import com.tracky.TrackyAccessor;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -151,7 +151,7 @@ public class BasicPortalRenderer extends PortalRenderer {
 	
 	@Override
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
-		if (Minecraft.getInstance().player.getBoundingBox().intersects(portal.box)) {
+		if (portal.overlaps(Minecraft.getInstance().player.getBoundingBox())) {
 			GlStateFunctions.enableDepthClamp();
 		}
 		
@@ -245,6 +245,11 @@ public class BasicPortalRenderer extends PortalRenderer {
 	
 	@Override
 	public void tickForceRendering() {
+		// unfortunately, this seems to be required
+		if (Minecraft.getInstance().screen != null)
+			if (Minecraft.getInstance().screen instanceof ReceivingLevelScreen)
+				return;
+		
 		// TODO: do level properly, maybe?
 		Level lvl = Minecraft.getInstance().level;
 		Set<SectionPos> positions = TrackyToolsClient.getChunksForPortal(lvl, portal);
@@ -273,9 +278,6 @@ public class BasicPortalRenderer extends PortalRenderer {
 		updated = updated || !positions.isEmpty();
 		positions.addAll(current);
 		
-		if (updated) {
-			TrackyToolsClient.markDirty();
-			TrackyAccessor.markForRerender(lvl);
-		}
+		if (updated) TrackyToolsClient.markDirty(lvl);
 	}
 }

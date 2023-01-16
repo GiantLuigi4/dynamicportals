@@ -74,11 +74,14 @@ public class ShaderInjections {
 				\tif (float(dynamicPortalsHasStencilTextureSet) > 0.5f) {
 				\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);
 				\t\tdynamicPortalsColor = texture(dynamicPortalsStencilTexture, dynamicPortalsPos);
+				\t\tdynamicPortalsDepth = texture(dynamicPortalsStencilDepth, dynamicPortalsPos);
+				\t\tif (dynamicPortalsDepth.r < 0.9) {
+				\t\t\tfloat v = 1 - (dynamicPortalsDepth.r * 1.1111111111);
+				\t\t\tv *= v;
+				\t\t\tdynamicPortalsColor = mix(dynamicPortalsColor, vec4(1), v);
+				\t\t}
 				\t\tfragColor = fragColor * dynamicPortalsColor;
 				\t}
-				\t
-				\t// TODO: figure out how to ignore the near plane when a portal is rendering
-				\t
 				\t/* end Dynamic Portals injection */
 				""";
 	}

@@ -206,7 +206,10 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public boolean overlaps(AABB box) {
-		return portalQuad.overlaps(box.move(-position.x, -position.y, -position.z));
+		if (this.box.intersects(box)) {
+			return portalQuad.overlaps(box.move(-position.x, -position.y, -position.z));
+		}
+		return false;
 	}
 	
 	@Override
@@ -310,7 +313,7 @@ public class BasicPortal extends AbstractPortal {
 				}
 			}
 		}
-		
+
 //		if (!player.level.isClientSide)
 //			if (!positions.isEmpty())
 //				TrackyAccessor.markForRetracking(player);

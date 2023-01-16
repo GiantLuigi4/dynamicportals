@@ -3,6 +3,8 @@ package tfc.dynamicportals.util;
 import com.google.common.collect.ImmutableList;
 import com.tracky.Tracky;
 import com.tracky.TrackyAccessor;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
 import tfc.dynamicportals.api.implementation.BasicPortal;
@@ -38,8 +40,10 @@ public class TrackyToolsClient {
 							isDirty = false;
 						}
 					}
+					if (Minecraft.getInstance().screen != null)
+						if (Minecraft.getInstance().screen instanceof ReceivingLevelScreen)
+							return Collections.emptySet();
 					return currentFrameOutput;
-//					return Collections.emptySet();
 				};
 				map0.put(trackyToolsUUID, function);
 			}
@@ -64,7 +68,8 @@ public class TrackyToolsClient {
 		}
 	}
 	
-	public static void markDirty() {
+	public static void markDirty(Level lvl) {
 		isDirty = true;
+		TrackyAccessor.markForRerender(lvl);
 	}
 }

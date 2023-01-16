@@ -17,6 +17,7 @@ import tfc.dynamicportals.api.DynamicPortalsConfig;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.api.implementation.BasicPortalRenderer;
 import tfc.dynamicportals.util.Vec2d;
+import tfc.dynamicportals.util.gl.GlStateFunctions;
 
 import java.util.UUID;
 
@@ -58,6 +59,8 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 	@Override
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		super.drawFrame(source, stack);
+		
+		GlStateFunctions.enableDepthClamp();
 		
 		Vec2d size = portal.getSize();
 		Vec3 position = portal.raytraceOffset();
@@ -220,10 +223,16 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 					.uv((minU + maxU) / 2, maxV).uv2(LightTexture.FULL_BRIGHT).normal(0, 0, 0).endVertex();
 		}
 		stack.popPose();
+		
+		GlStateFunctions.disableDepthClamp();
 	}
 	
 	@Override
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
+		if (portal.overlaps(Minecraft.getInstance().player.getBoundingBox())) {
+			GlStateFunctions.enableDepthClamp();
+		}
+		
 		float r = 1, b = r, g = b, a = g;
 		Matrix4f mat = stack.last().pose();
 		// Luigi's TODO: use a custom vertex builder which automatically fills in missing elements
