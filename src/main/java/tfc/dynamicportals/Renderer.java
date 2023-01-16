@@ -4,7 +4,6 @@ package tfc.dynamicportals;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
@@ -21,6 +20,7 @@ import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.async.AsyncDispatcher;
 import tfc.dynamicportals.util.async.ReusableThread;
+import tfc.dynamicportals.util.gl.GlStateFunctions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +112,7 @@ public class Renderer {
 		GLUtils.switchFBO(stencilTarget);
 		portal.renderer.drawStencil(source.getBuffer(portal.renderer.getRenderType()), stack);
 		forceDraw(source);
+		GlStateFunctions.disableDepthClamp(); // reset state
 		GLUtils.boundTarget().unbindWrite();
 		
 		// setup to draw to the portal FBO
@@ -172,6 +173,7 @@ public class Renderer {
 		// finish draw
 		RenderSystem.disableCull();
 		finishTesselator(builder, shaderInstance);
+		GlStateFunctions.disableDepthClamp(); // reset state
 		screenspaceTex = false;
 		
 		// draw portal frame (if there is one)
@@ -180,7 +182,7 @@ public class Renderer {
 		
 		// attempt to reset gl state
 		RenderSystem.enableCull();
-		Lighting.setupFor3DItems();
+//		Lighting.setupFor3DItems();
 		// Luigi's TODO: fix the lighting
 	}
 	
@@ -288,6 +290,7 @@ public class Renderer {
 		
 		for (AbstractPortal portal1 : portals) {
 			if (portal1.renderer.shouldRender(frustum, camX, camY, camZ)) {
+				portal1.tickChunkTracking(Minecraft.getInstance().player);
 				portal1.renderer.tickForceRendering();
 				renderPortal(stack, type, buffers, portal1, frustum);
 			}

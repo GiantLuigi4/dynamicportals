@@ -6,19 +6,28 @@ import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
+import com.tracky.TrackyAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.GLUtils;
 import tfc.dynamicportals.Renderer;
 import tfc.dynamicportals.api.PortalRenderer;
 import tfc.dynamicportals.util.Quad;
+import tfc.dynamicportals.util.TrackyToolsClient;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
+import tfc.dynamicportals.util.gl.GlStateFunctions;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class BasicPortalRenderer extends PortalRenderer {
 	protected BasicPortal portal;
@@ -142,6 +151,10 @@ public class BasicPortalRenderer extends PortalRenderer {
 	
 	@Override
 	public void drawStencil(VertexConsumer builder, PoseStack stack) {
+		if (Minecraft.getInstance().player.getBoundingBox().intersects(portal.box)) {
+			GlStateFunctions.enableDepthClamp();
+		}
+		
 		float r = 1, b = r, g = b, a = g;
 		Matrix4f mat = stack.last().pose();
 		// Luigi's TODO: use a custom vertex builder which automatically fills in missing elements
@@ -232,25 +245,37 @@ public class BasicPortalRenderer extends PortalRenderer {
 	
 	@Override
 	public void tickForceRendering() {
-//		// TODO: do level properly, maybe?
-//		ArrayList<ChunkPos> positions = TrackyToolsClient.getChunksForPortal(Minecraft.getInstance().level, portal);
-//		ChunkPos center = new ChunkPos(new BlockPos(portal.position.x, portal.position.y, portal.position.z));
-//
-//		ArrayList<ChunkPos> current = new ArrayList<>();
-//
-//		for (int x = -8; x <= 8; x++) {
-//			for (int z = -8; z <= 8; z++) {
-//				ChunkPos ps = new ChunkPos(center.x + x, center.z + z);
-//				boolean pz = positions.remove(ps);
-//				if (!pz) TrackyToolsClient.markDirty();
-//				current.add(ps);
-//			}
-//		}
-//
-//		if (!positions.isEmpty())
-//			TrackyToolsClient.markDirty();
-//
-//		positions.clear();
-//		positions.addAll(current);
+		// TODO: do level properly, maybe?
+		Level lvl = Minecraft.getInstance().level;
+		Set<SectionPos> positions = TrackyToolsClient.getChunksForPortal(lvl, portal);
+		SectionPos center = SectionPos.of(new BlockPos(portal.target.raytraceOffset().x, portal.target.raytraceOffset().y, portal.target.raytraceOffset().z));
+		
+		Set<SectionPos> current = new HashSet<>();
+		
+		boolean updated = false;
+		
+		// TODO: this should be relative to the player relative to the portal
+		for (int x = -8; x <= 8; x++) {
+			for (int y = -8; y <= 8; y++) {
+				for (int z = -8; z <= 8; z++) {
+					SectionPos ps = SectionPos.of(center.getX() + x, center.getY() + y, center.getZ() + z);
+					if (lvl.isInWorldBounds(ps.center())) {
+						boolean pz = positions.remove(ps);
+						if (!pz) updated = true;
+						current.add(ps);
+					}
+				}
+			}
+		}
+		
+		positions.clear();
+		//noinspection ConstantConditions
+		updated = updated || !positions.isEmpty();
+		positions.addAll(current);
+		
+		if (updated) {
+			TrackyToolsClient.markDirty();
+			TrackyAccessor.markForRerender(lvl);
+		}
 	}
 }

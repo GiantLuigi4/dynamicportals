@@ -62,7 +62,7 @@ public abstract class LevelRendererMixin {
 			return true;
 		return src;
 	}
-	
+
 	@Inject(at = @At("HEAD"), method = "setupRender", cancellable = true)
 	public void preSetupRender(Camera pCamera, Frustum pFrustrum, boolean pHasCapturedFrustrum, boolean pIsSpectator, CallbackInfo ci) {
 		// Luigi's TODO: check if this breaks compat

@@ -43,15 +43,6 @@ public class ShaderInjections {
 						"\t\tfragColor = dynamicPortalsColor" + colorModulate + ";\n" +
 						"\t\treturn;\n";
 		if (!hasTexCoord) worldSpace = "";
-		String clipping = """
-				if (1 == 1) {
-				  fragColor = vec4(
-				    (dynamicPortalsWorldPos.xyz / dynamicPortalsWorldPos.www) / vec3(dynamicPortalsFBOSize.xy, 100.),
-				    1
-				  );
-				  return;
-				}""";
-		clipping = "";
 		return
 				// Luigi's TODO: something needs to change when sodium is present
 				"\n\t/* Dynamic Portals injection */\n" +
@@ -72,7 +63,6 @@ public class ShaderInjections {
 						"\t\t\tdiscard;\n" +
 						"\t\t\treturn;\n" +
 						"\t\t}\n" +
-						"\t\t" + clipping + "\n" +
 						"\t}\n" +
 						"\t/* end Dynamic Portals injection */";
 	}
@@ -86,6 +76,9 @@ public class ShaderInjections {
 				\t\tdynamicPortalsColor = texture(dynamicPortalsStencilTexture, dynamicPortalsPos);
 				\t\tfragColor = fragColor * dynamicPortalsColor;
 				\t}
+				\t
+				\t// TODO: figure out how to ignore the near plane when a portal is rendering
+				\t
 				\t/* end Dynamic Portals injection */
 				""";
 	}

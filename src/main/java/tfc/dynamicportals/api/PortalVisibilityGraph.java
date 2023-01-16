@@ -38,7 +38,8 @@ public class PortalVisibilityGraph {
 //				}
 //			}
 //		}
-		for (LevelRenderer.RenderChunkInfo renderChunk : renderer.renderChunkStorage.get().renderChunks) {
+		LevelRenderer.RenderChunkStorage storage = renderer.renderChunkStorage.get();
+		for (LevelRenderer.RenderChunkInfo renderChunk : storage.renderChunks) {
 			// Luigi's TODO: side checking
 			if (renderChunk == null) continue;
 			AABB box = renderChunk.chunk.getBoundingBox();

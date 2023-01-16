@@ -4,6 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
 import com.mojang.math.Vector4f;
+import com.tracky.TrackyAccessor;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -13,11 +16,13 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.Quad;
+import tfc.dynamicportals.util.TrackyTools;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.support.PehkuiSupport;
 import virtuoel.pehkui.api.ScaleData;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class BasicPortal extends AbstractPortal {
@@ -285,29 +290,33 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public void tickChunkTracking(Player player) {
-//		// TODO: do level properly, maybe?
-//		ArrayList<ChunkPos> positions = TrackyTools.getChunksForPortal(player.level, player, this);
-//		ChunkPos center = new ChunkPos(new BlockPos(position.x, position.y, position.z));
-//		// TODO: optimize
-//		// TODO: don't redundantly do this
-//		// TODO: offset this to be centered around the translated player camera
-//		// TODO: frontface cull this to be only portals on the opposite side of the portal than the player's on
-//		ArrayList<ChunkPos> current = new ArrayList<>();
-//
-//		for (int x = -8; x <= 8; x++) {
-//			for (int z = -8; z <= 8; z++) {
-//				ChunkPos ps = new ChunkPos(center.x + x, center.z + z);
-//				boolean pz = positions.remove(ps);
-//				if (!pz) TrackyAccessor.markForRetracking(player);
-//				current.add(ps);
-//			}
-//		}
-//
-//		if (!positions.isEmpty())
-//			TrackyAccessor.markForRetracking(player);
-//
-//		positions.clear();
-//		positions.addAll(current);
+		// TODO: do level properly, maybe?
+		ArrayList<SectionPos> positions = TrackyTools.getChunksForPortal(player.level, player, this);
+		SectionPos center = SectionPos.of(new BlockPos(target.raytraceOffset().x, target.raytraceOffset().y, target.raytraceOffset().z));
+		// TODO: optimize
+		// TODO: don't redundantly do this
+		// TODO: offset this to be centered around the translated player camera
+		// TODO: frontface cull this to be only portals on the opposite side of the portal than the player's on
+		ArrayList<SectionPos> current = new ArrayList<>();
+		
+		for (int x = -8; x <= 8; x++) {
+			for (int y = -8; y <= 8; y++) {
+				for (int z = -8; z <= 8; z++) {
+					SectionPos ps = SectionPos.of(center.getX() + x, center.getY() + y, center.getZ() + z);
+					boolean pz = positions.remove(ps);
+					if (!player.level.isClientSide)
+						if (!pz) TrackyAccessor.markForRetracking(player);
+					current.add(ps);
+				}
+			}
+		}
+		
+//		if (!player.level.isClientSide)
+//			if (!positions.isEmpty())
+//				TrackyAccessor.markForRetracking(player);
+		
+		positions.clear();
+		positions.addAll(current);
 	}
 	
 	@Override
