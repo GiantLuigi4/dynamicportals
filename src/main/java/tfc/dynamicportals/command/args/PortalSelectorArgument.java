@@ -123,6 +123,9 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 	
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> pContext, SuggestionsBuilder pBuilder) {
 		if (pContext.getSource() instanceof SharedSuggestionProvider) {
+			if (true) // TODO: fix
+				return Suggestions.empty();
+			
 			String selector = pBuilder.getRemaining();
 			AbstractPortal[] portals = Temp.getPortals(null); //TODO: not actually null, but for now it's ok
 			if (selector.equals("@")) {

@@ -79,7 +79,7 @@ public class DynamicPortalsCommand {
 				newPortal.computeRenderNormal();
 			
 			if (targetFilter != null) {
-				CommandPortal[] possibleTargets = Temp.filter(targetFilter, context);
+				CommandPortal[] possibleTargets = Temp.filter(context.getSource().getLevel(), targetFilter, context);
 				if (possibleTargets.length > 0) {
 					CommandPortal target = possibleTargets[0];
 					((AbstractPortal) target).setTarget(newPortal);
@@ -108,10 +108,10 @@ public class DynamicPortalsCommand {
 			}
 			
 			int count = 0;
-			for (CommandPortal commandPortal : Temp.filter(i, context)) {
+			for (CommandPortal commandPortal : Temp.filter(context.getSource().getLevel(), i, context)) {
 				if (((AbstractPortal) commandPortal).target != commandPortal)
 					((AbstractPortal) commandPortal).target.setTarget(((AbstractPortal) commandPortal).target);
-				Temp.remove(commandPortal.myId());
+				Temp.remove(context.getSource().getLevel(), commandPortal.myId());
 				count += 1;
 			}
 			

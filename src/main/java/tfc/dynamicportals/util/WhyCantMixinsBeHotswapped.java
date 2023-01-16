@@ -51,13 +51,12 @@ public class WhyCantMixinsBeHotswapped {
 //										getX(pkt.getTargetSpot().x), getY(pkt.getTargetSpot().y), getZ(pkt.getTargetSpot().z)
 										pkt.getTargetSpot().x, pkt.getTargetSpot().y, pkt.getTargetSpot().z
 								);
-//								ci.cancel();
+								ci.cancel();
 							} else {
 								player.absMoveTo(vec.x, vec.y, vec.z, yRot, xRot);
 								LOGGER.warn("{} teleported wrongly! (Teleported to {} blocks away from the target portal, allowed to be {} blocks away.)", player.getScoreboardName(), d, speed);
 							}
 						} else {
-							// TODO: this gets run when teleporting due to doubled packets
 							player.absMoveTo(vec.x, vec.y, vec.z, yRot, xRot);
 							LOGGER.warn("{} teleported wrongly! (Teleported while {} blocks away from the portal, allowed to be {} blocks away.)", player.getScoreboardName(), d, speed);
 						}

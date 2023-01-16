@@ -7,6 +7,9 @@ import com.mojang.math.Vector4f;
 import com.tracky.TrackyAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -15,6 +18,11 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import tfc.dynamicportals.api.AbstractPortal;
+import tfc.dynamicportals.api.implementation.data.PortalDataSerializers;
+import tfc.dynamicportals.api.implementation.data.PortalDataTracker;
+import tfc.dynamicportals.api.implementation.data.PortalTrackedData;
+import tfc.dynamicportals.api.registry.BasicPortalTypes;
+import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.TrackyTools;
 import tfc.dynamicportals.util.Vec2d;
@@ -23,8 +31,10 @@ import tfc.dynamicportals.util.support.PehkuiSupport;
 import virtuoel.pehkui.api.ScaleData;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
+// TODO: TrackablePortal interface?
 public class BasicPortal extends AbstractPortal {
 	protected Vector3d position;
 	protected Vec2d size;
@@ -32,12 +42,36 @@ public class BasicPortal extends AbstractPortal {
 	protected Vec3 renderNormal;
 	protected Vec3 computedNormal;
 	protected Quad portalQuad;
+	public final PortalType<?> type;
 	AABB box = null;
 	
+	public final PortalDataTracker tracker = new PortalDataTracker();
+	
 	public BasicPortal(UUID uuid) {
+		this(uuid, BasicPortalTypes.BASIC);
+	}
+	
+	public BasicPortal(UUID uuid, PortalType<?> type) {
 		super(uuid);
 		if (FMLEnvironment.dist.isClient())
 			this.renderer = new BasicPortalRenderer(this);
+		this.type = type;
+		registerTrackedData();
+	}
+	
+	PortalTrackedData<Vector3d> POSITION = new PortalTrackedData<>("position", PortalDataSerializers.VECTOR_3D);
+	PortalTrackedData<Vec2d> SIZE = new PortalTrackedData<>("size", PortalDataSerializers.VEC2D);
+	PortalTrackedData<Vec3> ROTATION = new PortalTrackedData<>("rotation", PortalDataSerializers.VEC3);
+	PortalTrackedData<Optional<Vec3>> RENDER_NORM = new PortalTrackedData<>("render_normal", PortalDataSerializers.OPTIONAL_VEC3);
+	
+	protected void registerTrackedData() {
+		tracker.register(POSITION, () -> position, (pos) -> setPosition(pos.x, pos.y, pos.z));
+		tracker.register(SIZE, () -> size, (pos) -> setSize(pos.x, pos.y));
+		tracker.register(ROTATION, () -> rotation, this::setRotation);
+		tracker.register(RENDER_NORM, () -> {
+			if (renderNormal != null) return Optional.of(renderNormal);
+			else return Optional.empty();
+		}, (vec) -> vec.ifPresent(this::setRenderNormal));
 	}
 	
 	public static void scale(Entity entity, float amt) {
@@ -57,23 +91,27 @@ public class BasicPortal extends AbstractPortal {
 	public BasicPortal setPosition(double x, double y, double z) {
 		this.position = new Vector3d(x, y, z);
 		recomputePortal();
+		tracker.update(POSITION);
 		return this;
 	}
 	
 	public BasicPortal setSize(double x, double y) {
 		this.size = new Vec2d(x, y);
 		recomputePortal();
+		tracker.update(SIZE);
 		return this;
 	}
 	
 	public BasicPortal setRotation(double x, double y, double z) {
 		this.rotation = new Vec3(x, y, z);
 		recomputePortal();
+		tracker.update(ROTATION);
 		return this;
 	}
 	
 	public BasicPortal setRenderNormal(Vec3 renderNormal) {
 		this.renderNormal = renderNormal;
+		tracker.update(RENDER_NORM);
 		return this;
 	}
 	
@@ -326,5 +364,36 @@ public class BasicPortal extends AbstractPortal {
 	public Vec3 nearestPoint(Vec3 targetSpot) {
 		targetSpot = targetSpot.subtract(position.x, position.y, position.z);
 		return portalQuad.nearest(targetSpot).add(position.x, position.y, position.z);
+	}
+	
+	public CompoundTag serialize() {
+//		protected Vector3d position;
+//		protected Vec2d size;
+//		protected Vec3 rotation;
+//		protected Vec3 renderNormal;
+//		protected Vec3 computedNormal;
+//		protected Quad portalQuad;
+//		AABB box = null;
+		
+		CompoundTag tag = new CompoundTag();
+		tag.putUUID("UUID", uuid);
+		tag.putUUID("TargetUUID", target.uuid);
+		tag.put("Position", toList(position.x, position.y, position.z));
+		tag.put("Size", toList(size.x, size.y));
+		tag.put("Rotation", toList(rotation.x, rotation.y, rotation.z));
+		if (renderNormal != null)
+			tag.put("RenderNormal", toList(renderNormal.x, renderNormal.y, renderNormal.z));
+		tag = writeAdditional(tag);
+		return tag;
+	}
+	
+	protected static ListTag toList(double... values) {
+		ListTag tag = new ListTag();
+		for (double value : values) tag.add(DoubleTag.valueOf(value));
+		return tag;
+	}
+	
+	public CompoundTag writeAdditional(CompoundTag tag) {
+		return tag;
 	}
 }
