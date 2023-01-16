@@ -119,6 +119,57 @@ public class DynamicPortalsCommand {
 			return count;
 		});
 		
+		buildSubcommand("modify", PortalSelectorArgument.create(), commandNode, context -> {
+			DynamicPortalsSourceStack ctx;
+			if (context.getSource() instanceof DynamicPortalsSourceStack)
+				ctx = (DynamicPortalsSourceStack) context.getSource();
+			else {
+				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.missing_args"));
+				return -1;
+			}
+			
+			FullPortalFilter i = null;
+			try {
+				i = context.getArgument("modify", FullPortalFilter.class);
+			} catch (Throwable ignored) {
+			}
+			if (i == null) {
+				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.empty_argument"));
+				return -1;
+			}
+			
+			int count = 0;
+			for (CommandPortal commandPortal : Temp.filter(context.getSource().getLevel(), i, context)) {
+				if (commandPortal instanceof BasicPortal bap) {
+					bap.setPosition(ctx.getPositionFromWorldCoordinatesOrDefault("position", bap.raytraceOffset()));
+					
+					Vec3 vec = ctx.getPositionFromWorldCoordinatesOrDefault("rotation", null);
+					if (vec != null) bap.setRotation(VecMath.toRadians(vec));
+					
+					FullPortalFilter targetFilter = ctx.getArgument("target", FullPortalFilter.class);
+					if (targetFilter != null) {
+						CommandPortal[] possibleTargets = Temp.filter(context.getSource().getLevel(), targetFilter, context);
+						if (possibleTargets.length > 0) {
+							CommandPortal target = possibleTargets[0];
+							((AbstractPortal) target).setTarget(bap);
+							bap.setTarget((AbstractPortal) target);
+						} else {
+							ctx.sendFailure(new TranslatableComponent("dynamicportals.command.cheese.invalid_target"));
+						}
+					}
+					Vec3 sizeVec = ctx.getPositionFromWorldCoordinates("size");
+					if (sizeVec != null) bap.setSize(sizeVec.x, sizeVec.z);
+					
+					// TODO: everything else
+				}
+				
+				count += 1;
+			}
+			
+			context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.update", count), true);
+			return count;
+		});
+		
 		buildRedirectedSubcommand("position", Vec3Argument.vec3(false), commandNode);
 		buildRedirectedSubcommand("rotation", Vec3Argument.vec3(false), commandNode);
 		buildRedirectedSubcommand("size", Vec2Argument.vec2(false), commandNode);
