@@ -17,12 +17,10 @@ public class ShaderInjections {
 						""";
 		// thanks to Khlorghaal
 		// TODO: entities are a special butterfly, and need to be treated as such
-		if (hasProjMat && hasViewMat)
-			str = str.replace("%matrixMath%", "inverse(ProjMat * ModelViewMat) * %matrixMath%");
+		if (hasProjMat && hasViewMat) str = str.replace("%matrixMath%", "inverse(ProjMat * ModelViewMat) * %matrixMath%");
 		else if (hasProjMat) str = str.replace("%matrixMath%", "inverse(ProjMat) %matrixMath% * ");
 		else if (hasViewMat) str = str.replace("%matrixMath%", "inverse(ModelViewMat) * %matrixMath%");
-		str = str.replace(" %matrixMath%", "");
-		return str;
+		return str.replace(" %matrixMath%", "");
 	}
 	
 	// about iris/oculus/OF

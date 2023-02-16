@@ -11,10 +11,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import tfc.dynamicportals.api.AbstractPortal;
@@ -226,7 +229,15 @@ public class BasicPortal extends AbstractPortal {
 		double distanceEntityToPortal = position.distanceTo(portalQuad.center().add(raytraceOffset()));
 		// lorenzo: that "less than" check is a temporary hack to avoid calling this method for portals 20 blocks away
 		// luigi: not really temporary, actually
-		if (distanceEntityToPortal < Math.pow(Math.max(size.x, size.y), 2) * 2) {
+		// lorenzo: alright, fixed the check
+		double reach;
+		if (entity instanceof LivingEntity) {
+			AttributeInstance instance = ((LivingEntity) entity).getAttribute(ForgeMod.REACH_DISTANCE.get());
+			if (instance == null) reach = 0;
+			else reach = instance.getValue();
+		} else reach = 0;
+		
+		if (distanceEntityToPortal < reach) {
 			if (renderNormal != null)
 				return isInFront(entity, position);
 			return true;
@@ -291,13 +302,8 @@ public class BasicPortal extends AbstractPortal {
 					pos = VecMath.transform(pos, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
 				}
 				
-				Vec3 look = VecMath.getLookVec(entity.getRotationVector());
-				look = VecMath.transform(look, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
-				Vec2 rotVec = VecMath.lookAngle(look);
-				
-				Vec3 oldLook = VecMath.getLookVec(entity.getRotationVector());
-				oldLook = VecMath.transform(oldLook, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO);
-				Vec2 oldRotVec = VecMath.lookAngle(oldLook);
+				Vec2 rotVec = VecMath.lookAngle(VecMath.transform(VecMath.getLookVec(entity.getRotationVector()), srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO));
+				Vec2 oldRotVec = VecMath.lookAngle(VecMath.transform(VecMath.getLookVec(entity.getRotationVector()), srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), this == target, Vec3.ZERO, Vec3.ZERO));
 				
 				entity.setXRot(rotVec.x);
 				entity.xRotO = oldRotVec.x;

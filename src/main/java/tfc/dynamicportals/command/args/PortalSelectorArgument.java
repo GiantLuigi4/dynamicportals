@@ -32,6 +32,7 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 		return new PortalSelectorArgument();
 	}
 	
+	@Override
 	public FullPortalFilter parse(StringReader reader) throws CommandSyntaxException {
 		if (reader.canRead()) {
 			if (reader.peek() == '@') {
@@ -121,10 +122,12 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 		}
 	}
 	
+	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> pContext, SuggestionsBuilder pBuilder) {
 		if (pContext.getSource() instanceof SharedSuggestionProvider) {
-			if (true) // TODO: fix
-				return Suggestions.empty();
+			// Lorenzo: fix what exactly?
+			// if (true)  // TODO: fix
+			//      return Suggestions.empty();
 			
 			String selector = pBuilder.getRemaining();
 			AbstractPortal[] portals = Temp.getPortals(null); //TODO: not actually null, but for now it's ok
@@ -173,6 +176,7 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 		}
 	}
 	
+	@Override
 	public Collection<String> getExamples() {
 		return List.of("0", "10", "@", "@[uuid=586ca6a2-ad52-4b4e-8e95-2222ae39cb7a]", "@[id=0]", "@[type=basic]");
 	}

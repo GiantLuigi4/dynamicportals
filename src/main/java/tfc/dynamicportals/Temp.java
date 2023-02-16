@@ -116,6 +116,7 @@ public class Temp {
 		synchronized (cmdPortals) {
 			for (CommandPortal cmdPortal : cmdPortals) {
 				if (cmdPortal.myId() == myId) {
+					portals.remove((AbstractPortal) cmdPortal);
 					cmdPortals.remove(cmdPortal);
 					return;
 				}
