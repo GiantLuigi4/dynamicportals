@@ -7,9 +7,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.implementation.BasicPortal;
+import tfc.dynamicportals.portals.vanilla.EndPortal;
+import tfc.dynamicportals.portals.vanilla.NetherPortal;
 import tfc.dynamicportals.util.Vec2d;
-import tfc.dynamicportals.vanilla.EndPortal;
-import tfc.dynamicportals.vanilla.NetherPortal;
 
 import java.util.HashMap;
 

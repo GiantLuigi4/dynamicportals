@@ -1,4 +1,4 @@
-package tfc.dynamicportals.vanilla.render;
+package tfc.dynamicportals.portals.vanilla.render;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.vertex.PoseStack;

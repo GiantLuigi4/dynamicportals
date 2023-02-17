@@ -42,8 +42,11 @@ public class TrackyTools {
 		synchronized (forcedChunks) {
 			HashMap<UUID, HashMap<UUID, ArrayList<SectionPos>>> map = addIfAbsent(forcedChunks, lvl, HashMap::new);
 			HashMap<UUID, ArrayList<SectionPos>> forPlayer = addIfAbsent(map, player.getUUID(), HashMap::new);
-			if (!player.level.isClientSide)
-				addIfAbsent(players, lvl, ArrayList::new).add(player);
+			if (!player.level.isClientSide) {
+				List<Player> playersList = addIfAbsent(players, lvl, ArrayList::new);
+				if (!playersList.contains(player))
+					playersList.add(player);
+			}
 			init(lvl);
 			return addIfAbsent(forPlayer, portal.uuid, ArrayList::new);
 		}
@@ -55,5 +58,14 @@ public class TrackyTools {
 		if (!map.containsKey(key))
 			map.put(key, value.get());
 		return map.get(key);
+	}
+	
+	public static void removePortal(Level lvl, Player player, BasicPortal portal) {
+		synchronized (forcedChunks) {
+			HashMap<UUID, HashMap<UUID, ArrayList<SectionPos>>> map = addIfAbsent(forcedChunks, lvl, HashMap::new);
+			HashMap<UUID, ArrayList<SectionPos>> forPlayer = addIfAbsent(map, player.getUUID(), HashMap::new);
+			init(lvl);
+			forPlayer.remove(portal.uuid);
+		}
 	}
 }

@@ -4,6 +4,7 @@ package tfc.dynamicportals;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
@@ -16,6 +17,8 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
+import net.minecraftforge.common.MinecraftForge;
+import tfc.dynamicportals.access.client.LevelRendererAccessor;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.async.AsyncDispatcher;
@@ -58,6 +61,10 @@ public class Renderer {
 	public static void renderPortal(PoseStack a, RenderType type, RenderBuffers buffers, AbstractPortal portal, Frustum frustum) {
 		if (recursion == 2) {
 			// Luigi's TODO: do stuff with this
+			a.pushPose();
+			portal.renderer.setupMatrix(a);
+			portal.renderer.drawFrame(buffers.bufferSource(), a);
+			a.popPose();
 			return;
 		}
 		
@@ -70,6 +77,7 @@ public class Renderer {
 		PoseStack stack = new PoseStack();
 		stack.last().pose().load(a.last().pose());
 		stack.last().normal().load(a.last().normal());
+		
 		// raytracing debug
 		{
 			Entity entity = Minecraft.getInstance().cameraEntity;
@@ -129,13 +137,30 @@ public class Renderer {
 		stk.mulPose(new Quaternion(0, 180, 0, true));
 		portal.target.renderer.setupAsTarget(stk);
 		portal.renderer.setupRenderState();
+		
 		// setup state
 		RenderSystem.enableCull();
 		double camX = Renderer.camX, camY = Renderer.camY, camZ = Renderer.camZ;
+		
+		// setup camera
+		Camera oldCam = Minecraft.getInstance().getEntityRenderDispatcher().camera;
+		
 		Camera camera = portal.renderer.setupCamera(Minecraft.getInstance().gameRenderer.getMainCamera().getEntity(), camX, camY, camZ, Minecraft.getInstance().gameRenderer.getMainCamera());
+		Minecraft.getInstance().getEntityRenderDispatcher().camera = camera;
 		stk.translate(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
+		
+		// swap main render target
+		RenderTarget currentTarget = Minecraft.getInstance().getMainRenderTarget();
+		Minecraft.getInstance().mainRenderTarget = portalTarget;
+		// swap frustum
+		LevelRendererAccessor accessor = (LevelRendererAccessor) Minecraft.getInstance().levelRenderer;
+		Frustum vanillaFrustum = accessor.getCullingFrustum();
+		// TODO: fix this
+//		accessor.setCullingFrustum(new Frustum(RenderSystem.getProjectionMatrix(), stk.last().pose()));
+		accessor.setCullingFrustum(getFrustum(portal, a.last().pose(), RenderSystem.getProjectionMatrix()));
+		Minecraft.getInstance().levelRenderer.capturedFrustum = null;
+		
 		// draw
-//		Minecraft.getInstance().levelRenderer.capturedFrustum = portal.getGraph().getFrustum();
 		ObjectArrayList<LevelRenderer.RenderChunkInfo> chunkInfoList = Minecraft.getInstance().levelRenderer.renderChunksInFrustum;
 		if (portal.renderer.getGraph() != null) {
 			PoseStack sysStk = RenderSystem.getModelViewStack();
@@ -144,13 +169,19 @@ public class Renderer {
 //			if (ModList.get().isLoaded("flywheel"))
 //			MinecraftForge.EVENT_BUS.post(new BeginFrameEvent(Minecraft.getInstance().level, camera, frustum));
 			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.renderer.getGraph().getChunks();
+			// TODO: I think the level renderer expects a matrix stack that's only a scale/rotation
 			Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
+			MinecraftForge.EVENT_BUS.post(new RenderLevelLastEvent(Minecraft.getInstance().levelRenderer, stack, 0, RenderSystem.getProjectionMatrix(), System.nanoTime()));
 			RenderSystem.modelViewStack = sysStk;
 			RenderSystem.applyModelViewMatrix();
 		}
 		
+		accessor.setCullingFrustum(vanillaFrustum);
+		Minecraft.getInstance().mainRenderTarget = currentTarget;
 		Minecraft.getInstance().levelRenderer.renderChunksInFrustum = chunkInfoList;
+		
 		// restore camera pos
+		Minecraft.getInstance().getEntityRenderDispatcher().camera = oldCam;
 		Renderer.camX = camX;
 		Renderer.camY = camY;
 		Renderer.camZ = camZ;
@@ -182,7 +213,7 @@ public class Renderer {
 		
 		// attempt to reset gl state
 		RenderSystem.enableCull();
-//		Lighting.setupFor3DItems();
+		Lighting.setupFor3DItems();
 		// Luigi's TODO: fix the lighting
 	}
 	
@@ -250,7 +281,8 @@ public class Renderer {
 	}
 	
 	public static void onRenderEvent(RenderLevelLastEvent event) {
-		if (recursion > 1) return;
+		if (recursion > 0)
+			return;
 		
 		RenderTarget bound = GLUtils.boundTarget();
 		
@@ -375,7 +407,7 @@ public class Renderer {
 	}
 	
 	public static void refreshStencilBuffer(int framebufferWidth, int framebufferHeight) {
-		stencilTarget.resize(framebufferWidth, framebufferHeight, Minecraft.ON_OSX);
+		stencilTarget.resize(framebufferWidth, framebufferHeight, Minecraft.ON_OSX); // TODO: try out depth stencil on portal target?
 		portalTarget.resize(framebufferWidth, framebufferHeight, Minecraft.ON_OSX);
 	}
 	

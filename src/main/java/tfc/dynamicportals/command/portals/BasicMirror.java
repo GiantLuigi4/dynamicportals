@@ -1,13 +1,13 @@
 package tfc.dynamicportals.command.portals;
 
-import tfc.dynamicportals.portals.vanilla.NetherPortal;
+import tfc.dynamicportals.portals.mirror.Mirror;
 
 import java.util.UUID;
 
-public class BasicNetherPortal extends NetherPortal implements CommandPortal {
+public class BasicMirror extends Mirror implements CommandPortal {
 	int id = 0;
 	
-	public BasicNetherPortal(UUID uuid) {
+	public BasicMirror(UUID uuid) {
 		super(uuid);
 	}
 	
@@ -23,6 +23,6 @@ public class BasicNetherPortal extends NetherPortal implements CommandPortal {
 	
 	@Override
 	public String type() {
-		return "nether";
+		return "mirror";
 	}
 }

@@ -3,10 +3,13 @@ package tfc.dynamicportals.api;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector4f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
@@ -27,7 +30,7 @@ public abstract class PortalRenderer {
 	
 	public PortalVisibilityGraph getGraph() {
 		if (graph != null) {
-			Vec3 offset = portal.raytraceOffset();
+			Vec3 offset = portal.target.raytraceOffset();
 			graph.originX = (int) offset.x;
 			graph.originY = (int) offset.y;
 			graph.originZ = (int) offset.z;
@@ -145,25 +148,29 @@ public abstract class PortalRenderer {
 	public abstract boolean shouldRender(Frustum frustum, double camX, double camY, double camZ);
 	
 	public Camera setupCamera(Entity cameraEntity, double camX, double camY, double camZ, Camera gameCamera) {
-		// EX_TODO: this is a bit finicky
+		// EX TODO: this is a bit finicky
 		// lorenzo: why is it luigi :thonk4:
 		// setup
 		if (cam == null || !cam.isInitialized() || cam.actualCamera != gameCamera) {
 			cam = new PortalCamera(gameCamera);
 			cam.setup(cameraEntity.level, cameraEntity, true, false, 0);
 		}
+		
+		Vec3 myRaytraceOffset = portal.raytraceOffset();
+		Vec3 otherRaytraceOffset = portal.target.raytraceOffset();
+		
 		// position
 		Vec3 position = gameCamera.getPosition();
 		position = position.subtract(portal.raytraceOffset());
 		position = position.add(portal.target.raytraceOffset());
 		cam.setPosition(position);
-		// EX_TODO: rotation
+		// EX TODO: rotation
 		// lorenzo: what
 		// block and fog
 		cam.cameraBlock = null;
 		cam.cameraFog = null;
 		cam.cameraBlock = gameCamera.getBlockAtCamera();
-		// EX_TODO: center it in the portal
+		// EX TODO: center it in the portal
 		// lorenzo: what 2
 		// setup position
 //		BlockPos.MutableBlockPos pos = (BlockPos.MutableBlockPos) cam.getBlockPosition();
@@ -176,6 +183,27 @@ public abstract class PortalRenderer {
 		if (type.equals(FogType.NONE)) cam.cameraFog = gameCamera.getFluidInCamera();
 		// tick and return
 		cam.tick();
+		
+		// TODO: reduce allocation?
+		Vector4f look = new Vector4f(gameCamera.getLookVector());
+		PoseStack stk = new PoseStack();
+		portal.renderer.fullSetupMatrix(stk);
+		stk.mulPose(new Quaternion(0, 180, 0, true));
+		portal.target.renderer.setupAsTarget(stk);
+		Vector4f ZERO = new Vector4f(0, 0, 0, 1);
+		ZERO.transform(stk.last().pose());
+		look.transform(stk.last().pose());
+		look.add(-ZERO.x(), -ZERO.y(), -ZERO.z(), 0);
+		
+		Vec3 pTarget = new Vec3(look.x(), look.y(), look.z());
+		double d0 = pTarget.x;
+		double d1 = pTarget.y;
+		double d2 = pTarget.z;
+		double d3 = Math.sqrt(d0 * d0 + d2 * d2);
+		float xR = (Mth.wrapDegrees((float)(-(Mth.atan2(d1, d3) * (double)(180F / (float)Math.PI)))));
+		float yR = (Mth.wrapDegrees((float)(Mth.atan2(d2, d0) * (double)(180F / (float)Math.PI)) - 90.0F));
+		
+		cam.setRotation(yR, xR);
 		return cam;
 	}
 	

@@ -72,4 +72,12 @@ public class TrackyToolsClient {
 		isDirty = true;
 		TrackyAccessor.markForRerender(lvl);
 	}
+	
+	public static void removePortal(Level lvl, BasicPortal portal) {
+		synchronized (forcedChunks) {
+			HashMap<UUID, Set<SectionPos>> map = addIfAbsent(forcedChunks, lvl, HashMap::new);
+			init(lvl);
+			map.remove(portal.uuid);
+		}
+	}
 }

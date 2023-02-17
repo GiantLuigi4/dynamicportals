@@ -1,6 +1,6 @@
 package tfc.dynamicportals.command.portals;
 
-import tfc.dynamicportals.vanilla.EndPortal;
+import tfc.dynamicportals.portals.vanilla.EndPortal;
 
 import java.util.UUID;
 

@@ -1,6 +1,7 @@
 package tfc.dynamicportals.api;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -38,15 +39,36 @@ public class PortalVisibilityGraph {
 //				}
 //			}
 //		}
+
+//		int xO = originX >> 4;
+//		int yO = originY >> 4;
+//		int zO = originZ >> 4;
+		
+		int distance = Minecraft.getInstance().options.renderDistance * 16;
+		AABB boundingBox = new AABB(originX - distance, originY - distance, originZ - distance, originX + distance, originY + distance, originZ + distance);
+		
 		LevelRenderer.RenderChunkStorage storage = renderer.renderChunkStorage.get();
 		for (LevelRenderer.RenderChunkInfo renderChunk : storage.renderChunks) {
 			// Luigi's TODO: side checking
 			if (renderChunk == null) continue;
+
+//			BlockPos origin = renderChunk.chunk.getOrigin();
+//			int ax = Math.abs(xO - (origin.getX() >> 4));
+//			int ay = Math.abs(yO - (origin.getY() >> 4));
+//			int az = Math.abs(zO - (origin.getZ() >> 4));
+
+//			if (ax < 8) continue;
+//			if (ay < 8) continue;
+//			if (az < 8) continue;
+			
 			AABB box = renderChunk.chunk.getBoundingBox();
-			if (frustum.isVisible(box)) {
-				renderChunksInFrustum.add(renderChunk);
+			if (box.intersects(boundingBox)) {
+				if (frustum.isVisible(box)) {
+					renderChunksInFrustum.add(renderChunk);
+				}
 			}
 		}
+
 //		AsyncIterator.forEach(renderer.renderChunkStorage.get().renderChunks, (chunk) -> {
 //			if (chunk == null) return;
 //			AABB box = chunk.chunk.getBoundingBox();

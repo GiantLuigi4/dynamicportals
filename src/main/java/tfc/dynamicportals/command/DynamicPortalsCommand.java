@@ -21,10 +21,7 @@ import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.command.args.PortalSelectorArgument;
 import tfc.dynamicportals.command.args.StringArrayArgument;
-import tfc.dynamicportals.command.portals.BasicCommandPortal;
-import tfc.dynamicportals.command.portals.BasicEndPortal;
-import tfc.dynamicportals.command.portals.BasicNetherPortal;
-import tfc.dynamicportals.command.portals.CommandPortal;
+import tfc.dynamicportals.command.portals.*;
 import tfc.dynamicportals.util.DynamicPortalsSourceStack;
 import tfc.dynamicportals.util.VecMath;
 
@@ -42,6 +39,7 @@ public class DynamicPortalsCommand {
 		portalCreators.put("basic", BasicCommandPortal::new);
 		portalCreators.put("nether", BasicNetherPortal::new);
 		portalCreators.put("end", BasicEndPortal::new);
+		portalCreators.put("mirror", BasicMirror::new);
 	}
 	
 	public static LiteralArgumentBuilder<CommandSourceStack> build(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -174,7 +172,7 @@ public class DynamicPortalsCommand {
 		buildRedirectedSubcommand("rotation", Vec3Argument.vec3(false), commandNode);
 		buildRedirectedSubcommand("size", Vec2Argument.vec2(false), commandNode);
 		buildRedirectedSubcommand("normal", Vec3Argument.vec3(false), commandNode);
-		buildRedirectedSubcommand("type", StringArrayArgument.of(new String[]{"basic", "nether", "end"}), commandNode);
+		buildRedirectedSubcommand("type", StringArrayArgument.of(new String[]{"basic", "nether", "end", "mirror"}), commandNode);
 		buildRedirectedSubcommand("frontonly", StringArrayArgument.of(new String[]{"true", "false"}), commandNode);
 		buildRedirectedSubcommand("uuid", UuidArgument.uuid(), commandNode);
 		buildRedirectedSubcommand("target", PortalSelectorArgument.create(), commandNode);

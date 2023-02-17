@@ -16,25 +16,13 @@
     "common.core.ServerPlayerMixin"
   ],
   "client": [
-    "client.MojangWhy",
-    "client.access.ChunkStorageAccessor",
-    "client.access.LevelRendererAccessor",
-    "client.access.StorageAccessor",
-    "client.access.VertexFormatAccessor",
-    "client.core.GlStateManagerMixin",
-    "client.core.LevenRendererMixin",
-    "client.core.LocalPlayerMixin",
-    "client.core.ShaderMixin",
-    "client.core.WindowMixin",
-    "client.hackery.ClientLevelMixin",
-    "client.hackery.RenderSystemMixin",
-    "client.hackery.RenderTargetMixin",
-    "client.optimization.GameRendererMixin",
-    "client.optimization.VBOMixin",
-    "client.optimization.VertexFormatMixin",
-    "client.particle.ParticleMixin",
-    "client.quality.LevelRendererMixin",
-    "client.selection.GameRendererMixin"
+    "client.MojangWhy", "client.access.ChunkStorageAccessor", "client.access.LevelRendererAccessor",
+    "client.access.LevelRendererMixin", "client.access.StorageAccessor", "client.access.VertexFormatAccessor",
+    "client.core.GlStateManagerMixin", "client.core.LevenRendererMixin", "client.core.LocalPlayerMixin",
+    "client.core.ShaderMixin", "client.core.WindowMixin", "client.hackery.ClientLevelMixin",
+    "client.hackery.RenderSystemMixin", "client.hackery.RenderTargetMixin", "client.optimization.GameRendererMixin",
+    "client.optimization.VBOMixin", "client.optimization.VertexFormatMixin", "client.particle.ParticleMixin",
+    "client.quality.LevelRendererMixin", "client.quality.LightingMixin", "client.selection.GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

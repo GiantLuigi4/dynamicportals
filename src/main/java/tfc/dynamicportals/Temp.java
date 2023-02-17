@@ -1,11 +1,16 @@
 package tfc.dynamicportals;
 
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.command.FullPortalFilter;
 import tfc.dynamicportals.command.portals.CommandPortal;
+import tfc.dynamicportals.util.TrackyTools;
+import tfc.dynamicportals.util.TrackyToolsClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,6 +123,26 @@ public class Temp {
 				if (cmdPortal.myId() == myId) {
 					portals.remove((AbstractPortal) cmdPortal);
 					cmdPortals.remove(cmdPortal);
+					
+					if (!lvl.isClientSide) {
+						for (Player player : lvl.players()) {
+							if (cmdPortal instanceof BasicPortal bap) {
+								ArrayList<SectionPos> poses = TrackyTools.getChunksForPortal(lvl, player, bap);
+								poses.clear();
+								TrackyTools.removePortal(lvl, player, bap);
+							}
+						}
+					} else {
+						if (cmdPortal instanceof BasicPortal bap) {
+							TrackyTools.removePortal(lvl, Minecraft.getInstance().player, bap);
+							TrackyToolsClient.removePortal(lvl, bap);
+							TrackyToolsClient.markDirty(lvl);
+						}
+					}
+					
+					synchronized (portals) {
+						portals.remove((AbstractPortal) cmdPortal);
+					}
 					return;
 				}
 			}
@@ -129,6 +154,23 @@ public class Temp {
 			for (AbstractPortal portal : portals) {
 				if (portal.uuid.equals(uuid)) {
 					portals.remove(portal);
+					
+					if (!lvl.isClientSide) {
+						for (Player player : lvl.players()) {
+							if (portal instanceof BasicPortal bap) {
+								ArrayList<SectionPos> poses = TrackyTools.getChunksForPortal(lvl, player, bap);
+								poses.clear();
+								TrackyTools.removePortal(lvl, player, bap);
+							}
+						}
+					} else {
+						if (portal instanceof BasicPortal bap) {
+							TrackyTools.removePortal(lvl, Minecraft.getInstance().player, bap);
+							TrackyToolsClient.removePortal(lvl, bap);
+							TrackyToolsClient.markDirty(lvl);
+						}
+					}
+					
 					synchronized (cmdPortals) {
 						if (portal instanceof CommandPortal)
 							cmdPortals.remove(portal);

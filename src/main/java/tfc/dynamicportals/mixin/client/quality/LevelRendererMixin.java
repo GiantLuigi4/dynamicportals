@@ -27,7 +27,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
 // Luigi's TODO: get this working with sodium/rubidium
-@Mixin(LevelRenderer.class)
+@Mixin(value = LevelRenderer.class, priority = 2000)
 public abstract class LevelRendererMixin {
 	@Shadow
 	@Final
