@@ -5,7 +5,17 @@
   "package": "tfc.dynamicportals.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "dynamicportals.refmap.json",
-  "mixins": ["common.access.ConnectionMixin","common.access.ServerGameListenerAccessor","common.collision.EntityMixin","common.core.LevelMixin","common.core.MotionPacketMixin","common.core.PosPacketMixin","common.core.PosRotPacketMixin","common.core.RotPacketMixin","common.core.ServerPlayerMixin"],
+  "mixins": [
+    "common.access.ConnectionMixin",
+    "common.access.ServerGameListenerAccessor",
+    "common.collision.EntityMixin",
+    "common.core.LevelMixin",
+    "common.core.MotionPacketMixin",
+    "common.core.PosPacketMixin",
+    "common.core.PosRotPacketMixin",
+    "common.core.RotPacketMixin",
+    "common.core.ServerPlayerMixin"
+  ],
   "client": [
     "client.MojangWhy",
     "client.access.ChunkStorageAccessor",
@@ -23,6 +33,7 @@
     "client.optimization.GameRendererMixin",
     "client.optimization.VBOMixin",
     "client.optimization.VertexFormatMixin",
+    "client.particle.ParticleMixin",
     "client.quality.LevelRendererMixin",
     "client.selection.GameRendererMixin"
   ],

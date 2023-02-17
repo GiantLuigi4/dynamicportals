@@ -1,9 +1,12 @@
 package tfc.dynamicportals;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.access.ITeleportTroughPacket;
 import tfc.dynamicportals.api.AbstractPortal;
+import tfc.dynamicportals.access.ParticleAccessor;
 import tfc.dynamicportals.util.TeleportationData;
 
 import java.util.UUID;
@@ -35,6 +38,34 @@ public class TeleportationHandler {
 			}
 		}
 		return wentThrough ? new TeleportationData(entity.getDeltaMovement(), targetPos, portalUUID) : null;
+	}
+	
+	public static Vec3 getTeleportedMotion(Particle particle, Vec3 motion) {
+		TeleportationData data = getTeleportationData(particle, motion);
+		return data != null ? data.motion : null;
+	}
+	
+	public static TeleportationData getTeleportationData(Particle particle, Vec3 motion) {
+		// TODO: handle pre teleportation collision
+		boolean wentThrough = false;
+		AbstractPortal[] portals = Temp.getPortals(Minecraft.getInstance().level);
+		Vec3 targetPos = null;
+		UUID portalUUID = null;
+		for (AbstractPortal portal : portals) {
+			Vec3 pos = ((ParticleAccessor) particle).getPosition();
+			if (portal.canTeleport(pos)) {
+				if (portal.moveParticle((ParticleAccessor) particle, ((ParticleAccessor) particle).getPosition(), motion)) {
+					//portal.target.finishMove(entity, entity.getPosition(0), motion);
+					//((ITeleportTroughPacket) entity).setTeleported();
+					wentThrough = true;
+					// Luigi's TODO: better handling, deny teleporting through the pair
+					targetPos = ((ParticleAccessor) particle).getPosition();
+					portalUUID = portal.uuid;
+					break;
+				}
+			}
+		}
+		return wentThrough ? new TeleportationData(((ParticleAccessor) particle).getMotion(), targetPos, portalUUID) : null;
 	}
 	
 //	public static void handleServerMovePlayerPacket(ServerPlayer player, ServerboundMovePlayerPacket i) {

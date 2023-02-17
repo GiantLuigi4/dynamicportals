@@ -7,6 +7,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.implementation.BasicPortal;
+import tfc.dynamicportals.access.ParticleAccessor;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
 
@@ -112,6 +113,9 @@ public abstract class AbstractPortal {
 	public boolean isInFront(Entity entity, Vec3 position) {
 		return true;
 	}
+	public boolean isInFront(Vec3 position) {
+		return true;
+	}
 	
 	/**
 	 * whether or not the portal can teleport the entity from where the entity is standing
@@ -123,6 +127,9 @@ public abstract class AbstractPortal {
 	public boolean canTeleport(Entity entity, Vec3 position) {
 		return isInFront(entity, position.add(0, entity.getEyeHeight(), 0));
 	}
+	public boolean canTeleport(Vec3 position) {
+		return isInFront(position);
+	}
 	
 	/**
 	 * here is where you handle teleporting an entity
@@ -133,6 +140,9 @@ public abstract class AbstractPortal {
 	 * @return whether or not the entity was moved
 	 */
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
+		return false;
+	}
+	public boolean moveParticle(ParticleAccessor particle, Vec3 position, Vec3 motion) {
 		return false;
 	}
 	

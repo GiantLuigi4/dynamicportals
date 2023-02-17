@@ -26,6 +26,7 @@ import tfc.dynamicportals.api.implementation.data.PortalDataTracker;
 import tfc.dynamicportals.api.implementation.data.PortalTrackedData;
 import tfc.dynamicportals.api.registry.BasicPortalTypes;
 import tfc.dynamicportals.api.registry.PortalType;
+import tfc.dynamicportals.access.ParticleAccessor;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.TrackyTools;
 import tfc.dynamicportals.util.Vec2d;
@@ -34,6 +35,7 @@ import tfc.dynamicportals.util.support.PehkuiSupport;
 import virtuoel.pehkui.api.ScaleData;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -223,7 +225,7 @@ public class BasicPortal extends AbstractPortal {
 	public boolean isInFront(Entity entity, Vec3 position) {
 		return isInFront(position.add(0, entity.getEyeHeight(), 0));
 	}
-	
+
 	@Override
 	public boolean canTeleport(Entity entity, Vec3 position) {
 		double distanceEntityToPortal = position.distanceTo(portalQuad.center().add(raytraceOffset()));
@@ -245,6 +247,18 @@ public class BasicPortal extends AbstractPortal {
 		return false;
 	}
 	
+	@Override
+	public boolean canTeleport(Vec3 position) {
+		double distanceEntityToPortal = position.distanceTo(portalQuad.center().add(raytraceOffset()));
+		if (distanceEntityToPortal < 1) {
+			if (renderNormal != null)
+				return isInFront(position);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
 	public boolean isInFront(Vec3 vector) {
 		return isInFront(vector.x, vector.y, vector.z);
 	}
@@ -336,15 +350,64 @@ public class BasicPortal extends AbstractPortal {
 	}
 	
 	@Override
+	public boolean moveParticle(ParticleAccessor particle, Vec3 position, Vec3 motion) {
+		boolean wasInFront = isInFront(position);
+		boolean isInFront = isInFront(position.add(motion));
+		if (wasInFront != isInFront) {
+//			// TODO: do stuff with this
+//			Vec3 rot = VecMath.toDeegrees(rotation);
+//			if ((((int) (rot.x * 3)) / 3) % 90 == 0 && (((int) (rot.y * 3)) / 3) % 90 == 0 && (((int) (rot.z * 3)) / 3) % 90 == 0) {
+//				double x = RaytraceHelper.calculateXOffset(box, entity.getBoundingBox(), motion.x);
+//				double y = RaytraceHelper.calculateYOffset(box, entity.getBoundingBox(), motion.y);
+//				double z = RaytraceHelper.calculateZOffset(box, entity.getBoundingBox(), motion.z);
+//				if (x != motion.x || y != motion.y || z != motion.z)
+//					System.out.println(raytraceOffset() + "multiple");
+//			}
+			
+			double raytraceDistance = trace(position, position.add(motion));
+			// luigi: not sure if this comparison between raytrace distance and distance from entity to portal is a good idea or not
+			double distanceEntityToPortal = position.distanceTo(portalQuad.center().add(raytraceOffset()));
+			if (raytraceDistance != -1 && distanceEntityToPortal < raytraceDistance || overlaps(particle.getBBox()) || overlaps(particle.getBBox().move(motion))) {
+				// Luigi's TODO: individual scales for x and y
+				//scale(entity, (float) (1 / size.y));
+				Quaternion srcRot = raytraceRotation();
+				Quaternion dstRot = target.raytraceRotation();
+				Vec3 srcOff = raytraceOffset();
+				Vec3 dstOff = target.raytraceOffset();
+				
+				Vec3 oldPos = particle.getOldPosition();
+				Vec3 oPos = particle.getPosition();
+				Vec3 pos = position;
+				if (target != this) {
+					oldPos = VecMath.transform(oldPos, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					oPos = VecMath.transform(oPos, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+					pos = VecMath.transform(pos, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+				}
+				
+				motion = VecMath.transform(motion, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), target == this, Vec3.ZERO, Vec3.ZERO);
+				particle.move(motion);
+				particle.setPosition(pos.x, pos.y, pos.z);
+				particle.move(motion);
+				
+				particle.setPosition(oPos.x, oPos.y, oPos.z);
+				particle.setOldPosition(oldPos.x, oldPos.y, oldPos.z);
+				
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
 	public void tickChunkTracking(Player player) {
 		// TODO: do level properly, maybe?
-		ArrayList<SectionPos> positions = TrackyTools.getChunksForPortal(player.level, player, this);
+		List<SectionPos> positions = TrackyTools.getChunksForPortal(player.level, player, this);
 		SectionPos center = SectionPos.of(new BlockPos(target.raytraceOffset().x, target.raytraceOffset().y, target.raytraceOffset().z));
 		// TODO: optimize
 		// TODO: don't redundantly do this
 		// TODO: offset this to be centered around the translated player camera
 		// TODO: frontface cull this to be only portals on the opposite side of the portal than the player's on
-		ArrayList<SectionPos> current = new ArrayList<>();
+		List<SectionPos> current = new ArrayList<>();
 		
 		for (int x = -8; x <= 8; x++) {
 			for (int y = -8; y <= 8; y++) {

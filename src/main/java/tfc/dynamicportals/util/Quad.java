@@ -28,8 +28,8 @@ public class Quad {
 	}
 	
 	public boolean overlaps(AABB box) {
-		Vec3 P = box.getCenter();
-		Vec3 n = nearestInQuad(P);
+//		Vec3 P = box.getCenter();
+		Vec3 n = nearestInQuad(box.getCenter());
 		return n != null && box.contains(n);
 	}
 	
@@ -49,7 +49,7 @@ public class Quad {
 		Vec3 normal = normal();
 		//d represents the offset from the origin, since there is none we assume it's 0
 		
-		//Consider the matrix equation Ax=B, x=B/A=inv(A)*B
+		//Considering the matrix equation Ax=B, we know that x=B/A, therefore x=inv(A)*B
 		//"A" is the matrix of our plane, "B" is a 1x4 matrix containing (point.x,point.y,point.z,d=0)
 		Matrix4f A = new Matrix4f(new float[]{
 				1, 0, 0, (float) -normal.x,
@@ -98,6 +98,7 @@ public class Quad {
 			}
 		}
 		// luigi: the code above doesn't account for corners, so I've strapped this on
+		// lorenzo: ok
 		if (actualNearest == null) {
 			for (Vec3 vec3 : vert) {
 				double d = vec3.distanceTo(point);
