@@ -40,6 +40,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 // TODO: TrackablePortal interface?
+// le what?
 public class BasicPortal extends AbstractPortal {
 	protected Vector3d position;
 	protected Vec2d size;
@@ -188,6 +189,10 @@ public class BasicPortal extends AbstractPortal {
 	@Override
 	public Vec2d getSize() {
 		return size;
+	}
+	
+	public Vec3 getRotation() {
+		return rotation;
 	}
 	
 	public BasicPortal setSize(Vec2d size) {

@@ -29,6 +29,24 @@ public class DynamicPortalsSourceStack extends CommandSourceStack {
 		this.context = context;
 	}
 	
+	public DynamicPortalsSourceStack(CommandContext<CommandSourceStack> context, int perm) {
+		this(context.getSource().source,
+				context.getSource().getPosition(),
+				context.getSource().getRotation(),
+				context.getSource().getLevel(),
+				perm,
+				context.getSource().getTextName(),
+				context.getSource().getDisplayName(),
+				context.getSource().getServer(),
+				context.getSource().getEntity(),
+				context.getSource().silent,
+				context.getSource().consumer,
+				context.getSource().anchor,
+				context.getInput(),
+				context.getNodes(),
+				context);
+	}
+	
 	public <T> T getArgument(String name, Class<T> clazz) {
 		return getArgumentOrDefault(name, clazz, null);
 	}

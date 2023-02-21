@@ -25,9 +25,7 @@ import tfc.dynamicportals.command.portals.*;
 import tfc.dynamicportals.util.DynamicPortalsSourceStack;
 import tfc.dynamicportals.util.VecMath;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
@@ -71,10 +69,8 @@ public class DynamicPortalsCommand {
 					.setPosition(ctx.getPositionFromWorldCoordinatesOrDefault("position", context.getSource().getPosition()))
 					.setSize(sizeVec.x, sizeVec.z)
 					.setRotation(VecMath.toRadians(ctx.getPositionFromWorldCoordinatesOrDefault("rotation", new Vec3(context.getSource().getRotation().y, -context.getSource().getRotation().x, 0))));
-			if (normal != null)
-				newPortal.setRenderNormal(normal);
-			if (ctx.getArgumentOrDefault("frontonly", String.class, "false").equals("true"))
-				newPortal.computeRenderNormal();
+			if (normal != null) newPortal.setRenderNormal(normal);
+			if (ctx.getArgumentOrDefault("frontonly", String.class, "false").equals("true")) newPortal.computeRenderNormal();
 			
 			if (targetFilter != null) {
 				CommandPortal[] possibleTargets = Temp.filter(context.getSource().getLevel(), targetFilter, context);
@@ -137,8 +133,21 @@ public class DynamicPortalsCommand {
 			}
 			
 			int count = 0;
+			Map<BasicPortal, UUID> toRemove = new HashMap<>();
+			Map<BasicPortal, UUID> targets = new HashMap<>();
 			for (CommandPortal commandPortal : Temp.filter(context.getSource().getLevel(), i, context)) {
 				if (commandPortal instanceof BasicPortal bap) {
+					String type;
+					if ((type = ctx.getArgument("type", String.class)) != null) {
+						if (!type.equals(bap.type.toString())) {
+							UUID old = bap.uuid;
+							UUID oldTarget = bap.target.uuid;
+							bap = portalCreators.get(type).apply(bap.uuid).setPosition(bap.raytraceOffset()).setSize(bap.getSize()).setRotation(bap.getRotation());
+							toRemove.put(bap, old);
+							targets.put(bap, oldTarget);
+						}
+					}
+					
 					bap.setPosition(ctx.getPositionFromWorldCoordinatesOrDefault("position", bap.raytraceOffset()));
 					
 					Vec3 vec = ctx.getPositionFromWorldCoordinatesOrDefault("rotation", null);
@@ -155,13 +164,24 @@ public class DynamicPortalsCommand {
 							ctx.sendFailure(new TranslatableComponent("dynamicportals.command.cheese.invalid_target"));
 						}
 					}
+					
 					Vec3 sizeVec = ctx.getPositionFromWorldCoordinates("size");
 					if (sizeVec != null) bap.setSize(sizeVec.x, sizeVec.z);
 					
-					// TODO: everything else
+					Vec3 normalVec = ctx.getPositionFromWorldCoordinates("normal");
+					if (normalVec != null) bap.setRenderNormal(normalVec);
+					if (ctx.getArgumentOrDefault("frontonly", String.class, "false").equals("true")) bap.computeRenderNormal();
 				}
 				
 				count += 1;
+			}
+			for (Map.Entry<BasicPortal, UUID> entry : toRemove.entrySet()) {
+				Temp.remove(context.getSource().getLevel(), entry.getValue());
+				Temp.addPortal(context.getSource().getLevel(), (CommandPortal) entry.getKey());
+			}
+			for (Map.Entry<BasicPortal, UUID> entry : targets.entrySet()) {
+				Optional<AbstractPortal> portal = Arrays.stream(Temp.getPortals(context.getSource().getLevel())).filter(p -> p.uuid == entry.getValue()).findFirst();
+				portal.ifPresent(abstractPortal -> entry.getKey().setTarget(abstractPortal));
 			}
 			
 			context.getSource().sendSuccess(new TranslatableComponent("dynamicportals.command.bread.update", count), true);
@@ -172,7 +192,7 @@ public class DynamicPortalsCommand {
 		buildRedirectedSubcommand("rotation", Vec3Argument.vec3(false), commandNode);
 		buildRedirectedSubcommand("size", Vec2Argument.vec2(false), commandNode);
 		buildRedirectedSubcommand("normal", Vec3Argument.vec3(false), commandNode);
-		buildRedirectedSubcommand("type", StringArrayArgument.of(new String[]{"basic", "nether", "end", "mirror"}), commandNode);
+		buildRedirectedSubcommand("type", StringArrayArgument.of(PortalSelectorArgument.portalTypes), commandNode);
 		buildRedirectedSubcommand("frontonly", StringArrayArgument.of(new String[]{"true", "false"}), commandNode);
 		buildRedirectedSubcommand("uuid", UuidArgument.uuid(), commandNode);
 		buildRedirectedSubcommand("target", PortalSelectorArgument.create(), commandNode);
@@ -183,23 +203,7 @@ public class DynamicPortalsCommand {
 	private static CommandSourceStack toSource(CommandContext<CommandSourceStack> context) {
 		int perm = 0;
 		while (context.getSource().hasPermission(perm)) perm++;
-		return new DynamicPortalsSourceStack(
-				context.getSource().source,
-				context.getSource().getPosition(),
-				context.getSource().getRotation(),
-				context.getSource().getLevel(),
-				perm - 1,
-				context.getSource().getTextName(),
-				context.getSource().getDisplayName(),
-				context.getSource().getServer(),
-				context.getSource().getEntity(),
-				context.getSource().silent,
-				context.getSource().consumer,
-				context.getSource().anchor,
-				context.getInput(),
-				context.getNodes(),
-				context
-		);
+		return new DynamicPortalsSourceStack(context, perm-1);
 	}
 	
 	// give me something to work with, and I will butcher it until it works in a way which is easy to work with

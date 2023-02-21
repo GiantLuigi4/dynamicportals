@@ -27,7 +27,7 @@ public record StringArrayArgument(String[] options) implements ArgumentType<Stri
 			for (String option : options) {
 				if (parsed.equalsIgnoreCase(option)) return option;
 			}
-			throw new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.unknown", parsed).append("; Option must be one of: " + Arrays.toString(options))).createWithContext(reader);
+			throw new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.unknown", parsed).append("; ").append(new TranslatableComponent("dynamicportals.command.cheese.options")).append(Arrays.toString(options))).createWithContext(reader);
 		}
 		throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.unknown")).createWithContext(reader);
 	}

@@ -13,5 +13,7 @@
   "dynamicportals.command.cheese.invalid_simple_id": "Invalid portal id %s.",
   "dynamicportals.command.cheese.empty_option": "Empty option.",
   "dynamicportals.command.cheese.empty_argument": "Empty argument.",
+  "dynamicportals.command.cheese.options": "Option must be one of: ",
+  "dynamicportals.command.bread.update": "Updated %s portals",
   "dynamicportals.command.cheese.unknown": "Unknown error/WIP"
 }

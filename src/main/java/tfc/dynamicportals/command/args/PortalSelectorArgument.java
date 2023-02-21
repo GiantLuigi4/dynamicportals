@@ -24,6 +24,7 @@ import static net.minecraft.commands.arguments.selector.options.EntitySelectorOp
 
 public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 	public List<String> options = List.of("uuid", "id", "type");
+	public static String[] portalTypes = new String[]{"basic", "nether", "end", "mirror"};
 	
 	public PortalSelectorArgument() {
 	}
@@ -143,7 +144,7 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 				
 				if (selectorStart < selectorEnd) {
 					if (selectorType.startsWith("type=")) {
-						options.addAll(List.of("basic", "nether", "end"));
+						options.addAll(List.of(portalTypes));
 					} else if (selectorType.startsWith("uuid=")) {
 						for (AbstractPortal p : portals)
 							options.add(p.uuid.toString());
