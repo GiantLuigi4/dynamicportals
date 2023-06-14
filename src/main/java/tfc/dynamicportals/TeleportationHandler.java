@@ -41,11 +41,11 @@ public class TeleportationHandler {
 	}
 	
 	public static Vec3 getTeleportedMotion(Particle particle, Vec3 motion) {
-		TeleportationData data = getTeleportationData(particle, motion);
+		TeleportationData data = getParticleTeleportationData(particle, motion);
 		return data != null ? data.motion : null;
 	}
 	
-	public static TeleportationData getTeleportationData(Particle p, Vec3 motion) {
+	public static TeleportationData getParticleTeleportationData(Particle p, Vec3 motion) {
 		// TODO: handle pre teleportation collision
 		boolean wentThrough = false;
 		AbstractPortal[] portals = Temp.getPortals(Minecraft.getInstance().level);

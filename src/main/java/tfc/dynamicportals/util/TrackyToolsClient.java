@@ -24,7 +24,7 @@ public class TrackyToolsClient {
 		synchronized (forcedChunks) {
 			Map<UUID, Supplier<Collection<SectionPos>>> map0 = TrackyAccessor.getRenderedChunks(lvl);
 			if (!forcedChunks.containsKey(lvl) || !map0.containsKey(trackyToolsUUID)) {
-				HashMap<UUID, Set<SectionPos>> map = addIfAbsent(forcedChunks, lvl, HashMap::new);
+				Map<UUID, Set<SectionPos>> map = addIfAbsent(forcedChunks, lvl, HashMap::new);
 				final Collection<SectionPos>[] output = new Collection[]{new HashSet<>()};
 				Supplier<Collection<SectionPos>> function = () -> {
 					Collection<SectionPos> currentFrameOutput = output[0];
@@ -75,7 +75,7 @@ public class TrackyToolsClient {
 	
 	public static void removePortal(Level lvl, BasicPortal portal) {
 		synchronized (forcedChunks) {
-			HashMap<UUID, Set<SectionPos>> map = addIfAbsent(forcedChunks, lvl, HashMap::new);
+			Map<UUID, Set<SectionPos>> map = addIfAbsent(forcedChunks, lvl, HashMap::new);
 			init(lvl);
 			map.remove(portal.uuid);
 		}

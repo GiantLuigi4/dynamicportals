@@ -405,6 +405,7 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public void tickChunkTracking(Player player) {
+		if (true) return;
 		// TODO: do level properly, maybe?
 		List<SectionPos> positions = TrackyTools.getChunksForPortal(player.level, player, this);
 		SectionPos center = SectionPos.of(new BlockPos(target.raytraceOffset().x, target.raytraceOffset().y, target.raytraceOffset().z));

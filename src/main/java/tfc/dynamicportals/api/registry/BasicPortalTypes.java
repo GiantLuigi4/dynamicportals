@@ -12,6 +12,7 @@ import tfc.dynamicportals.portals.vanilla.NetherPortal;
 import tfc.dynamicportals.util.Vec2d;
 
 import java.util.HashMap;
+import java.util.Map;
 
 // TODO: convert to deferred register?
 public class BasicPortalTypes {
@@ -19,7 +20,7 @@ public class BasicPortalTypes {
 	public static final PortalType<?> NETHER;
 	public static final PortalType<?> END;
 	
-	protected static HashMap<ResourceLocation, PortalType<?>> TYPES = new HashMap<>();
+	protected static Map<ResourceLocation, PortalType<?>> TYPES = new HashMap<>();
 	
 	public static <T extends BasicPortal> PortalType<T> register(ResourceLocation location, PortalType<T> type) {
 		TYPES.put(location, type);

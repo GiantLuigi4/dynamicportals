@@ -245,6 +245,7 @@ public class BasicPortalRenderer extends PortalRenderer {
 	
 	@Override
 	public void tickForceRendering() {
+		if (true) return;
 		// unfortunately, this seems to be required
 		if (Minecraft.getInstance().screen != null)
 			if (Minecraft.getInstance().screen instanceof ReceivingLevelScreen)
@@ -274,7 +275,6 @@ public class BasicPortalRenderer extends PortalRenderer {
 		}
 		
 		positions.clear();
-		//noinspection ConstantConditions
 		updated = updated || !positions.isEmpty();
 		positions.addAll(current);
 		
