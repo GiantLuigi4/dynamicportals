@@ -78,12 +78,13 @@ public class PortalRenderSource extends RenderSource {
 	@Override
 	public boolean containsSection(SectionPos pos) {
 		int yO = pos.getY() - originSection.getY();
-		if (Math.abs(yO) > radius) return false;
+		if (Math.abs(yO) > radius)
+			return false;
 		
 		int xO = pos.getX() - originSection.getX();
 		int zO = pos.getZ() - originSection.getZ();
 		
-		return Math.sqrt(xO * xO + zO * zO) < radius;
+		return Math.sqrt(xO * xO + zO * zO) <= radius;
 	}
 	
 	@Override

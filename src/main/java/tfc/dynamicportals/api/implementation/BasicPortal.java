@@ -20,13 +20,13 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import tfc.dynamicportals.access.ParticleAccessor;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.implementation.data.PortalDataSerializers;
 import tfc.dynamicportals.api.implementation.data.PortalDataTracker;
 import tfc.dynamicportals.api.implementation.data.PortalTrackedData;
 import tfc.dynamicportals.api.registry.BasicPortalTypes;
 import tfc.dynamicportals.api.registry.PortalType;
-import tfc.dynamicportals.access.ParticleAccessor;
 import tfc.dynamicportals.util.Quad;
 import tfc.dynamicportals.util.TrackyTools;
 import tfc.dynamicportals.util.Vec2d;
@@ -405,7 +405,6 @@ public class BasicPortal extends AbstractPortal {
 	
 	@Override
 	public void tickChunkTracking(Player player) {
-		if (true) return;
 		// TODO: do level properly, maybe?
 		List<SectionPos> positions = TrackyTools.getChunksForPortal(player.level, player, this);
 		SectionPos center = SectionPos.of(new BlockPos(target.raytraceOffset().x, target.raytraceOffset().y, target.raytraceOffset().z));
