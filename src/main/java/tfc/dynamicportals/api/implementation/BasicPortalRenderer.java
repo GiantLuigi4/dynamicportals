@@ -7,14 +7,10 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3d;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.GLUtils;
@@ -26,15 +22,17 @@ import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.gl.GlStateFunctions;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class BasicPortalRenderer extends PortalRenderer {
 	protected BasicPortal portal;
+	protected PortalRenderSource renderSource;
 	
 	public BasicPortalRenderer(BasicPortal portal) {
 		super(portal);
 		this.portal = portal;
+	}
+	
+	public PortalRenderSource createRenderSource() {
+		return new PortalRenderSource(8, portal);
 	}
 	
 	@Override
@@ -243,41 +241,15 @@ public class BasicPortalRenderer extends PortalRenderer {
 		return false;
 	}
 	
-	@Override
-	public void tickForceRendering() {
-		if (true) return;
-		// unfortunately, this seems to be required
-		if (Minecraft.getInstance().screen != null)
-			if (Minecraft.getInstance().screen instanceof ReceivingLevelScreen)
-				return;
-		
-		// TODO: do level properly, maybe?
-		Level lvl = Minecraft.getInstance().level;
-		Set<SectionPos> positions = TrackyToolsClient.getChunksForPortal(lvl, portal);
-		SectionPos center = SectionPos.of(new BlockPos(portal.target.raytraceOffset().x, portal.target.raytraceOffset().y, portal.target.raytraceOffset().z));
-		
-		Set<SectionPos> current = new HashSet<>();
-		
-		boolean updated = false;
-		
-		// TODO: this should be relative to the player relative to the portal
-		for (int x = -8; x <= 8; x++) {
-			for (int y = -8; y <= 8; y++) {
-				for (int z = -8; z <= 8; z++) {
-					SectionPos ps = SectionPos.of(center.getX() + x, center.getY() + y, center.getZ() + z);
-					if (lvl.isInWorldBounds(ps.center())) {
-						boolean pz = positions.remove(ps);
-						if (!pz) updated = true;
-						current.add(ps);
-					}
-				}
-			}
+	public PortalRenderSource getRenderSource() {
+		if (renderSource == null) {
+			this.renderSource = createRenderSource();
+			
+			// TODO: support having multiple worlds
+			TrackyToolsClient.getChunksForPortal(Minecraft.getInstance().level, portal).add(renderSource);
+			TrackyToolsClient.markDirty(Minecraft.getInstance().level);
 		}
 		
-		positions.clear();
-		updated = updated || !positions.isEmpty();
-		positions.addAll(current);
-		
-		if (updated) TrackyToolsClient.markDirty(lvl);
+		return renderSource;
 	}
 }

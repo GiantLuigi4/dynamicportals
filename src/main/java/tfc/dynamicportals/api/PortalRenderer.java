@@ -13,6 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
+import tfc.dynamicportals.api.implementation.PortalRenderSource;
 import tfc.dynamicportals.util.RenderTypes;
 
 public abstract class PortalRenderer {
@@ -207,5 +208,5 @@ public abstract class PortalRenderer {
 		return cam;
 	}
 	
-	public abstract void tickForceRendering();
+	public abstract PortalRenderSource getRenderSource();
 }

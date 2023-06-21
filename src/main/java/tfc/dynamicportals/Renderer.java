@@ -120,7 +120,7 @@ public class Renderer {
 		GLUtils.switchFBO(stencilTarget);
 		portal.renderer.drawStencil(source.getBuffer(portal.renderer.getRenderType()), stack);
 		forceDraw(source);
-		GlStateFunctions.disableDepthClamp(); // reset state
+		GlStateFunctions.enableDepthClamp();
 		GLUtils.boundTarget().unbindWrite();
 		
 		// setup to draw to the portal FBO
@@ -163,17 +163,20 @@ public class Renderer {
 		// draw
 		ObjectArrayList<LevelRenderer.RenderChunkInfo> chunkInfoList = Minecraft.getInstance().levelRenderer.renderChunksInFrustum;
 		if (portal.renderer.getGraph() != null) {
+			portal.renderer.getRenderSource().setActive(true);
+			
 			PoseStack sysStk = RenderSystem.getModelViewStack();
-//			RenderSystem.modelViewStack = stk;
-//			RenderSystem.applyModelViewMatrix();
-//			if (ModList.get().isLoaded("flywheel"))
-//			MinecraftForge.EVENT_BUS.post(new BeginFrameEvent(Minecraft.getInstance().level, camera, frustum));
-			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = portal.renderer.getGraph().getChunks();
+			
+			
+			// don't render vanilla chunks
+			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = new ObjectArrayList<>();
 			// TODO: I think the level renderer expects a matrix stack that's only a scale/rotation
 			Minecraft.getInstance().levelRenderer.renderLevel(stk, Minecraft.getInstance().getFrameTime(), 0, true, camera, Minecraft.getInstance().gameRenderer, Minecraft.getInstance().gameRenderer.lightTexture(), RenderSystem.getProjectionMatrix());
 			MinecraftForge.EVENT_BUS.post(new RenderLevelLastEvent(Minecraft.getInstance().levelRenderer, stack, 0, RenderSystem.getProjectionMatrix(), System.nanoTime()));
 			RenderSystem.modelViewStack = sysStk;
 			RenderSystem.applyModelViewMatrix();
+			
+			portal.renderer.getRenderSource().setActive(false);
 		}
 		
 		accessor.setCullingFrustum(vanillaFrustum);
@@ -233,15 +236,18 @@ public class Renderer {
 			portal.renderer.setupVisGraph(Minecraft.getInstance().levelRenderer);
 			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
 			portal.renderer.getGraph().update();
+			
+			portal.renderer.getRenderSource().doFrustumUpdate(Minecraft.getInstance().gameRenderer.getMainCamera(), getFrustum(portal, mat, proj));
 		} else if (
 				(int) orx != (int) rx || (int) ory != (int) ry ||
 						(int) oldPos.x != (int) camVec.x ||
 						(int) oldPos.y != (int) camVec.y ||
 						(int) oldPos.z != (int) camVec.z
 		) {
-			portal.renderer.setupVisGraph(Minecraft.getInstance().levelRenderer);
-			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
-			portal.renderer.getGraph().update();
+//			portal.renderer.setupVisGraph(Minecraft.getInstance().levelRenderer);
+//			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
+//			portal.renderer.getGraph().update();
+			portal.renderer.getRenderSource().doFrustumUpdate(Minecraft.getInstance().gameRenderer.getMainCamera(), getFrustum(portal, mat, proj));
 		}
 	}
 	
@@ -323,7 +329,6 @@ public class Renderer {
 		for (AbstractPortal portal1 : portals) {
 			if (portal1.renderer.shouldRender(frustum, camX, camY, camZ)) {
 				portal1.tickChunkTracking(Minecraft.getInstance().player);
-				portal1.renderer.tickForceRendering();
 				renderPortal(stack, type, buffers, portal1, frustum);
 			}
 		}
