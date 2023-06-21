@@ -20,6 +20,7 @@ import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 import tfc.dynamicportals.access.client.LevelRendererAccessor;
 import tfc.dynamicportals.api.AbstractPortal;
+import tfc.dynamicportals.api.implementation.PortalRenderSource;
 import tfc.dynamicportals.util.VecMath;
 import tfc.dynamicportals.util.async.AsyncDispatcher;
 import tfc.dynamicportals.util.async.ReusableThread;
@@ -155,18 +156,19 @@ public class Renderer {
 		// swap frustum
 		LevelRendererAccessor accessor = (LevelRendererAccessor) Minecraft.getInstance().levelRenderer;
 		Frustum vanillaFrustum = accessor.getCullingFrustum();
-		// TODO: fix this
+		// TODO: fix this?
 //		accessor.setCullingFrustum(new Frustum(RenderSystem.getProjectionMatrix(), stk.last().pose()));
 		accessor.setCullingFrustum(getFrustum(portal, a.last().pose(), RenderSystem.getProjectionMatrix()));
 		Minecraft.getInstance().levelRenderer.capturedFrustum = null;
 		
 		// draw
 		ObjectArrayList<LevelRenderer.RenderChunkInfo> chunkInfoList = Minecraft.getInstance().levelRenderer.renderChunksInFrustum;
-		if (portal.renderer.getGraph() != null) {
-			portal.renderer.getRenderSource().setActive(true);
+		
+		PortalRenderSource renderSource = portal.renderer.getRenderSource();
+		if (renderSource != null) {
+			renderSource.setActive(true);
 			
 			PoseStack sysStk = RenderSystem.getModelViewStack();
-			
 			
 			// don't render vanilla chunks
 			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = new ObjectArrayList<>();
@@ -176,7 +178,7 @@ public class Renderer {
 			RenderSystem.modelViewStack = sysStk;
 			RenderSystem.applyModelViewMatrix();
 			
-			portal.renderer.getRenderSource().setActive(false);
+			renderSource.setActive(false);
 		}
 		
 		accessor.setCullingFrustum(vanillaFrustum);
@@ -232,23 +234,17 @@ public class Renderer {
 	
 	public static void updatePortal(AbstractPortal portal, Matrix4f mat, Matrix4f proj) {
 		// frustum culling
-		if (portal.renderer.getGraph() == null) {
-			portal.renderer.setupVisGraph(Minecraft.getInstance().levelRenderer);
-			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
-			portal.renderer.getGraph().update();
-			
-			portal.renderer.getRenderSource().doFrustumUpdate(Minecraft.getInstance().gameRenderer.getMainCamera(), getFrustum(portal, mat, proj));
-		} else if (
-				(int) orx != (int) rx || (int) ory != (int) ry ||
+		if (
+				portal.renderer.isFirstRender() ||
+						(int) orx != (int) rx || (int) ory != (int) ry ||
 						(int) oldPos.x != (int) camVec.x ||
 						(int) oldPos.y != (int) camVec.y ||
 						(int) oldPos.z != (int) camVec.z
 		) {
-//			portal.renderer.setupVisGraph(Minecraft.getInstance().levelRenderer);
-//			portal.renderer.getGraph().setFrustum(getFrustum(portal, mat, proj));
-//			portal.renderer.getGraph().update();
 			portal.renderer.getRenderSource().doFrustumUpdate(Minecraft.getInstance().gameRenderer.getMainCamera(), getFrustum(portal, mat, proj));
 		}
+		
+		portal.renderer.setFirstRender(false);
 	}
 	
 	private static BufferBuilder setupTesselator(ShaderInstance shaderInstance, VertexFormat format) {

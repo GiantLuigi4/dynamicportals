@@ -17,8 +17,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tfc.dynamicportals.Renderer;
-import tfc.dynamicportals.Temp;
-import tfc.dynamicportals.api.AbstractPortal;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashSet;
@@ -51,13 +49,6 @@ public abstract class LevelRendererMixin {
 	
 	@ModifyVariable(at = @At("HEAD"), method = "setupRender", index = 3, argsOnly = true)
 	public boolean denyRefresh(boolean src) {
-		if (!recentlyCompiledChunks.isEmpty()) {
-			for (AbstractPortal portal : Temp.getPortals(level)) {
-				if (portal.renderer.getGraph() != null) {
-					portal.renderer.getGraph().addAll(recentlyCompiledChunks);
-				}
-			}
-		}
 		if (Renderer.isStencilPresent())
 			return true;
 		return src;

@@ -5,9 +5,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector4f;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -17,7 +19,6 @@ import tfc.dynamicportals.api.implementation.PortalRenderSource;
 import tfc.dynamicportals.util.RenderTypes;
 
 public abstract class PortalRenderer {
-	protected PortalVisibilityGraph graph;
 	protected AbstractPortal portal;
 	protected PortalCamera cam;
 	
@@ -25,25 +26,15 @@ public abstract class PortalRenderer {
 		this.portal = portal;
 	}
 	
-	public void setupVisGraph(LevelRenderer renderer) {
-		graph = new PortalVisibilityGraph(renderer);
+	boolean firstRender = false;
+	
+	public boolean isFirstRender() {
+		return firstRender;
 	}
 	
-	public PortalVisibilityGraph getGraph() {
-		if (graph != null) {
-			Vec3 offset = portal.target.raytraceOffset();
-			graph.originX = (int) offset.x;
-			graph.originY = (int) offset.y;
-			graph.originZ = (int) offset.z;
-		}
-		return graph;
-	}
-	
-	public void teleportEntity(Entity entity) {
-		if (entity == Minecraft.getInstance().cameraEntity) {
-			if (graph != null)
-				graph.nudgeRenderer();
-		}
+	public PortalRenderer setFirstRender(boolean firstRender) {
+		this.firstRender = firstRender;
+		return this;
 	}
 	
 	/**
@@ -201,12 +192,25 @@ public abstract class PortalRenderer {
 		double d1 = pTarget.y;
 		double d2 = pTarget.z;
 		double d3 = Math.sqrt(d0 * d0 + d2 * d2);
-		float xR = (Mth.wrapDegrees((float)(-(Mth.atan2(d1, d3) * (double)(180F / (float)Math.PI)))));
-		float yR = (Mth.wrapDegrees((float)(Mth.atan2(d2, d0) * (double)(180F / (float)Math.PI)) - 90.0F));
+		float xR = (Mth.wrapDegrees((float) (-(Mth.atan2(d1, d3) * (double) (180F / (float) Math.PI)))));
+		float yR = (Mth.wrapDegrees((float) (Mth.atan2(d2, d0) * (double) (180F / (float) Math.PI)) - 90.0F));
 		
 		cam.setRotation(yR, xR);
 		return cam;
 	}
 	
 	public abstract PortalRenderSource getRenderSource();
+	
+	public void teleportEntity(Entity entity) {
+		if (entity == Minecraft.getInstance().cameraEntity) {
+			Minecraft.getInstance().levelRenderer.renderChunksInFrustum = new ObjectArrayList<>();
+			LevelRenderer.RenderChunkStorage storage = Minecraft.getInstance().levelRenderer.renderChunkStorage.get();
+			
+			for (ChunkRenderDispatcher.RenderChunk renderChunk : getRenderSource().getChunksInFrustum()) {
+				LevelRenderer.RenderChunkInfo info = storage.renderInfoMap.get(renderChunk);
+				
+				if (info != null) Minecraft.getInstance().levelRenderer.renderChunksInFrustum.add(info);
+			}
+		}
+	}
 }
