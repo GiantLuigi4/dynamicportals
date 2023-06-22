@@ -55,19 +55,17 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 									for (CommandPortal portal : oldFilter.filter(portals, ctx)) {
 										switch (split[0]) {
 											case "type" -> {
-												if (portal.type().equals(split[1])) {
-													output.add(portal);
-												}
+												if (portal.type().equals(split[1])) output.add(portal);
 											}
 											case "id" -> {
-												if (portal.myId() == Integer.parseInt(split[1])) {
-													output.add(portal);
+												try {
+													if (portal.myId() == Integer.parseInt(split[1])) output.add(portal);
+												} catch (Throwable ignored) {
+													//TODO: deal with erroneous behaviour?
 												}
 											}
 											case "uuid" -> {
-												if (((AbstractPortal) portal).uuid.toString().equals(split[1])) {
-													output.add(portal);
-												}
+												if (((AbstractPortal) portal).uuid.toString().equals(split[1])) output.add(portal);
 											}
 										}
 									}
@@ -107,33 +105,28 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 	
 	public String[] parseSingleFilter(StringReader reader) throws CommandSyntaxException {
 		String option = reader.readString();
-		if (option.isEmpty())
-			throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.empty_option")).createWithContext(reader);
-		else if (!options.contains(option))
-			throw ERROR_UNKNOWN_OPTION.createWithContext(reader, option);
+		if (option.isEmpty()) throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.empty_option")).createWithContext(reader);
+		else if (!options.contains(option)) throw ERROR_UNKNOWN_OPTION.createWithContext(reader, option);
 		if (reader.peek() == '=') {
 			reader.skip();
 			String argument = reader.readString();
-			if (argument.isEmpty())
-				throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.empty_argument")).createWithContext(reader);
+			if (argument.isEmpty()) throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.empty_argument")).createWithContext(reader);
 			return new String[]{option, argument};
-		} else {
-			throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.missing_equal")).createWithContext(reader);
-		}
+		} else throw new SimpleCommandExceptionType(new TranslatableComponent("dynamicportals.command.cheese.missing_equal")).createWithContext(reader);
 	}
 	
 	@Override
-	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> pContext, SuggestionsBuilder pBuilder) {
-		if (pContext.getSource() instanceof SharedSuggestionProvider) {
+	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
+		if (context.getSource() instanceof SharedSuggestionProvider) {
 			// Lorenzo: fix what exactly?
 			// if (true)  // TODO: fix
 			//      return Suggestions.empty();
 			
-			String selector = pBuilder.getRemaining();
+			String selector = builder.getRemaining();
 //			AbstractPortal[] portals = Temp.getPortals(null); //TODO: not actually null, but for now it's ok
 			AbstractPortal[] portals = new AbstractPortal[0];
 			if (selector.equals("@")) {
-				return SharedSuggestionProvider.suggest(new String[]{"@["}, pBuilder);
+				return SharedSuggestionProvider.suggest(new String[]{"@["}, builder);
 			} else if (selector.startsWith("@[")) {
 				int selectorStart = Math.max(selector.indexOf("["), selector.lastIndexOf(","));
 				int selectorEnd = Math.max(selector.lastIndexOf(","), selector.lastIndexOf("="));
@@ -160,18 +153,18 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 				
 				for (String option : options) {
 					if (option.equals(argument)) {
-						return SharedSuggestionProvider.suggest(new String[]{",", "]"}, pBuilder.createOffset(pBuilder.getStart() + pBuilder.getRemaining().length()));
+						return SharedSuggestionProvider.suggest(new String[]{",", "]"}, builder.createOffset(builder.getStart() + builder.getRemaining().length()));
 					}
 				}
 				
-				return SharedSuggestionProvider.suggest(options, pBuilder.createOffset(pBuilder.getStart() + (selectorEnd < 0 ? selectorStart : selectorEnd) + 1));
+				return SharedSuggestionProvider.suggest(options, builder.createOffset(builder.getStart() + (selectorEnd < 0 ? selectorStart : selectorEnd) + 1));
 			}
 			List<String> ids = new ArrayList<>(List.of("@"));
 			for (AbstractPortal p : portals) {
 				if (p instanceof CommandPortal)
 					ids.add(Integer.toString(((CommandPortal) p).myId()));
 			}
-			return SharedSuggestionProvider.suggest(ids, pBuilder);
+			return SharedSuggestionProvider.suggest(ids, builder);
 		} else {
 			return Suggestions.empty();
 		}

@@ -109,8 +109,8 @@ public class LocalPlayerMixin implements ITrackChunks {
 		Entity e = (Entity) (Object) this;
 		if (
 				dp_xo != e.position().x ||
-						dp_yo != e.position().y ||
-						dp_zo != e.position().z
+				dp_yo != e.position().y ||
+				dp_zo != e.position().z
 		) {
 			for (AbstractPortal portal : Temp.getPortals(((Entity) (Object) this).getLevel())) {
 				portal.tickChunkTracking((Player) (Object) this);
