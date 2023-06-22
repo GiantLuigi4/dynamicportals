@@ -39,19 +39,21 @@ public class PortalDataTracker {
 	}
 	
 	public void write(FriendlyByteBuf buf) {
-		int count = 0;
-		DataEntry<Object>[] entriesUpdated = new DataEntry[entries.size()];
-		for (DataEntry<?> value : entries.values()) {
-			if (value.isDirty()) {
-				entriesUpdated[count++] = (DataEntry<Object>) value;
-				value.setDirty(false);
+		if (buf != null) {
+			int count = 0;
+			DataEntry<Object>[] entriesUpdated = new DataEntry[entries.size()];
+			for (DataEntry<?> value : entries.values()) {
+				if (value.isDirty()) {
+					entriesUpdated[count++] = (DataEntry<Object>) value;
+					value.setDirty(false);
+				}
 			}
-		}
-		
-		buf.writeInt(count);
-		for (int i = 0; i < count; i++) {
-			buf.writeUtf(entriesUpdated[i].parameter.name);
-			entriesUpdated[i].parameter.serializer.write(buf, entriesUpdated[i].getter.get());
+			
+			buf.writeInt(count);
+			for (int i = 0; i < count; i++) {
+				buf.writeUtf(entriesUpdated[i].parameter.name);
+				entriesUpdated[i].parameter.serializer.write(buf, entriesUpdated[i].getter.get());
+			}
 		}
 		
 		isDirty = false;

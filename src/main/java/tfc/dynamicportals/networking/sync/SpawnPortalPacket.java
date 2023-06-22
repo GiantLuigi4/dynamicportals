@@ -1,36 +1,41 @@
 package tfc.dynamicportals.networking.sync;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.api.implementation.BasicPortal;
-import tfc.dynamicportals.api.registry.BasicPortalTypes;
 import tfc.dynamicportals.networking.Packet;
+import tfc.dynamicportals.portals.PortalPair;
+
+import java.util.UUID;
 
 public class SpawnPortalPacket extends Packet {
-	ResourceLocation type;
-	CompoundTag tag;
+	PortalPair pair;
+	UUID partner;
 	
 	public SpawnPortalPacket(BasicPortal portal) {
-		type = portal.type.getRegistryName();
-		tag = portal.serialize();
+		this.pair = new PortalPair(portal, portal);
+		partner = portal.target.uuid;
+	}
+	
+	public SpawnPortalPacket(PortalPair pair) {
+		this.pair = pair;
 	}
 	
 	public SpawnPortalPacket(FriendlyByteBuf buf) {
 		super(buf);
-		type = buf.readResourceLocation();
-		tag = buf.readNbt();
+		this.pair = new PortalPair(null, null);
+		pair.read(buf);
+		partner = buf.readUUID();
 	}
 	
 	@Override
 	public void write(FriendlyByteBuf buf) {
 		super.write(buf);
-		buf.writeResourceLocation(type);
-		buf.writeNbt(tag);
+		pair.write(buf);
+		buf.writeUUID(partner);
 	}
 	
 	@Override
@@ -38,8 +43,11 @@ public class SpawnPortalPacket extends Packet {
 		if (checkClient(ctx)) {
 			// TODO: defer portal creation so that pairs can exist
 			Level level = Minecraft.getInstance().level;
-			BasicPortal portal = BasicPortalTypes.createPortal(level, type, tag);
-			Temp.addRegularPortal(level, portal);
+			Temp.addRegularPortal(level, pair.left);
+			if (pair.right != pair.left) Temp.addRegularPortal(level, pair.right);
+			pair.right.target = pair.left;
+			pair.left.target = Temp.getPortal(level, partner);
+			pair.left.target.target = pair.left;
 			ctx.setPacketHandled(true);
 		}
 	}

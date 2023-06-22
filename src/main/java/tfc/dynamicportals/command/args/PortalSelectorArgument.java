@@ -9,7 +9,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.TranslatableComponent;
-import tfc.dynamicportals.Temp;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.command.FullPortalFilter;
 import tfc.dynamicportals.command.portals.CommandPortal;
@@ -131,7 +130,8 @@ public class PortalSelectorArgument implements ArgumentType<FullPortalFilter> {
 			//      return Suggestions.empty();
 			
 			String selector = pBuilder.getRemaining();
-			AbstractPortal[] portals = Temp.getPortals(null); //TODO: not actually null, but for now it's ok
+//			AbstractPortal[] portals = Temp.getPortals(null); //TODO: not actually null, but for now it's ok
+			AbstractPortal[] portals = new AbstractPortal[0];
 			if (selector.equals("@")) {
 				return SharedSuggestionProvider.suggest(new String[]{"@["}, pBuilder);
 			} else if (selector.startsWith("@[")) {

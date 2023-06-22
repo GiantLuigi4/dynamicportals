@@ -20,8 +20,6 @@ public class DynamicPortalsNetworkRegistry {
 	);
 	
 	static {
-//		NetworkEntry<?>[] entries = new NetworkEntry[]{
-//		};
 		ArrayList<NetworkEntry<?>> entries = new ArrayList<>();
 		entries.add(new NetworkEntry<>(SpawnPortalPacket.class, SpawnPortalPacket::new));
 		entries.add(new NetworkEntry<>(RemovePortalPacket.class, RemovePortalPacket::new));
