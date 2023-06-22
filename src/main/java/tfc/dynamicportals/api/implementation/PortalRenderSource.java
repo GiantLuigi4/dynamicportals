@@ -93,8 +93,8 @@ public class PortalRenderSource extends RenderSource {
 			this.chunksInFrustum.clear();
 			
 			for (ChunkRenderDispatcher.RenderChunk renderChunk : this.chunksInSource) {
-				if (renderChunk.getCompiledChunk().hasNoRenderableLayers())
-					continue;
+//				if (renderChunk.getCompiledChunk().hasNoRenderableLayers())
+//					continue;
 				
 				if (frustum.isVisible(renderChunk.getBoundingBox()))
 					chunksInFrustum.add(renderChunk);
