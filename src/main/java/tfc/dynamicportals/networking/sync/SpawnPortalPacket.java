@@ -5,6 +5,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 import tfc.dynamicportals.Temp;
+import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.networking.Packet;
 import tfc.dynamicportals.portals.PortalPair;
@@ -46,7 +47,8 @@ public class SpawnPortalPacket extends Packet {
 			Temp.addRegularPortal(level, pair.left);
 			if (pair.right != pair.left) Temp.addRegularPortal(level, pair.right);
 			pair.right.target = pair.left;
-			pair.left.target = Temp.getPortal(level, partner);
+			AbstractPortal ptrl = Temp.getPortal(level, partner);
+			if (ptrl != null) pair.left.target = ptrl;
 			pair.left.target.target = pair.left;
 			ctx.setPacketHandled(true);
 		}
