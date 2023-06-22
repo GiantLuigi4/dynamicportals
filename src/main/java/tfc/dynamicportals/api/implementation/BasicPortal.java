@@ -55,6 +55,7 @@ public class BasicPortal extends AbstractPortal {
 	
 	public BasicPortal(UUID uuid) {
 		this(uuid, BasicPortalTypes.BASIC);
+		target = this;
 	}
 	
 	public BasicPortal(UUID uuid, PortalType<?> type) {
@@ -63,6 +64,7 @@ public class BasicPortal extends AbstractPortal {
 			this.renderer = new BasicPortalRenderer(this);
 		this.type = type;
 		registerTrackedData();
+		target = this;
 	}
 	
 	PortalTrackedData<Vector3d> POSITION = new PortalTrackedData<>("position", PortalDataSerializers.VECTOR_3D);
