@@ -6,7 +6,7 @@
   "dynamicportals.command.bread.delete": "Deleted %s portals",
   "dynamicportals.command.cheese.size_crab": "I'm not sure why you're seeing this, so report what exactly your command was to https://github.com/GiantLuigi4/dynamicportals/issues",
   "dynamicportals.command.cheese.missing_args": "In order to create a portal, you must supply the following arguments: [size:Vec2]",
-  "dynamicportals.command.cheese.modify_missing_args": "In order to modify a portal, you must supply the at least an option before the modify keyboard (target, size, etc.)",
+  "dynamicportals.command.cheese.modify_missing_args": "In order to modify a portal, you must supply the at least an option before the modify keyword (target, size, etc.)",
   "dynamicportals.command.cheese.missing_size": "In order to create a portal, you must supply an argument for the size of the portal.",
   "dynamicportals.command.cheese.missing_equal": "Missing equal sign.",
   "dynamicportals.command.cheese.invalid_target": "Didn't find any portal for the specified target. The portal will be a mirror.",
