@@ -72,12 +72,16 @@ public class DynamicPortalsCommand {
 			if (normal != null) newPortal.setRenderNormal(normal);
 			if (ctx.getArgumentOrDefault("frontonly", String.class, "false").equals("true")) newPortal.computeRenderNormal();
 			
+			int trgId = 0;
+			
 			if (targetFilter != null) {
 				CommandPortal[] possibleTargets = Temp.filter(context.getSource().getLevel(), targetFilter, context);
 				if (possibleTargets.length > 0) {
 					CommandPortal target = possibleTargets[0];
 					((AbstractPortal) target).setTarget(newPortal);
 					newPortal.setTarget((AbstractPortal) target);
+					
+					trgId = possibleTargets[0].myId();
 				} else {
 					ctx.sendFailure(new TranslatableComponent("dynamicportals.command.cheese.invalid_target"));
 				}
@@ -86,7 +90,7 @@ public class DynamicPortalsCommand {
 			int newId = Temp.addPortal(context.getSource().getLevel(), (CommandPortal) newPortal);
 			if (newPortal.target == newPortal)
 				ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.mirror", newId), true);
-			else ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.target", newId), true);
+			else ctx.sendSuccess(new TranslatableComponent("dynamicportals.command.bread.target", newId, trgId), true);
 			return 0;
 		});
 		
