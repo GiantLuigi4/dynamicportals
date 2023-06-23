@@ -74,8 +74,8 @@ public abstract class ServerPlayerMixin implements ITrackChunks {
 		Entity e = (Entity) (Object) this;
 		if (
 				dp_xo != e.position().x ||
-						dp_yo != e.position().y ||
-						dp_zo != e.position().z
+				dp_yo != e.position().y ||
+				dp_zo != e.position().z
 		) {
 			for (AbstractPortal portal : Temp.getPortals(getLevel())) {
 				portal.tickChunkTracking((Player) (Object) this);

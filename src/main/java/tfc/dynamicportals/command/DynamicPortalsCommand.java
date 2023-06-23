@@ -118,16 +118,16 @@ public class DynamicPortalsCommand {
 			if (context.getSource() instanceof DynamicPortalsSourceStack)
 				ctx = (DynamicPortalsSourceStack) context.getSource();
 			else {
-				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.missing_args"));
+				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.modify_missing_args"));
 				return -1;
 			}
 			
-			FullPortalFilter i = null;
+			FullPortalFilter filter = null;
 			try {
-				i = context.getArgument("modify", FullPortalFilter.class);
+				filter = context.getArgument("modify", FullPortalFilter.class);
 			} catch (Throwable ignored) {
 			}
-			if (i == null) {
+			if (filter == null) {
 				context.getSource().sendFailure(new TranslatableComponent("dynamicportals.command.cheese.empty_argument"));
 				return -1;
 			}
@@ -135,7 +135,7 @@ public class DynamicPortalsCommand {
 			int count = 0;
 			Map<BasicPortal, UUID> toRemove = new HashMap<>();
 			Map<BasicPortal, UUID> targets = new HashMap<>();
-			for (CommandPortal commandPortal : Temp.filter(context.getSource().getLevel(), i, context)) {
+			for (CommandPortal commandPortal : Temp.filter(context.getSource().getLevel(), filter, context)) {
 				if (commandPortal instanceof BasicPortal bap) {
 					String type;
 					if ((type = ctx.getArgument("type", String.class)) != null) {
@@ -173,7 +173,7 @@ public class DynamicPortalsCommand {
 					if (ctx.getArgumentOrDefault("frontonly", String.class, "false").equals("true")) bap.computeRenderNormal();
 				}
 				
-				count += 1;
+				count++;
 			}
 			for (Map.Entry<BasicPortal, UUID> entry : toRemove.entrySet()) {
 				Temp.remove(context.getSource().getLevel(), entry.getValue());
@@ -203,7 +203,7 @@ public class DynamicPortalsCommand {
 	private static CommandSourceStack toSource(CommandContext<CommandSourceStack> context) {
 		int perm = 0;
 		while (context.getSource().hasPermission(perm)) perm++;
-		return new DynamicPortalsSourceStack(context, perm-1);
+		return new DynamicPortalsSourceStack(context, --perm);
 	}
 	
 	// give me something to work with, and I will butcher it until it works in a way which is easy to work with
