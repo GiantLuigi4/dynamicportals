@@ -25,6 +25,7 @@ import tfc.dynamicportals.command.portals.CommandPortal;
 import tfc.dynamicportals.networking.DynamicPortalsNetworkRegistry;
 import tfc.dynamicportals.networking.DypoNetworkTargets;
 import tfc.dynamicportals.networking.sync.RemovePortalPacket;
+import tfc.dynamicportals.util.TrackyTools;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -144,6 +145,8 @@ public abstract class LevelMixin implements IHoldPortals {
 					if (aportal instanceof BasicPortal bportal) {
 						LevelChunk chunk = getChunkAt(new BlockPos(bportal.raytraceOffset()));
 						DynamicPortalsNetworkRegistry.NETWORK_INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> chunk), new RemovePortalPacket(bportal.uuid));
+						
+						if (isServer) TrackyTools.removePortal(((Level) (Object) this), null, bportal);
 					}
 					
 					return;
@@ -172,6 +175,8 @@ public abstract class LevelMixin implements IHoldPortals {
 								)
 						), new RemovePortalPacket(bap.uuid)
 				);
+				
+				TrackyTools.removePortal(((Level) (Object) this), null, bap);
 			}
 		}
 		

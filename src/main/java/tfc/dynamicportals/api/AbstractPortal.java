@@ -6,8 +6,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.access.ParticleAccessor;
+import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.util.Vec2d;
 import tfc.dynamicportals.util.VecMath;
 
@@ -113,6 +113,7 @@ public abstract class AbstractPortal {
 	public boolean isInFront(Entity entity, Vec3 position) {
 		return true;
 	}
+	
 	public boolean isInFront(Vec3 position) {
 		return true;
 	}
@@ -120,13 +121,15 @@ public abstract class AbstractPortal {
 	/**
 	 * whether or not the portal can teleport the entity from where the entity is standing
 	 * EX, for a portal which only has a front face, it would be if the entity is infront and within x distance of the portal
-	 * @param entity the entity in question
+	 *
+	 * @param entity   the entity in question
 	 * @param position the position of the entity
 	 * @return if the entity can be teleported
 	 */
 	public boolean canTeleport(Entity entity, Vec3 position) {
 		return isInFront(entity, position.add(0, entity.getEyeHeight(), 0));
 	}
+	
 	public boolean canTeleport(Vec3 position) {
 		return isInFront(position);
 	}
@@ -142,6 +145,7 @@ public abstract class AbstractPortal {
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		return false;
 	}
+	
 	public boolean moveParticle(ParticleAccessor particle, Vec3 position, Vec3 motion) {
 		return false;
 	}
@@ -152,4 +156,12 @@ public abstract class AbstractPortal {
 	public abstract void tickChunkTracking(Player player);
 	
 	public abstract Vec3 nearestPoint(Vec3 targetSpot);
+	
+	/**
+	 * Gets the coordinate at which the vector would be if it were teleported through the portal
+	 *
+	 * @param src the input vector
+	 * @return the "teleported" vector
+	 */
+	public abstract Vec3 getDestination(Vec3 src);
 }

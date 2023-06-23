@@ -37,7 +37,10 @@
     "client.particle.ParticleMixin",
     "client.quality.LevelRendererMixin",
     "client.quality.LightingMixin",
-    "client.selection.GameRendererMixin"
+    "client.quality.camera.CameraMixin",
+    "client.quality.camera.GameRendererMixin",
+    "client.selection.GameRendererMixin",
+    "dev.RenderDocker"
   ],
   "injectors": {
     "defaultRequire": 1

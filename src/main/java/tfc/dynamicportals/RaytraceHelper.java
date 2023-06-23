@@ -4,6 +4,7 @@ import com.mojang.math.Quaternion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.AbstractPortal;
@@ -62,6 +63,27 @@ public class RaytraceHelper {
 			}
 		}
 		return offsetZ;
+	}
+	
+	public static AbstractPortal tracePortal(Level level, Vec3 start, Vec3 end) {
+		AbstractPortal[] portals = Temp.getPortals(level);
+		
+		Vec3 reach = end.subtract(start).normalize();
+		
+		double bDist = Double.POSITIVE_INFINITY;
+		AbstractPortal hit = null;
+		for (AbstractPortal portal : portals) {
+			if (!portal.canTeleport(new Vec3(start.x, start.y, start.z))) continue;
+			double dist = portal.trace(start, end);
+			if (dist == 1) continue;
+			double distance = reach.scale(dist).length();
+			if (distance > bDist) continue;
+			
+			bDist = distance;
+			hit = portal;
+		}
+		
+		return hit;
 	}
 	
 	public static void trace(Minecraft minecraft, float pPartialTicks) {

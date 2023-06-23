@@ -1,7 +1,5 @@
 package tfc.dynamicportals;
 
-//import com.jozufozu.flywheel.event.BeginFrameEvent;
-
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
@@ -18,6 +16,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.common.MinecraftForge;
+import org.lwjgl.opengl.GL11;
 import tfc.dynamicportals.access.client.LevelRendererAccessor;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.implementation.PortalRenderSource;
@@ -29,6 +28,8 @@ import tfc.dynamicportals.util.gl.GlStateFunctions;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: I'd like to make the render systems more modular, so that the renderers can be swapped out easily
+// this would be the compat renderer, which aims to not break anything rather than trying to perform well
 public class Renderer {
 	private static final RenderTarget stencilTarget = new TextureTarget(
 			1, 1,
@@ -73,6 +74,7 @@ public class Renderer {
 		//		Tesselator tesselator = RenderSystem.renderThreadTesselator();
 		ShaderInstance shaderInstance;
 		MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
+		GlStateFunctions.enableDepthClamp();
 		
 		// copy stack (easier to work with, as I don't need to reset the stack's state)
 		PoseStack stack = new PoseStack();
@@ -121,13 +123,42 @@ public class Renderer {
 		GLUtils.switchFBO(stencilTarget);
 		portal.renderer.drawStencil(source.getBuffer(portal.renderer.getRenderType()), stack);
 		forceDraw(source);
-		GlStateFunctions.enableDepthClamp();
 		GLUtils.boundTarget().unbindWrite();
 		
 		// setup to draw to the portal FBO
 		portalTarget.clear(Minecraft.ON_OSX);
 		portalTarget.bindWrite(false);
 		GLUtils.switchFBO(portalTarget);
+		
+		// setup an actual stencil
+		{
+			if (!GLUtils.boundTarget().isStencilEnabled())
+				GLUtils.boundTarget().enableStencil();
+			
+			GL11.glEnable(GL11.GL_STENCIL_TEST);
+			
+			// write to buffer
+			GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
+			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_REPLACE);
+			GL11.glStencilMask(0xFF);
+			GL11.glColorMask(false, false, false, false);
+			GL11.glDepthMask(false);
+			GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
+
+			RenderSystem.enableDepthTest();
+			RenderSystem.disableTexture();
+			RenderSystem.depthFunc(GL11.GL_LEQUAL);
+
+			portal.renderer.drawStencil(source.getBuffer(portal.renderer.getRenderType()), stack);
+			forceDraw(source);
+
+			// disable writing
+			GL11.glStencilMask(0x00);
+			GL11.glStencilFunc(GL11.GL_EQUAL, 1, 0xFF);
+
+			GL11.glColorMask(true, true, true, true);
+		}
+		
 		isStencilPresent = true;
 		// copy matrix so vanilla's renderer doesn't yell at me
 		PoseStack stk = new PoseStack();
@@ -180,6 +211,14 @@ public class Renderer {
 			
 			renderSource.setActive(false);
 		}
+		
+		// disable stencil
+		GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
+		GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_REPLACE);
+		GL11.glStencilMask(0xFF);
+		GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
+		
+		GL11.glDisable(GL11.GL_STENCIL_TEST);
 		
 		accessor.setCullingFrustum(vanillaFrustum);
 		Minecraft.getInstance().mainRenderTarget = currentTarget;

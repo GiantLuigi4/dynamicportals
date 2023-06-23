@@ -63,9 +63,15 @@ public class TrackyTools {
 	public static void removePortal(Level lvl, Player player, BasicPortal portal) {
 		synchronized (forcedChunks) {
 			HashMap<UUID, HashMap<UUID, ArrayList<SectionPos>>> map = addIfAbsent(forcedChunks, lvl, HashMap::new);
-			HashMap<UUID, ArrayList<SectionPos>> forPlayer = addIfAbsent(map, player.getUUID(), HashMap::new);
-			init(lvl);
-			forPlayer.remove(portal.uuid);
+			if (player != null) {
+				HashMap<UUID, ArrayList<SectionPos>> forPlayer = addIfAbsent(map, player.getUUID(), HashMap::new);
+				init(lvl);
+				forPlayer.remove(portal.uuid);
+			} else {
+				for (HashMap<UUID, ArrayList<SectionPos>> value : map.values()) {
+					value.remove(portal.uuid);
+				}
+			}
 		}
 	}
 }

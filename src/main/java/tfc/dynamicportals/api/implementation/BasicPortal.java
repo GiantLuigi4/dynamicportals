@@ -287,6 +287,15 @@ public class BasicPortal extends AbstractPortal {
 //		scale(entity, (float) size.y);
 	}
 	
+	@Override
+	public Vec3 getDestination(Vec3 src) {
+		Quaternion srcRot = raytraceRotation();
+		Quaternion dstRot = target.raytraceRotation();
+		Vec3 srcOff = raytraceOffset();
+		Vec3 dstOff = target.raytraceOffset();
+		return VecMath.transform(src, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
+	}
+	
 	// Luigi's TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {

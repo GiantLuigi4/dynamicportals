@@ -60,6 +60,8 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 	public void drawFrame(MultiBufferSource source, PoseStack stack) {
 		super.drawFrame(source, stack);
 		
+//		if (true) return;
+		
 		GlStateFunctions.enableDepthClamp();
 		
 		Vec2d size = portal.getSize();
@@ -246,6 +248,9 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		b = 250 / 255f;
 		r = (r + 1) / 2;
 		b = (b + 1) / 2;
+		
+//		r = g = b = 1;
+		
 		float minU = 0, maxU = 0, minV = 0, maxV = 0;
 		Vec2d size = portal.getSize();
 		builder.vertex(mat, (float) -size.x / 2, 0, 0).color(r, g, b, a).uv(minU, minV).endVertex();

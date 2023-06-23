@@ -5,7 +5,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 import tfc.dynamicportals.Temp;
+import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.networking.Packet;
+import tfc.dynamicportals.util.TrackyTools;
+import tfc.dynamicportals.util.TrackyToolsClient;
 
 import java.util.UUID;
 
@@ -32,7 +35,11 @@ public class RemovePortalPacket extends Packet {
 		super.handle(ctx);
 		if (checkClient(ctx)) {
 			Level lvl = Minecraft.getInstance().level;
+			BasicPortal bap = (BasicPortal) Temp.getPortal(lvl, toRemove);
 			Temp.remove(lvl, toRemove);
+			TrackyTools.removePortal(lvl, Minecraft.getInstance().player, bap);
+			TrackyToolsClient.removePortal(lvl, bap);
+			TrackyToolsClient.markDirty(lvl);
 		}
 	}
 }
