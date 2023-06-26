@@ -296,7 +296,7 @@ public class BasicPortal extends AbstractPortal {
 		return VecMath.transform(src, srcRot, dstRot, getScaleRatio(), target.get180DegreesRotationAroundVerticalAxis(), false, srcOff, dstOff);
 	}
 	
-	// Luigi's TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks
+	//Luigi's TODO: work some stuff out better on the server, 'cuz currently this can wind up causing the player to collide with millions of blocks acrossed thousands of chunks
 	@Override
 	public boolean moveEntity(Entity entity, Vec3 position, Vec3 motion) {
 		boolean wasInFront = isInFront(entity, position);

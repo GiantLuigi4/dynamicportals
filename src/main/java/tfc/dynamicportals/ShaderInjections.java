@@ -35,12 +35,11 @@ public class ShaderInjections {
 		// lorenzo: LUIGI WHY ARE YOU CALLING VARIABLES "yes1" AND "yes" WHAT
 		// luigi: didn't know what to call them
 		String colorModulate = hasColorAttrib ? " * vertexColor" : "";
-		String worldSpace =
+		String worldSpace = hasTexCoord ?
 				"\t\tdynamicPortalsPos = gl_FragCoord.xy / (dynamicPortalsFBOSize * 1.);\n" +
 						"\t\tdynamicPortalsColor = texture(" + samplerName + ", dynamicPortalsPos);\n" +
 						"\t\tfragColor = dynamicPortalsColor" + colorModulate + ";\n" +
-						"\t\treturn;\n";
-		if (!hasTexCoord) worldSpace = "";
+						"\t\treturn;\n" : "";
 		return
 				// Luigi's TODO: something needs to change when sodium is present
 				"\n\t/* Dynamic Portals injection */\n" +
@@ -56,7 +55,8 @@ public class ShaderInjections {
 						"\t\t\tdiscard;\n" +
 						"\t\t\treturn;\n" +
 						"\t\t}\n" +
-						"\t\tdynamicPortalsDepth = texture(dynamicPortalsStencilDepth, dynamicPortalsPos);\n" +
+						//I want to debug stuff, but I am unable to do so
+						"\t\tdynamicPortalsDepth = texture(dynamicPortalsStencilDepth, dynamicPortalsPos);\n" + //texture(dynamicPortalsStencilDepth, dynamicPortalsPos);
 						"\t\tif (dynamicPortalsDepth.r > gl_FragCoord.z) {\n" +
 						"\t\t\tdiscard;\n" +
 						"\t\t\treturn;\n" +
@@ -78,7 +78,7 @@ public class ShaderInjections {
 				\t\t\tv *= v;
 				\t\t\tdynamicPortalsColor = mix(dynamicPortalsColor, vec4(1), v);
 				\t\t}
-				\t\tfragColor = fragColor * dynamicPortalsColor;
+				\t\tfragColor *= dynamicPortalsColor;
 				\t}
 				\t/* end Dynamic Portals injection */
 				""";

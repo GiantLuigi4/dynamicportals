@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // I'm not even gonna attempt to explain what's happening here
 // lorenzo: I'll destroy this class anyway
 @Mixin(GlStateManager.class)
-public class GlStateManagerMixin {
+public abstract class GlStateManagerMixin {
 	@Unique
 	private static final HashMap<Integer, Integer> shaderToTypeMap = new HashMap<>();
 	
@@ -46,7 +46,7 @@ public class GlStateManagerMixin {
 	private static void preGlShaderSource(int s, List<String> pointerBuffer, CallbackInfo ci) {
 		int type = shaderToTypeMap.get(s);
 		
-		String shaderFile = String.join("\n", pointerBuffer);
+		String shaderFile = String.join("\n", pointerBuffer).trim().replace("\n\n", "\n");
 		if (shaderFile.contains("#dynportals skip_inject")) {
 			pointerBuffer.clear();
 			Arrays.stream(shaderFile.replace("#dynportals skip_inject", "").split("\n")).forEach((str) -> pointerBuffer.add(str + "\n"));
@@ -57,73 +57,41 @@ public class GlStateManagerMixin {
 		boolean hitUniforms = false;
 		boolean hitOuts = false;
 		boolean hitInputs = false;
-		boolean hasTexCoordInput = false;
-		boolean hasColorInput = false;
-		boolean hasModelViewMat = false;
-		boolean hasProjMat = false;
+		boolean hasTexCoordInput = shaderFile.contains("out vec4 fragColor");
+		boolean hasColorInput = shaderFile.contains("in vec4 vertexColor");
+		boolean hasModelViewMat = shaderFile.contains("uniform mat4 ModelViewMat");
+		boolean hasProjMat = shaderFile.contains("uniform mat4 ProjMat");
 		
-		boolean isBlock = false;
+		boolean isBlock = shaderFile.contains("uniform vec3 ChunkOffset");
 		String samplerName = null;
 		
 		StringBuilder output = new StringBuilder();
 		for (String line : shaderFile.split("\n")) {
+			line = line.trim();
 			String injected = line;
-			int len = line.length();
-			line = line.replace("  ", " ");
-			while (len != line.length()) {
-				len = line.length();
-				line = line
-						.replace("  ", " ")
-						.replace("( ", " ")
-						.replace(" (", " ")
-						.replace(" )", " ")
-						.replace(") ", " ")
-						.replace("\t", "")
-						.trim();
-			}
-			// TODO: make this stuff more reliable
-			// Well actually, I don't know what you mean by "reliable", I tried to make it "optimized"
-			// I'll leave this as "myTODO" but I won't touch it for a bit
-			hasTexCoordInput = hasTexCoordInput || line.startsWith("out vec4 fragColor");
-			hasColorInput = hasColorInput || line.startsWith("in vec4 vertexColor");
-			
-			hasModelViewMat = hasModelViewMat || line.startsWith("uniform mat4 ModelViewMat");
-			hasProjMat = hasProjMat || line.startsWith("uniform mat4 ProjMat");
-			
-			isBlock = isBlock || line.startsWith("uniform vec3 ChunkOffset");
-
 			if (line.startsWith("uniform sampler2D")) {
-				String str1 = line.replace("uniform sampler2D ", "").trim();
+				String str1 = line.replace("uniform sampler2D ", "").trim().replace(";", "");
 				if (str1.startsWith("Sampler0") || str1.startsWith("DiffuseSampler"))
-					samplerName = str1.substring(0, str1.length() - 1);
+					samplerName = str1;
 			}
-			if (!hitUniforms && line/*.trim()*/.startsWith("uniform")) {
+			if (!hitUniforms && line.startsWith("uniform")) {
 				injected = injectUniforms(type, injected);
 				hitUniforms = true;
 			}
-			if (!hitOuts && line/*.trim()*/.startsWith("out")) {
+			if (!hitOuts && line.startsWith("out")) {
 				injected = injectOuts(type, injected);
 				hitOuts = true;
 			}
-			if (!hitInputs && line/*.trim()*/.startsWith("in")) {
+			if (!hitInputs && line.startsWith("in")) {
 				injected = injectIns(type, injected);
 				hitInputs = true;
 			}
 			if (hitUniforms && hitOuts && hitInputs && (inMain || line.contains("void main()"))) {
 				injected = checkLineAndInject(type, injected, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput, hasProjMat, hasModelViewMat, isBlock);
 				inMain = (!inMain || lCC.get() != 0) && (line.contains("void main()") || inMain);
-//				if (inMain) {
-//					injected = checkLineAndInject(type, injected, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
-//					if (lCC.get() == 0) inMain = false;
-//				}
-//				if (line.contains("void main()")) {
-//					injected = checkLineAndInject(type, injected, lCC, hasTexCoordInput && samplerName != null, samplerName, hasColorInput);
-//					inMain = true;
-//				}
 			}
 			output.append(injected).append("\n");
 		}
-//		System.out.println(output);
 //		if (output.toString().contains("iris")) {
 //			String path =
 //					"shader/" +
@@ -149,32 +117,30 @@ public class GlStateManagerMixin {
 	}
 	
 	private static String injectUniforms(int type, String srcStr) {
-		String str = "";
+		srcStr += """
+				
+				/* Dynamic Portals injection */
+				uniform int dynamicPortalsHasStencilTextureSet;
+				""";
 		if (type == GL42.GL_FRAGMENT_SHADER) {
-			str =
+			srcStr +=
 					"""
-					/* Dynamic Portals injection */
-					uniform int dynamicPortalsHasStencilTextureSet;
 					uniform sampler2D dynamicPortalsStencilTexture;
 					uniform sampler2D dynamicPortalsStencilDepth;
 					uniform vec2 dynamicPortalsFBOSize;
-					/* end Dynamic Portals injection */
-					""";
-		} else if (type == GL42.GL_VERTEX_SHADER) {
-			str =
-					"""
-					/* Dynamic Portals injection */
-					uniform int dynamicPortalsHasStencilTextureSet;
-					/* end Dynamic Portals injection */
 					""";
 		}
-		return srcStr + str;
+		return srcStr +
+                """
+				/* end Dynamic Portals injection */
+				""";
 	}
 	
 	private static String injectOuts(int type, String srcStr) {
 		if (type == GL20.GL_VERTEX_SHADER)  {
-			srcStr = srcStr +
+			srcStr +=
 					"""
+     
 					/* Dynamic Portals injection */
 					out vec4 dynamicPortalsWorldPos;
 					/* end Dynamic Portals injection */
@@ -185,8 +151,9 @@ public class GlStateManagerMixin {
 	
 	private static String injectIns(int type, String srcStr) {
 		if (type == GL20.GL_FRAGMENT_SHADER)  {
-			srcStr = srcStr +
+			srcStr +=
 					"""
+     
 					/* Dynamic Portals injection */
 					in vec4 dynamicPortalsWorldPos;
 					/* end Dynamic Portals injection */
@@ -232,12 +199,12 @@ public class GlStateManagerMixin {
 		ArrayList<String> strings = new ArrayList<>();
 		StringBuilder builder = new StringBuilder();
 		for (char c : str.toCharArray()) {
-			if (!delim.contains("" + c)) {
+			if (!delim.contains(String.valueOf(c))) {
 				builder.append(c);
 			} else {
 				if (!builder.toString().isEmpty())
 					strings.add(builder.toString());
-				strings.add("" + c);
+				strings.add(String.valueOf(c));
 				builder = new StringBuilder();
 			}
 		}

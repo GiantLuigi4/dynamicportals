@@ -2,6 +2,7 @@ package tfc.dynamicportals.mixin.client.core;
 
 import com.mojang.blaze3d.shaders.AbstractUniform;
 import com.mojang.blaze3d.shaders.Program;
+import com.mojang.blaze3d.shaders.Shader;
 import com.mojang.blaze3d.shaders.Uniform;
 import net.minecraft.client.renderer.ShaderInstance;
 import org.spongepowered.asm.mixin.Final;
@@ -73,10 +74,10 @@ public abstract class ShaderMixin {
 	@Unique
 	private void getUniform(String name, String typeStr, int count) {
 		int type = Uniform.getTypeFromString(typeStr);
-		int l = count > 1 && count <= 4 && count < 8 ? count - 1 : 0;
+		int l = count > 0 && count <= 4 ? count - 1 : 0;
 		int k = Uniform.glGetUniformLocation(this.programId, name);
 		if (k != -1) {
-			Uniform uniform = new Uniform(name, type + l, count, (ShaderInstance) (Object) this);
+			Uniform uniform = new Uniform(name, type + l, count, (Shader) this);
 			uniform.setLocation(k);
 			uniformMap.put(name, uniform);
 		}

@@ -8,6 +8,7 @@
     "common.access.ConnectionMixin",
     "common.access.ServerGameListenerAccessor",
     "common.collision.EntityMixin",
+    "common.core.EntityMixin",
     "common.core.LevelMixin",
     "common.core.MotionPacketMixin",
     "common.core.PosPacketMixin",

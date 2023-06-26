@@ -128,7 +128,7 @@ public abstract class PortalRenderer {
 	}
 	
 	/**
-	 * whether or not the portal should render
+	 * whether the portal should render
 	 * this should take into account backface culling, as well as frustum checking
 	 *
 	 * @param frustum the frustum to check with
