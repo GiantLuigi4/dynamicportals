@@ -11,15 +11,15 @@ import tfc.dynamicportals.network.Packet;
 
 public class CreateNetworkPacket extends Packet {
 	PortalNet net;
-	
+	CompoundTag tg;
+
 	public CreateNetworkPacket(PortalNet net) {
 		this.net = net;
 	}
 	
 	public CreateNetworkPacket(FriendlyByteBuf buf) {
-		CompoundTag tg = buf.readNbt();
+		tg = buf.readNbt();
 		net = new PortalNet(tg.getUUID("uuid"));
-		net.read((ListTag) tg.get("data"));
 	}
 	
 	@Override
@@ -32,6 +32,7 @@ public class CreateNetworkPacket extends Packet {
 	@Override
 	public void handle(NetworkEvent.Context ctx) {
 		if (checkClient(ctx)) {
+			net.read((NetworkHolder) Minecraft.getInstance(), (ListTag) tg.get("data"));
 			((NetworkHolder) Minecraft.getInstance()).getPortalNetworks().add(net);
 		}
 	}
