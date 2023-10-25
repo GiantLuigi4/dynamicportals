@@ -15,7 +15,7 @@ import java.util.UUID;
 
 public class PortalNet {
     int latestPortalId = 0;
-    
+
     ArrayList<AbstractPortal> portals = new ArrayList<>();
     ReadOnlyList<AbstractPortal> readOnly = new ReadOnlyList<>(portals);
 
@@ -24,11 +24,11 @@ public class PortalNet {
     }
 
     UUID uuid;
-    
+
     public PortalNet(UUID uuid) {
         this.uuid = uuid;
     }
-    
+
     public void link(AbstractPortal portal) {
         if (portal.connectedNetwork != null) {
             portal.connectedNetwork.unlink(portal);
@@ -57,11 +57,15 @@ public class PortalNet {
             portal.write(tg);
             tags.add(tg);
             tg.putString("type", portal.type.getRegistryName().toString());
+            CompoundTag world = new CompoundTag();
+            world.putString("registry", portal.myLevel.dimension().registry().toString());
+            world.putString("location", portal.myLevel.dimension().location().toString());
+            tg.put("level", world);
         }
         tag.putUUID("uuid", uuid);
         tag.put("data", tags);
     }
-    
+
     public void read(NetworkHolder holder, ListTag data) {
         for (Tag datum : data) {
             CompoundTag tg = (CompoundTag) datum;
@@ -71,5 +75,13 @@ public class PortalNet {
                     )
             );
         }
+    }
+
+    // writes and reads own data to correct level references
+    public void correct(NetworkHolder holder) {
+        CompoundTag tg = new CompoundTag();
+        write(tg);
+        portals.clear();
+        read(holder, tg.getList("data", Tag.TAG_COMPOUND));
     }
 }

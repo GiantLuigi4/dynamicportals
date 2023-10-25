@@ -101,13 +101,20 @@ public class LevelRendererMixin {
                             consumer, pPoseStack,
                             portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1, portal.getPosition().z - pCamera.getPosition().z,
                             portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1.1, portal.getPosition().z - pCamera.getPosition().z,
-                            r, g, 0
+                            r, 0, g
                     );
                     drawLine(
                             consumer, pPoseStack,
                             portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1.3, portal.getPosition().z - pCamera.getPosition().z,
                             portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 2, portal.getPosition().z - pCamera.getPosition().z,
-                            r, g, 0
+                            r, 0, g
+                    );
+                } else {
+                    drawLine(
+                            consumer, pPoseStack,
+                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1, portal.getPosition().z - pCamera.getPosition().z,
+                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1.1, portal.getPosition().z - pCamera.getPosition().z,
+                            0, 1, 0
                     );
                 }
             }
