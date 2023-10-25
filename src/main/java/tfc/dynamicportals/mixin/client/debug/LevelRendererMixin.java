@@ -44,12 +44,12 @@ public class LevelRendererMixin {
         consumer
                 .vertex(stack.last().pose(), (float) x0, (float) y0, (float) z0)
                 .color((float) r, (float) g, (float) b, 1)
-                .normal(stack.last().normal(), (float) Math.abs(x1 - x0), (float) Math.abs(y1 - y0), (float) Math.abs(z1 - z0))
+                .normal(stack.last().normal(), 0, (float) Math.abs(y1 - y0), (float) Math.max(Math.abs(x1 - x0), Math.abs(z1 - z0)))
                 .endVertex();
         consumer
                 .vertex(stack.last().pose(), (float) x1, (float) y1, (float) z1)
                 .color((float) r, (float) g, (float) b, 1)
-                .normal(stack.last().normal(), (float) Math.abs(x1 - x0), (float) Math.abs(y1 - y0), (float) Math.abs(z1 - z0))
+                .normal(stack.last().normal(), 0, (float) Math.abs(y1 - y0), (float) Math.max(Math.abs(x1 - x0), Math.abs(z1 - z0)))
                 .endVertex();
     }
 
@@ -110,6 +110,12 @@ public class LevelRendererMixin {
                             r, 0, g
                     );
                 } else {
+                    drawLine(
+                            consumer, pPoseStack,
+                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y, portal.getPosition().z - pCamera.getPosition().z,
+                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1, portal.getPosition().z - pCamera.getPosition().z,
+                            1, 1, 1
+                    );
                     drawLine(
                             consumer, pPoseStack,
                             portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1, portal.getPosition().z - pCamera.getPosition().z,

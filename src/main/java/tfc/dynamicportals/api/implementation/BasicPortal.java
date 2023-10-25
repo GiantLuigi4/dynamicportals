@@ -19,7 +19,7 @@ public class BasicPortal extends AbstractPortal {
     }
 
     @Override
-    public AABB getNetworkBox() {
+    public AABB getContainingBox() {
         return new AABB(
                 position.x - 1, position.y - 1, position.z - 1,
                 position.x + 1, position.y + 1, position.z + 1

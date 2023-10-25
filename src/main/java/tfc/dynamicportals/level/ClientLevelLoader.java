@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 import tfc.dynamicportals.network.sync.SyncLevelsPacket;
 
 import java.util.HashMap;
@@ -51,7 +53,7 @@ public class ClientLevelLoader extends LevelLoader {
         for (HashMap<ResourceLocation, Level> value : levels.values()) {
             for (Level level : value.values()) {
                 if (level != null)
-                    net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.world.WorldEvent.Unload(level));
+                    MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(level));
             }
         }
         levels.clear();
@@ -99,6 +101,24 @@ public class ClientLevelLoader extends LevelLoader {
                             entry.debug, entry.seed
                     );
                 }
+        );
+    }
+
+    public void update(ClientLevel level) {
+        Level old = levels.computeIfAbsent(
+                level.dimension().registry(),
+                (k) -> new HashMap<>()
+        ).get(
+                level.dimension().location()
+        );
+        if (old != null)
+            MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(old));
+        levels.computeIfAbsent(
+                level.dimension().registry(),
+                (k) -> new HashMap<>()
+        ).put(
+                level.dimension().location(),
+                level
         );
     }
 }

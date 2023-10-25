@@ -6,6 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.registry.PortalType;
+import tfc.dynamicportals.client.AbstractPortalRenderDispatcher;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.util.PortalPacketSender;
 
@@ -23,7 +24,11 @@ public abstract class AbstractPortal {
         this.type = type;
     }
 
-    public abstract AABB getNetworkBox();
+    public AABB getNetworkBox() {
+        return getContainingBox();
+    }
+
+    public abstract AABB getContainingBox();
 
     public void sendPacket(PortalPacketSender sender) {
         AABB netBox = getNetworkBox().inflate(
@@ -69,5 +74,10 @@ public abstract class AbstractPortal {
 
     public void setPosition(double x, double y, double z) {
         this.position = new Vec3(x, y, z);
+    }
+
+    /* DISCOURAGED */
+    public AbstractPortalRenderDispatcher preferredDispatcher() {
+        return null;
     }
 }
