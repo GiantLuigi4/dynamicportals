@@ -6,6 +6,7 @@
   "refmap": "dynamicportals.refmap.json",
   "mixins": [
     "core.data.LevelMixin",
+    "core.data.PlayerListMixin",
     "core.data.ServerLevelMixin",
     "core.data.ServerMixin",
     "core.debug.ServerMixin"

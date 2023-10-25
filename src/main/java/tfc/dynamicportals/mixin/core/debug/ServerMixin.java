@@ -29,6 +29,9 @@ public abstract class ServerMixin {
         Level lvl = getLevel(ResourceKey.create(
                 Registry.DIMENSION_REGISTRY, new ResourceLocation("minecraft:overworld")
         ));
+        Level nether = getLevel(ResourceKey.create(
+                Registry.DIMENSION_REGISTRY, new ResourceLocation("minecraft:the_nether")
+        ));
 
         PortalNet net = new PortalNet(new UUID(
                 98423, 23912
@@ -36,7 +39,7 @@ public abstract class ServerMixin {
         BasicPortal bap0 = new BasicPortal(lvl);
         bap0.setPosition(16, 64, 0);
         net.link(bap0);
-        BasicPortal bap1 = new BasicPortal(lvl);
+        BasicPortal bap1 = new BasicPortal(nether);
         bap1.setPosition(-16, 64, 0);
         net.link(bap1);
         ((NetworkHolder) this).getPortalNetworks().add(net);

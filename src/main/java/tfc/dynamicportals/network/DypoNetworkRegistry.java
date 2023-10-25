@@ -4,6 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 import tfc.dynamicportals.network.sync.CreateNetworkPacket;
+import tfc.dynamicportals.network.sync.SyncLevelsPacket;
 
 import java.util.ArrayList;
 
@@ -20,6 +21,7 @@ public class DypoNetworkRegistry {
     static {
         ArrayList<NetworkEntry<?>> entries = new ArrayList<>();
         entries.add(new NetworkEntry<>(CreateNetworkPacket.class, CreateNetworkPacket::new));
+        entries.add(new NetworkEntry<>(SyncLevelsPacket.class, SyncLevelsPacket::new));
 
         for (int i = 0; i < entries.size(); i++) entries.get(i).register(i, NETWORK_INSTANCE);
     }
