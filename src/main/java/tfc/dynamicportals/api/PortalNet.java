@@ -2,15 +2,25 @@ package tfc.dynamicportals.api;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import tfc.dynamicportals.network.util.PortalPacketSender;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class PortalNet {
+    int latestPortalId = 0;
+    
     ArrayList<AbstractPortal> portals = new ArrayList<>();
 
+    UUID uuid;
+    
+    public PortalNet(UUID uuid) {
+        this.uuid = uuid;
+    }
+    
     public void link(AbstractPortal portal) {
         if (portal.connectedNetwork != null) {
             portal.connectedNetwork.unlink(portal);
@@ -32,7 +42,7 @@ public class PortalNet {
         }
     }
 
-    public ListTag write(CompoundTag tag) {
+    public void write(CompoundTag tag) {
         ListTag tags = new ListTag();
         for (AbstractPortal portal : portals) {
             CompoundTag tg = new CompoundTag();
@@ -40,6 +50,13 @@ public class PortalNet {
             tags.add(tg);
             tg.putString("type", portal.type.getRegistryName().toString());
         }
-        return tags;
+        tag.putUUID("uuid", uuid);
+        tag.put("data", tags);
+    }
+    
+    public void read(ListTag data) {
+        for (Tag datum : data) {
+            // TODO
+        }
     }
 }

@@ -11,8 +11,7 @@ import tfc.dynamicportals.api.registry.PortalType;
 import java.io.ByteArrayOutputStream;
 
 public class BasicPortal extends AbstractPortal {
-    Vec3 position;
-    Quaternion orientation;
+    public Vec3 position;
 
     public BasicPortal(PortalType<?> type) {
         super(type);
