@@ -1,22 +1,21 @@
 package tfc.dynamicportals.api.implementation;
 
-import com.mojang.math.Quaternion;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.registry.BasicPortalTypes;
 import tfc.dynamicportals.api.registry.PortalType;
-
-import java.io.ByteArrayOutputStream;
+import tfc.dynamicportals.itf.NetworkHolder;
 
 public class BasicPortal extends AbstractPortal {
-    public BasicPortal(PortalType<?> type) {
-        super(type);
+    public BasicPortal(Level level, PortalType<?> type) {
+        super(level, type);
     }
 
-    public BasicPortal() {
-        super(BasicPortalTypes.BASIC);
+    public BasicPortal(Level level) {
+        super(level, BasicPortalTypes.BASIC);
     }
 
     @Override
@@ -41,7 +40,7 @@ public class BasicPortal extends AbstractPortal {
     }
 
     @Override
-    public void load(CompoundTag tag) {
+    public void load(NetworkHolder holder, CompoundTag tag) {
         long[] coords = tag.getLongArray("coords");
         position = new Vec3(
                 Double.longBitsToDouble(coords[0]),

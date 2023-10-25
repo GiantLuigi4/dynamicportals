@@ -6,8 +6,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,23 +20,25 @@ import java.util.UUID;
 
 @Mixin(MinecraftServer.class)
 public abstract class ServerMixin {
-	@Shadow @Nullable public abstract ServerLevel getLevel(ResourceKey<Level> pDimension);
-	
-	@Inject(at = @At("RETURN"), method = "createLevels")
-	public void preRun(CallbackInfo ci) {
-		PortalNet net = new PortalNet(new UUID(
-				98423, 23912
-		));
-		BasicPortal bap0 = new BasicPortal();
-		bap0.position = new Vec3(32, 64, 0);
-		net.link(bap0);
-		BasicPortal bap1 = new BasicPortal();
-		bap1.position = new Vec3(-32, 64, 0);
-		net.link(bap1);
-		((NetworkHolder) this).getPortalNetworks().add(net);
-		
-		bap0.myLevel = bap1.myLevel = getLevel(ResourceKey.create(
-				Registry.DIMENSION_REGISTRY, new ResourceLocation("minecraft:overworld")
-		));
-	}
+    @Shadow
+    @Nullable
+    public abstract ServerLevel getLevel(ResourceKey<Level> pDimension);
+
+    @Inject(at = @At("RETURN"), method = "createLevels")
+    public void preRun(CallbackInfo ci) {
+        Level lvl = getLevel(ResourceKey.create(
+                Registry.DIMENSION_REGISTRY, new ResourceLocation("minecraft:overworld")
+        ));
+
+        PortalNet net = new PortalNet(new UUID(
+                98423, 23912
+        ));
+        BasicPortal bap0 = new BasicPortal(lvl);
+        bap0.setPosition(16, 64, 0);
+        net.link(bap0);
+        BasicPortal bap1 = new BasicPortal(lvl);
+        bap1.setPosition(-16, 64, 0);
+        net.link(bap1);
+        ((NetworkHolder) this).getPortalNetworks().add(net);
+    }
 }

@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.itf.NetworkHolder;
+import tfc.dynamicportals.level.LevelLoader;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -15,9 +16,14 @@ public abstract class ServerLevelMixin implements NetworkHolder {
 	@Shadow
 	@Nonnull
 	public abstract MinecraftServer getServer();
-	
+
 	@Override
 	public ArrayList<PortalNet> getPortalNetworks() {
 		return ((NetworkHolder) getServer()).getPortalNetworks();
+	}
+
+	@Override
+	public LevelLoader getLoader() {
+		return ((NetworkHolder) getServer()).getLoader();
 	}
 }

@@ -33,10 +33,15 @@ public class LevelRendererMixin {
         for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
             for (AbstractPortal portal : portalNetwork.getPortals()) {
                 consumer
-                        .vertex(pPoseStack.last().pose(), (float) portal.position.x, (float) portal.position.y, (float) portal.position.z)
+                        .vertex(
+                                pPoseStack.last().pose(),
+                                (float) (portal.getPosition().x - pCamera.getPosition().x),
+                                (float) (portal.getPosition().y - pCamera.getPosition().y),
+                                (float) (portal.getPosition().z - pCamera.getPosition().z)
+                        )
                         .color(rng.nextInt(), rng.nextInt(), rng.nextInt(), 255)
-                        .normal(1, 0, 0)
-                ;
+                        .normal(pPoseStack.last().normal(), 1, 0, 0)
+                        .endVertex();
             }
         }
         source.getBuffer(RenderType.solid());

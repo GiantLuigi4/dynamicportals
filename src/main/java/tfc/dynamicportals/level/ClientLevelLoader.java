@@ -1,18 +1,18 @@
 package tfc.dynamicportals.level;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
-import tfc.dynamicportals.level.LevelLoader;
 
 import java.util.HashMap;
 
 public class ClientLevelLoader extends LevelLoader {
     Minecraft mc;
+
+    public ClientLevelLoader(Minecraft mc) {
+        this.mc = mc;
+    }
 
     //@formatter:off
     HashMap<

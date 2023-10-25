@@ -1,18 +1,14 @@
 package tfc.dynamicportals.api;
 
-import com.google.common.collect.ImmutableList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import tfc.dynamicportals.api.registry.BasicPortalTypes;
-import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.util.PortalPacketSender;
 import tfc.dynamicportals.util.ReadOnlyList;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -71,7 +67,7 @@ public class PortalNet {
             CompoundTag tg = (CompoundTag) datum;
             portals.add(
                     BasicPortalTypes.createPortal(
-                            new ResourceLocation(tg.getString("type")), tg
+                            new ResourceLocation(tg.getString("type")), holder, tg
                     )
             );
         }
