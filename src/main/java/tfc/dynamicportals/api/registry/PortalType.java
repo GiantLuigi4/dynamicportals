@@ -6,12 +6,13 @@ import net.minecraft.world.level.Level;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class PortalType<T extends BasicPortal> {
-	BiFunction<Level, CompoundTag, T> fromNbt;
+	Function<CompoundTag, T> fromNbt;
 	ResourceLocation name;
 	
-	public PortalType(BiFunction<Level, CompoundTag, T> fromNbt) {
+	public PortalType(Function<CompoundTag, T> fromNbt) {
 		this.fromNbt = fromNbt;
 	}
 	

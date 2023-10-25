@@ -4,6 +4,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import tfc.dynamicportals.api.registry.BasicPortalTypes;
+import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.network.util.PortalPacketSender;
 
 import java.io.ByteArrayOutputStream;
@@ -56,7 +59,12 @@ public class PortalNet {
     
     public void read(ListTag data) {
         for (Tag datum : data) {
-            // TODO
+            CompoundTag tg = (CompoundTag) datum;
+            portals.add(
+                    BasicPortalTypes.createPortal(
+                            new ResourceLocation(tg.getString("type")), tg
+                    )
+            );
         }
     }
 }

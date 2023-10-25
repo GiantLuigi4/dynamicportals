@@ -13,6 +13,7 @@ public class CreateNetworkPacket extends Packet {
 	PortalNet net;
 	
 	public CreateNetworkPacket(PortalNet net) {
+		this.net = net;
 	}
 	
 	public CreateNetworkPacket(FriendlyByteBuf buf) {

@@ -22,7 +22,7 @@ public class BasicPortalTypes {
 
     static {
         BASIC = register(
-                new ResourceLocation("dynamic_portals:basic"), new PortalType<>((level, tag) -> {
+                new ResourceLocation("dynamic_portals:basic"), new PortalType<>((tag) -> {
                     BasicPortal bp = new BasicPortal();
                     bp.load(tag);
                     return bp;
@@ -30,11 +30,7 @@ public class BasicPortalTypes {
         );
     }
 
-    public static BasicPortal defaultTagLoad(Level level, BasicPortal portal, CompoundTag tag) {
-        return portal;
-    }
-
-    public static BasicPortal createPortal(Level level, ResourceLocation type, CompoundTag tag) {
-        return TYPES.get(type).fromNbt.apply(level, tag);
+    public static BasicPortal createPortal(ResourceLocation type, CompoundTag tag) {
+        return TYPES.get(type).fromNbt.apply(tag);
     }
 }
