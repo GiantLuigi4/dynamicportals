@@ -1,8 +1,12 @@
 package tfc.dynamicportals;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -12,6 +16,10 @@ import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.DypoNetworkRegistry;
 import tfc.dynamicportals.network.sync.CreateNetworkPacket;
 import tfc.dynamicportals.network.util.PortalPacketSender;
+import tfc.dynamicportals.util.DypoShaders;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
 
 @Mod("dynamicportals")
 public class DynamicPortals {
@@ -21,6 +29,7 @@ public class DynamicPortals {
 	public DynamicPortals() {
 		DypoNetworkRegistry.init();
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::onPlayerJoined);
+		DypoShaders.init();
 	}
 	
 	public static void onPlayerJoined(PlayerEvent.PlayerLoggedInEvent event) {
