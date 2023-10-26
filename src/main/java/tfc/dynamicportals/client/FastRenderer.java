@@ -6,10 +6,7 @@ import com.mojang.math.Matrix4f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
 import org.lwjgl.opengl.GL11;
@@ -39,7 +36,8 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 
             Minecraft.getInstance().getMainRenderTarget().enableStencil();
 
-            GL11.glEnable(GL11.GL_CULL_FACE);
+            RenderType.waterMask().setupRenderState();
+            RenderSystem.enableCull();
 
             RenderSystem.disableBlend();
             GL40.glEnable(GL40.GL_DEPTH_CLAMP);
@@ -50,17 +48,17 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
             // draw stencil
             GameRenderer.getRendertypeWaterMaskShader().apply();
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glDepthFunc(GL11.GL_LEQUAL);
-            GL11.glColorMask(false, false, false, true);
-            GL11.glDepthMask(false);
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
+            RenderSystem.colorMask(false, false, false, true);
+            RenderSystem.depthMask(false);
             drawStencil(pPoseStack, pCamera, portal, tesselator);
-            GL11.glColorMask(true, true, true, true);
+            RenderSystem.colorMask(true, true, true, true);
             GameRenderer.getRendertypeWaterMaskShader().clear();
 
             GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF);
             GL11.glStencilMask(0x00);
-            GL11.glDepthMask(true);
+            RenderSystem.depthMask(true);
 
             // draw world
             LevelRenderer dst = portal.getTargetLevelRenderer();
@@ -81,7 +79,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
                 }
 
                 // clear
-                GL11.glDepthFunc(GL11.GL_ALWAYS);
+                RenderSystem.depthFunc(GL11.GL_ALWAYS);
                 RenderSystem.setShader(DypoShaders::getDepthClear);
                 float[] fog = RenderSystem.getShaderFogColor();
                 RenderSystem.setShaderColor(
@@ -91,8 +89,8 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
                 DypoShaders.getDepthClear().apply();
                 drawStencil(pPoseStack, pCamera, portal, tesselator);
                 DypoShaders.getDepthClear().clear();
-                GL11.glEnable(GL11.GL_DEPTH_TEST);
-                GL11.glDepthFunc(GL11.GL_LEQUAL);
+                RenderSystem.depthFunc(GL11.GL_LEQUAL);
+                RenderType.waterMask().clearRenderState();
 
                 GL11.glDisable(GL40.GL_DEPTH_CLAMP);
 
@@ -118,25 +116,22 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
                 RenderSystem.setProjectionMatrix(pProjectionMatrix);
                 mc.level = mcLvl;
 
-                RenderSystem.disableBlend();
-                RenderSystem.disableTexture();
-                GL11.glEnable(GL11.GL_CULL_FACE);
+                RenderType.waterMask().setupRenderState();
+                RenderSystem.enableCull();
             }
 
-            GL11.glEnable(GL11.GL_CULL_FACE);
             GL11.glEnable(GL40.GL_DEPTH_CLAMP);
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
 
             GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
             GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0x00); // all fragments should pass the stencil test
             GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
             // draw stencil
             GameRenderer.getRendertypeWaterMaskShader().apply();
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glDepthFunc(GL11.GL_LEQUAL);
-            GL11.glColorMask(false, false, false, true);
-            GL11.glDepthMask(true);
+            RenderSystem.colorMask(false, false, false, true);
+            RenderSystem.depthMask(true);
             drawStencil(pPoseStack, pCamera, portal, tesselator);
-            GL11.glColorMask(true, true, true, true);
+            RenderSystem.colorMask(true, true, true, true);
             GameRenderer.getRendertypeWaterMaskShader().clear();
 
             GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
@@ -146,7 +141,8 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 
             pPoseStack.popPose();
 
-            GL11.glDisable(GL11.GL_CULL_FACE);
+            RenderType.waterMask().clearRenderState();
+            RenderSystem.enableCull();
         }
     }
 
