@@ -39,7 +39,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 							(float) (portal.getPosition().x - pCamera.getPosition().x),
 							(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
 							(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-					).color(255, 255, 255, 255)
+					).color(255, 255, 255, 0)
 					.normal(pPoseStack.last().normal(), 0, 0, 1)
 					.endVertex();
 			consumer.vertex(
@@ -47,7 +47,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 							(float) (portal.getPosition().x - pCamera.getPosition().x),
 							(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
 							(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-					).color(255, 255, 255, 255)
+					).color(255, 255, 255, 0)
 					.normal(pPoseStack.last().normal(), 0, 0, 1)
 					.endVertex();
 			
@@ -56,7 +56,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 							(float) (portal.getPosition().x - pCamera.getPosition().x),
 							(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
 							(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-					).color(255, 255, 255, 255)
+					).color(255, 255, 255, 0)
 					.normal(pPoseStack.last().normal(), 0, 0, 1)
 					.endVertex();
 			consumer.vertex(
@@ -64,7 +64,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 							(float) (portal.getPosition().x - pCamera.getPosition().x),
 							(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
 							(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-					).color(255, 255, 255, 255)
+					).color(255, 255, 255, 0)
 					.normal(pPoseStack.last().normal(), 0, 0, 1)
 					.endVertex();
 			
@@ -73,7 +73,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 							(float) (portal.getPosition().x - pCamera.getPosition().x),
 							(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
 							(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-					).color(255, 255, 255, 255)
+					).color(255, 255, 255, 0)
 					.normal(pPoseStack.last().normal(), 0, 1, 0)
 					.endVertex();
 			consumer.vertex(
@@ -81,7 +81,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 							(float) (portal.getPosition().x - pCamera.getPosition().x),
 							(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
 							(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-					).color(255, 255, 255, 255)
+					).color(255, 255, 255, 0)
 					.normal(pPoseStack.last().normal(), 0, 1, 0)
 					.endVertex();
 			
@@ -90,7 +90,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 							(float) (portal.getPosition().x - pCamera.getPosition().x),
 							(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
 							(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-					).color(255, 255, 255, 255)
+					).color(255, 255, 255, 0)
 					.normal(pPoseStack.last().normal(), 0, 1, 0)
 					.endVertex();
 			consumer.vertex(
@@ -98,15 +98,15 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 							(float) (portal.getPosition().x - pCamera.getPosition().x),
 							(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
 							(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-					).color(255, 255, 255, 255)
+					).color(255, 255, 255, 0)
 					.normal(pPoseStack.last().normal(), 0, 1, 0)
 					.endVertex();
 			source.endBatch();
 			
 			GL40.glEnable(GL40.GL_DEPTH_CLAMP);
-
+			
 			GL11.glEnable(GL11.GL_STENCIL_TEST);
-
+			
 			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_INCR);
 			GL11.glStencilFunc(GL11.GL_ALWAYS, layer, 0xFF); // all fragments should pass the stencil test
 			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
@@ -119,7 +119,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			drawStencil(pPoseStack, pCamera, portal, tesselator);
 			GL11.glColorMask(true, true, true, true);
 			GameRenderer.getRendertypeWaterMaskShader().clear();
-
+			
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF);
 			GL11.glStencilMask(0x00);
 			GL11.glDepthMask(true);
@@ -128,16 +128,10 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glDepthFunc(GL11.GL_ALWAYS);
 			RenderSystem.setShader(DypoShaders::getDepthClear);
 			DypoShaders.getDepthClear().apply();
-			if (DypoShaders.getDepthClear().COLOR_MODULATOR != null) {
-				DypoShaders.getDepthClear().COLOR_MODULATOR.set(0f, 0, 0, 1);
-				DypoShaders.getDepthClear().COLOR_MODULATOR.upload();
-			}
-			DypoShaders.getDepthClear().PROJECTION_MATRIX.set(pProjectionMatrix);
-			DypoShaders.getDepthClear().PROJECTION_MATRIX.upload();
-			Matrix4f ident = new Matrix4f();
-			ident.setIdentity();
-			DypoShaders.getDepthClear().MODEL_VIEW_MATRIX.set(ident);
-			DypoShaders.getDepthClear().MODEL_VIEW_MATRIX.upload();
+			float[] fog = RenderSystem.getShaderFogColor();
+			RenderSystem.setShaderColor(
+					fog[0], fog[1], fog[2], fog[3]
+			);
 			
 			drawStencil(pPoseStack, pCamera, portal, tesselator);
 			DypoShaders.getDepthClear().clear();
@@ -162,7 +156,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 					(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
 			).color(255, 0, 0, 255).uv2(LightTexture.FULL_BRIGHT).endVertex();
 			source.endBatch();
-
+			
 			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0x00); // all fragments should pass the stencil test
 			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
@@ -174,13 +168,13 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			drawStencil(pPoseStack, pCamera, portal, tesselator);
 			GL11.glColorMask(true, true, true, true);
 			GameRenderer.getRendertypeWaterMaskShader().clear();
-
+			
 			GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
-
+			
 			GL11.glStencilMask(0xFF);
 			GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
 			GL11.glStencilMask(0x00);
-
+			
 			GL11.glDisable(GL11.GL_STENCIL_TEST);
 			GL11.glDisable(GL40.GL_DEPTH_CLAMP);
 		}

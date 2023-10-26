@@ -1,13 +1,12 @@
 #version 150
 
-#moj_import <fog.glsl>
-
 in vec3 Position;
 
-uniform mat4 ProjMat;
 uniform mat4 ModelViewMat;
-uniform int FogShape;
+uniform mat4 ProjMat;
 
 void main() {
-    gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+    vec4 crd = ProjMat * ModelViewMat * vec4(Position, 1.0);
+    crd.z = crd.w;
+    gl_Position = crd;
 }
