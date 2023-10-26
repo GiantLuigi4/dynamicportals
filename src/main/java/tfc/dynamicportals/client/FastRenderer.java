@@ -111,9 +111,10 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glStencilFunc(GL11.GL_ALWAYS, layer, 0xFF); // all fragments should pass the stencil test
 			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
 			// draw stencil
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
 			GameRenderer.getRendertypeWaterMaskShader().apply();
-			GL11.glColorMask(false, false, false, false);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glDepthFunc(GL11.GL_LEQUAL);
+			GL11.glColorMask(false, false, false, true);
 			GL11.glDepthMask(false);
 			drawStencil(pPoseStack, pCamera, portal, tesselator);
 			GL11.glColorMask(true, true, true, true);
@@ -123,7 +124,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glStencilMask(0x00);
 			GL11.glDepthMask(true);
 			
-			GL11.glDisable(GL11.GL_STENCIL_TEST);
 			
 			GL11.glDepthFunc(GL11.GL_ALWAYS);
 			RenderSystem.setShader(DypoShaders::getDepthClear);
@@ -142,7 +142,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			drawStencil(pPoseStack, pCamera, portal, tesselator);
 			DypoShaders.getDepthClear().clear();
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_STENCIL_TEST);
 			GL11.glDepthFunc(GL11.GL_LEQUAL);
 			
 			// draw world
@@ -168,8 +167,9 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0x00); // all fragments should pass the stencil test
 			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
 			// draw stencil
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
 			GameRenderer.getRendertypeWaterMaskShader().apply();
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glDepthFunc(GL11.GL_LEQUAL);
 			GL11.glColorMask(false, false, false, false);
 			drawStencil(pPoseStack, pCamera, portal, tesselator);
 			GL11.glColorMask(true, true, true, true);
