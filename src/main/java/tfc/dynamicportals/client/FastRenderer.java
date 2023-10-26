@@ -5,131 +5,174 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL40;
 import tfc.dynamicportals.api.AbstractPortal;
+import tfc.dynamicportals.mixin.client.data.access.CameraAccessor;
+import tfc.dynamicportals.mixin.client.data.access.LevelRendererAccessor;
 import tfc.dynamicportals.util.DypoShaders;
 
 public class FastRenderer extends AbstractPortalRenderDispatcher {
-	int layer = 0;
-	
-	@Override
-	public void push(int layer) {
-		this.layer = layer;
-	}
-	
-	@Override
-	public void pop(int layer) {
-		this.layer = layer;
-	}
-	
-	@Override
-	public void draw(Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick) {
-		if (frustum.isVisible(portal.getContainingBox())) {
-			Minecraft.getInstance().getMainRenderTarget().enableStencil();
-			
-			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-			source.endBatch();
-			
-			GL40.glEnable(GL40.GL_DEPTH_CLAMP);
-			
-			GL11.glEnable(GL11.GL_STENCIL_TEST);
-			
-			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_INCR);
-			GL11.glStencilFunc(GL11.GL_ALWAYS, layer, 0xFF); // all fragments should pass the stencil test
-			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
-			// draw stencil
-			GameRenderer.getRendertypeWaterMaskShader().apply();
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthFunc(GL11.GL_LEQUAL);
-			GL11.glColorMask(false, false, false, true);
-			GL11.glDepthMask(false);
-			drawStencil(pPoseStack, pCamera, portal, tesselator);
-			GL11.glColorMask(true, true, true, true);
-			GameRenderer.getRendertypeWaterMaskShader().clear();
-			
-			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF);
-			GL11.glStencilMask(0x00);
-			GL11.glDepthMask(true);
-			
-			GL11.glDepthFunc(GL11.GL_ALWAYS);
-			RenderSystem.setShader(DypoShaders::getDepthClear);
-			DypoShaders.getDepthClear().apply();
-			float[] fog = RenderSystem.getShaderFogColor();
-			RenderSystem.setShaderColor(
-					fog[0], fog[1], fog[2], fog[3]
-			);
-			
-			drawStencil(pPoseStack, pCamera, portal, tesselator);
-			DypoShaders.getDepthClear().clear();
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthFunc(GL11.GL_LEQUAL);
-			
-			// draw world
-			RenderSystem.setShader(GameRenderer::getPositionShader);
-			mc.levelRenderer.renderSky(
-					pPoseStack,
-					pProjectionMatrix, pPartialTick,
-					pCamera, false, () -> {
-						float f = pGameRenderer.getRenderDistance();
-						boolean flag2 = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
-						FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, f, flag2, pPartialTick);
-					}
-			);
-			mc.levelRenderer.renderClouds(
-					pPoseStack, pProjectionMatrix,
-					pPartialTick, pCamera.getPosition().x, pCamera.getPosition().y, pCamera.getPosition().z
-			);
-			
-			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
-			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0x00); // all fragments should pass the stencil test
-			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
-			// draw stencil
-			GameRenderer.getRendertypeWaterMaskShader().apply();
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthFunc(GL11.GL_LEQUAL);
-			GL11.glColorMask(false, false, false, false);
-			drawStencil(pPoseStack, pCamera, portal, tesselator);
-			GL11.glColorMask(true, true, true, true);
-			GameRenderer.getRendertypeWaterMaskShader().clear();
-			
-			GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
-			
-			GL11.glStencilMask(0xFF);
-			GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
-			GL11.glStencilMask(0x00);
-			
-			GL11.glDisable(GL11.GL_STENCIL_TEST);
-			GL11.glDisable(GL40.GL_DEPTH_CLAMP);
-		}
-	}
-	
-	void drawStencil(PoseStack pPoseStack, Camera pCamera, AbstractPortal portal, Tesselator tesselator) {
-		BufferBuilder builder = tesselator.getBuilder();
-		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-		builder.vertex(
-				pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x),
-				(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
-				(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-		).color(255, 0, 0, 255).endVertex();
-		builder.vertex(
-				pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x),
-				(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
-				(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-		).color(255, 0, 0, 255).endVertex();
-		builder.vertex(
-				pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x),
-				(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
-				(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-		).color(255, 0, 0, 255).endVertex();
-		builder.vertex(
-				pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x),
-				(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
-				(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-		).color(255, 0, 0, 255).endVertex();
-		tesselator.end();
-	}
+    int layer = 0;
+
+    @Override
+    public void push(int layer) {
+        this.layer = layer;
+    }
+
+    @Override
+    public void pop(int layer) {
+        this.layer = layer;
+    }
+
+    @Override
+    public void draw(Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick) {
+        if (frustum.isVisible(portal.getContainingBox())) {
+            pPoseStack.pushPose();
+
+            Minecraft.getInstance().getMainRenderTarget().enableStencil();
+
+            GL11.glEnable(GL11.GL_CULL_FACE);
+
+            RenderSystem.disableBlend();
+            GL40.glEnable(GL40.GL_DEPTH_CLAMP);
+            GL11.glEnable(GL11.GL_STENCIL_TEST);
+
+            GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_INCR);
+            GL11.glStencilFunc(GL11.GL_ALWAYS, layer, 0xFF); // all fragments should pass the stencil test
+            GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
+            // draw stencil
+            GameRenderer.getRendertypeWaterMaskShader().apply();
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glDepthFunc(GL11.GL_LEQUAL);
+            GL11.glColorMask(false, false, false, true);
+            GL11.glDepthMask(false);
+            drawStencil(pPoseStack, pCamera, portal, tesselator);
+            GL11.glColorMask(true, true, true, true);
+            GameRenderer.getRendertypeWaterMaskShader().clear();
+
+            GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF);
+            GL11.glStencilMask(0x00);
+            GL11.glDepthMask(true);
+
+            // draw world
+            LevelRenderer dst = portal.getTargetLevelRenderer();
+            if (dst != null) {
+                ClientLevel mcLvl = mc.level;
+                mc.level = ((LevelRendererAccessor) dst).getLevel();
+                ((CameraAccessor) mc.getBlockEntityRenderDispatcher().camera).setLevel(mc.level);
+
+                {
+                    float f = pGameRenderer.getRenderDistance();
+                    if (mc.level.dimension().location().toString().equals("minecraft:the_nether") && !mc.level.isLoaded(pCamera.getBlockPosition())) {
+                        RenderSystem.setShaderFogColor(0.16265765f, 0.025490593f, 0.025490593f, 1.0f);
+                    } else {
+                        boolean flag2 = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
+                        FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, f, flag2, pPartialTick);
+                        FogRenderer.levelFogColor();
+                    }
+                }
+
+                // clear
+                GL11.glDepthFunc(GL11.GL_ALWAYS);
+                RenderSystem.setShader(DypoShaders::getDepthClear);
+                float[] fog = RenderSystem.getShaderFogColor();
+                RenderSystem.setShaderColor(
+                        fog[0], fog[1], fog[2], fog[3]
+                );
+
+                DypoShaders.getDepthClear().apply();
+                drawStencil(pPoseStack, pCamera, portal, tesselator);
+                DypoShaders.getDepthClear().clear();
+                GL11.glEnable(GL11.GL_DEPTH_TEST);
+                GL11.glDepthFunc(GL11.GL_LEQUAL);
+
+                GL11.glDisable(GL40.GL_DEPTH_CLAMP);
+
+                // draw world
+                RenderSystem.setShader(GameRenderer::getPositionShader);
+                Matrix4f pCpy = pProjectionMatrix.copy();
+                RenderSystem.setProjectionMatrix(pCpy);
+                dst.renderSky(
+                        pPoseStack,
+                        pCpy, pPartialTick,
+                        pCamera, false, () -> {
+                            float f = pGameRenderer.getRenderDistance();
+                            boolean flag2 = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
+                            FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, f, flag2, pPartialTick);
+                        }
+                );
+                dst.renderClouds(
+                        pPoseStack, pCpy,
+                        pPartialTick, pCamera.getPosition().x, pCamera.getPosition().y, pCamera.getPosition().z
+                );
+
+                ((CameraAccessor) mc.getBlockEntityRenderDispatcher().camera).setLevel(mcLvl);
+                RenderSystem.setProjectionMatrix(pProjectionMatrix);
+                mc.level = mcLvl;
+
+                RenderSystem.disableBlend();
+                RenderSystem.disableTexture();
+                GL11.glEnable(GL11.GL_CULL_FACE);
+            }
+
+            GL11.glEnable(GL11.GL_CULL_FACE);
+            GL11.glEnable(GL40.GL_DEPTH_CLAMP);
+
+            GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
+            GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0x00); // all fragments should pass the stencil test
+            GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
+            // draw stencil
+            GameRenderer.getRendertypeWaterMaskShader().apply();
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glDepthFunc(GL11.GL_LEQUAL);
+            GL11.glColorMask(false, false, false, true);
+            GL11.glDepthMask(true);
+            drawStencil(pPoseStack, pCamera, portal, tesselator);
+            GL11.glColorMask(true, true, true, true);
+            GameRenderer.getRendertypeWaterMaskShader().clear();
+
+            GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
+
+            GL11.glDisable(GL11.GL_STENCIL_TEST);
+            GL11.glDisable(GL40.GL_DEPTH_CLAMP);
+
+            pPoseStack.popPose();
+
+            GL11.glDisable(GL11.GL_CULL_FACE);
+        }
+    }
+
+    void drawStencil(PoseStack pPoseStack, Camera pCamera, AbstractPortal portal, Tesselator tesselator) {
+        BufferBuilder builder = tesselator.getBuilder();
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+        builder.vertex(
+                pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x),
+                (float) (portal.getPosition().y - pCamera.getPosition().y - 1),
+                (float) (portal.getPosition().z - pCamera.getPosition().z - 1)
+        ).color(255, 0, 0, 255).endVertex();
+        builder.vertex(
+                pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x),
+                (float) (portal.getPosition().y - pCamera.getPosition().y + 1),
+                (float) (portal.getPosition().z - pCamera.getPosition().z - 1)
+        ).color(255, 0, 0, 255).endVertex();
+        builder.vertex(
+                pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x),
+                (float) (portal.getPosition().y - pCamera.getPosition().y + 1),
+                (float) (portal.getPosition().z - pCamera.getPosition().z + 1)
+        ).color(255, 0, 0, 255).endVertex();
+        builder.vertex(
+                pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x),
+                (float) (portal.getPosition().y - pCamera.getPosition().y - 1),
+                (float) (portal.getPosition().z - pCamera.getPosition().z + 1)
+        ).color(255, 0, 0, 255).endVertex();
+        tesselator.end();
+    }
 }

@@ -14,6 +14,9 @@
   "client": [
     "client.data.ClientLevelMixin",
     "client.data.MinecraftMixin",
+    "client.data.access.CameraAccessor",
+    "client.data.access.ClientLevelAccessor",
+    "client.data.access.LevelRendererAccessor",
     "client.debug.LevelRendererMixin",
     "client.render.LevelRendererMixin"
   ],

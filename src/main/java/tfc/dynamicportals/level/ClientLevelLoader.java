@@ -81,6 +81,17 @@ public class ClientLevelLoader extends LevelLoader {
         ).computeIfAbsent(
                 world.location(),
                 (k) -> {
+                    LevelRenderer renderer = new LevelRenderer(mc, mc.renderBuffers());
+                    ClientLevel lvl = new ClientLevel(
+                            mc.getConnection(),
+                            new ClientLevel.ClientLevelData(Difficulty.NORMAL, entry.hardcore, entry.flat),
+                            world, entry.type,
+                            vd, sd,
+                            mc::getProfiler,
+                            renderer,
+                            entry.debug, entry.seed
+                    );
+                    renderer.setLevel(lvl);
                     // ClientPacketListener pConnection
                     // ClientLevel.ClientLevelData pClientLevelData
                     // ResourceKey<Level> pDimension
@@ -91,15 +102,7 @@ public class ClientLevelLoader extends LevelLoader {
                     // LevelRenderer pLevelRenderer
                     // boolean pIsDebug
                     // long pBiomeZoomSeed
-                    return new ClientLevel(
-                            mc.getConnection(),
-                            new ClientLevel.ClientLevelData(Difficulty.NORMAL, entry.hardcore, entry.flat),
-                            world, entry.type,
-                            vd, sd,
-                            mc::getProfiler,
-                            new LevelRenderer(mc, mc.renderBuffers()),
-                            entry.debug, entry.seed
-                    );
+                    return lvl;
                 }
         );
     }

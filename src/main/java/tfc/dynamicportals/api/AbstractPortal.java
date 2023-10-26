@@ -1,13 +1,17 @@
 package tfc.dynamicportals.api;
 
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.client.AbstractPortalRenderDispatcher;
 import tfc.dynamicportals.itf.NetworkHolder;
+import tfc.dynamicportals.mixin.client.data.access.ClientLevelAccessor;
 import tfc.dynamicportals.network.util.PortalPacketSender;
 
 public abstract class AbstractPortal {
@@ -76,8 +80,19 @@ public abstract class AbstractPortal {
         this.position = new Vec3(x, y, z);
     }
 
+    // TODO: portal renderer class
     /* DISCOURAGED */
     public AbstractPortalRenderDispatcher preferredDispatcher() {
+        return null;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public LevelRenderer getTargetLevelRenderer() {
+        if (connectedNetwork == null) return null;
+        if (connectedNetwork.portals.size() == 2) {
+            AbstractPortal left = connectedNetwork.getPortals().get(0);
+            return ((ClientLevelAccessor) (left == this ? connectedNetwork.getPortals().get(1) : left).myLevel).getLevelRenderer();
+        }
         return null;
     }
 }

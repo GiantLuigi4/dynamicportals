@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.culling.Frustum;
+import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -65,6 +66,12 @@ public class LevelRendererMixin {
                             portal.preferredDispatcher().draw(tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick);
                         else
                             renderer.draw(tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick);
+
+                        if (recurse == 1) {
+                            GL11.glStencilMask(0xFF);
+                            GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
+                            GL11.glStencilMask(0x00);
+                        }
                     }
                 }
             }

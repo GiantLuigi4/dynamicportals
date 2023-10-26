@@ -69,11 +69,13 @@ public class PortalNet {
     public void read(NetworkHolder holder, ListTag data) {
         for (Tag datum : data) {
             CompoundTag tg = (CompoundTag) datum;
+            AbstractPortal portal;
             portals.add(
-                    BasicPortalTypes.createPortal(
+                    portal = BasicPortalTypes.createPortal(
                             new ResourceLocation(tg.getString("type")), holder, tg
                     )
             );
+            portal.connectedNetwork = this;
         }
     }
 
