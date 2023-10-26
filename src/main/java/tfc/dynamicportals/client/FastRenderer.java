@@ -5,11 +5,9 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.util.Mth;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL40;
 import tfc.dynamicportals.api.AbstractPortal;
@@ -34,73 +32,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			Minecraft.getInstance().getMainRenderTarget().enableStencil();
 			
 			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
-			consumer.vertex(
-							pPoseStack.last().pose(),
-							(float) (portal.getPosition().x - pCamera.getPosition().x),
-							(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
-							(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-					).color(255, 255, 255, 0)
-					.normal(pPoseStack.last().normal(), 0, 0, 1)
-					.endVertex();
-			consumer.vertex(
-							pPoseStack.last().pose(),
-							(float) (portal.getPosition().x - pCamera.getPosition().x),
-							(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
-							(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-					).color(255, 255, 255, 0)
-					.normal(pPoseStack.last().normal(), 0, 0, 1)
-					.endVertex();
-			
-			consumer.vertex(
-							pPoseStack.last().pose(),
-							(float) (portal.getPosition().x - pCamera.getPosition().x),
-							(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
-							(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-					).color(255, 255, 255, 0)
-					.normal(pPoseStack.last().normal(), 0, 0, 1)
-					.endVertex();
-			consumer.vertex(
-							pPoseStack.last().pose(),
-							(float) (portal.getPosition().x - pCamera.getPosition().x),
-							(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
-							(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-					).color(255, 255, 255, 0)
-					.normal(pPoseStack.last().normal(), 0, 0, 1)
-					.endVertex();
-			
-			consumer.vertex(
-							pPoseStack.last().pose(),
-							(float) (portal.getPosition().x - pCamera.getPosition().x),
-							(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
-							(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-					).color(255, 255, 255, 0)
-					.normal(pPoseStack.last().normal(), 0, 1, 0)
-					.endVertex();
-			consumer.vertex(
-							pPoseStack.last().pose(),
-							(float) (portal.getPosition().x - pCamera.getPosition().x),
-							(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
-							(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-					).color(255, 255, 255, 0)
-					.normal(pPoseStack.last().normal(), 0, 1, 0)
-					.endVertex();
-			
-			consumer.vertex(
-							pPoseStack.last().pose(),
-							(float) (portal.getPosition().x - pCamera.getPosition().x),
-							(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
-							(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-					).color(255, 255, 255, 0)
-					.normal(pPoseStack.last().normal(), 0, 1, 0)
-					.endVertex();
-			consumer.vertex(
-							pPoseStack.last().pose(),
-							(float) (portal.getPosition().x - pCamera.getPosition().x),
-							(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
-							(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-					).color(255, 255, 255, 0)
-					.normal(pPoseStack.last().normal(), 0, 1, 0)
-					.endVertex();
 			source.endBatch();
 			
 			GL40.glEnable(GL40.GL_DEPTH_CLAMP);
@@ -124,7 +55,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glStencilMask(0x00);
 			GL11.glDepthMask(true);
 			
-			
 			GL11.glDepthFunc(GL11.GL_ALWAYS);
 			RenderSystem.setShader(DypoShaders::getDepthClear);
 			DypoShaders.getDepthClear().apply();
@@ -139,23 +69,20 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glDepthFunc(GL11.GL_LEQUAL);
 			
 			// draw world
-			consumer = source.getBuffer(RenderType.leash());
-			consumer.vertex(
-					pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x - 1),
-					(float) (portal.getPosition().y - pCamera.getPosition().y - 1),
-					(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-			).color(255, 0, 0, 255).uv2(LightTexture.FULL_BRIGHT).endVertex();
-			consumer.vertex(
-					pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x - 1),
-					(float) (portal.getPosition().y - pCamera.getPosition().y + 1),
-					(float) (portal.getPosition().z - pCamera.getPosition().z - 1)
-			).color(255, 0, 0, 255).uv2(LightTexture.FULL_BRIGHT).endVertex();
-			consumer.vertex(
-					pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.getPosition().x - 2),
-					(float) (portal.getPosition().y - pCamera.getPosition().y + 2),
-					(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
-			).color(255, 0, 0, 255).uv2(LightTexture.FULL_BRIGHT).endVertex();
-			source.endBatch();
+			RenderSystem.setShader(GameRenderer::getPositionShader);
+			mc.levelRenderer.renderSky(
+					pPoseStack,
+					pProjectionMatrix, pPartialTick,
+					pCamera, false, () -> {
+						float f = pGameRenderer.getRenderDistance();
+						boolean flag2 = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
+						FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, f, flag2, pPartialTick);
+					}
+			);
+			mc.levelRenderer.renderClouds(
+					pPoseStack, pProjectionMatrix,
+					pPartialTick, pCamera.getPosition().x, pCamera.getPosition().y, pCamera.getPosition().z
+			);
 			
 			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0x00); // all fragments should pass the stencil test
