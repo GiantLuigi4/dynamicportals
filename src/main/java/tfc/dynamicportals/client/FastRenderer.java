@@ -124,7 +124,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glDepthMask(true);
 			
 			GL11.glDisable(GL11.GL_STENCIL_TEST);
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			
 			GL11.glDepthFunc(GL11.GL_ALWAYS);
 			RenderSystem.setShader(DypoShaders::getDepthClear);
@@ -164,7 +163,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 					(float) (portal.getPosition().z - pCamera.getPosition().z + 1)
 			).color(255, 0, 0, 255).uv2(LightTexture.FULL_BRIGHT).endVertex();
 			source.endBatch();
-			GL11.glDepthFunc(GL11.GL_LEQUAL);
 
 			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0x00); // all fragments should pass the stencil test
