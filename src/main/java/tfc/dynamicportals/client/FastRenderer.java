@@ -144,6 +144,10 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             RenderType.waterMask().clearRenderState();
             RenderSystem.enableCull();
         }
+
+        float f = pGameRenderer.getRenderDistance();
+        boolean flag2 = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
+        FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_TERRAIN, f, flag2, pPartialTick);
     }
 
     void drawStencil(PoseStack pPoseStack, Camera pCamera, AbstractPortal portal, Tesselator tesselator) {
