@@ -18,6 +18,7 @@
     "client.data.access.ClientLevelAccessor",
     "client.data.access.LevelRendererAccessor",
     "client.debug.LevelRendererMixin",
+    "client.render.GlStateManagerMixin",
     "client.render.LevelRendererMixin"
   ],
   "injectors": {
