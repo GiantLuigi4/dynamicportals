@@ -62,7 +62,7 @@ public class LevelRendererMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endBatch(Lnet/minecraft/client/renderer/RenderType;)V", ordinal = 3), method = "renderLevel")
     public void drawPortals(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
-        if (recurse <= 2) {
+        if (recurse < 2) {
             GL11.glEnable(GL11.GL_STENCIL_TEST);
 
             AbstractPortalRenderDispatcher renderer = AbstractPortalRenderDispatcher.getSelected();
@@ -72,9 +72,9 @@ public class LevelRendererMixin {
                 for (AbstractPortal portal : portalNetwork.getPortals()) {
                     if (portal.myLevel == level) {
                         if (portal.preferredDispatcher() != null)
-                            portal.preferredDispatcher().draw(tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick, pLightTexture, pRenderBlockOutline, pFinishNanoTime);
+                            portal.preferredDispatcher().draw(recurse - 1, portal, tessel, minecraft.renderBuffers().bufferSource(), minecraft, pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, pGameRenderer, pLightTexture, pPartialTick, pRenderBlockOutline, pFinishNanoTime);
                         else
-                            renderer.draw(tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick, pLightTexture, pRenderBlockOutline, pFinishNanoTime);
+                            renderer.draw(recurse - 1, portal, tessel, minecraft.renderBuffers().bufferSource(), minecraft, pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, pGameRenderer, pLightTexture, pPartialTick, pRenderBlockOutline, pFinishNanoTime);
                     }
                 }
             }

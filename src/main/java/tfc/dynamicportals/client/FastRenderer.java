@@ -35,7 +35,25 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
     }
 
     @Override
-    public void draw(Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick, LightTexture lightTexture, boolean renderOutline, long finish) {
+    public void draw(
+            // portal info
+            int layer,
+            AbstractPortal portal,
+            // buffers
+            Tesselator tesselator,
+            MultiBufferSource.BufferSource source,
+            // mc
+            Minecraft mc,
+            // matrices
+            PoseStack pPoseStack, Matrix4f pProjectionMatrix,
+            // camera
+            Frustum frustum, Camera pCamera,
+            // required for renderer
+            GameRenderer pGameRenderer,
+            LightTexture lightTexture,
+            float pPartialTick,
+            boolean renderOutline, long finish
+    ) {
         if (frustum.isVisible(portal.getContainingBox())) {
             pPoseStack.pushPose();
 
@@ -55,10 +73,10 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.colorMask(false, false, false, true);
-            RenderSystem.depthMask(false);
+            RenderSystem.depthMask(true);
             drawStencil(pPoseStack, pCamera.getPosition(), portal, tesselator);
-            RenderSystem.colorMask(true, true, true, true);
             GameRenderer.getRendertypeWaterMaskShader().clear();
+            RenderSystem.colorMask(true, true, true, true);
 
             GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF);
             GL11.glStencilMask(0x00);
@@ -123,6 +141,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
                 );
                 drawing = portal;
                 RenderSystem.modelViewStack = rsStack;
+                RenderSystem.applyModelViewMatrix();
 
                 ((CameraAccessor) mc.getBlockEntityRenderDispatcher().camera).setLevel(mcLvl);
                 RenderSystem.setProjectionMatrix(pProjectionMatrix);
@@ -134,28 +153,30 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             pPoseStack.popPose();
 
             GL11.glEnable(GL40.GL_DEPTH_CLAMP);
-            RenderSystem.depthFunc(GL11.GL_LEQUAL);
+            RenderSystem.depthFunc(GL11.GL_ALWAYS);
 
             GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
             GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF);
             GL11.glStencilMask(0xFF);
             // draw stencil
             GameRenderer.getRendertypeWaterMaskShader().apply();
-            RenderSystem.colorMask(false, false, false, false);
+            RenderSystem.colorMask(false, false, false, true);
             RenderSystem.depthMask(true);
             drawStencil(pPoseStack, pCamera.getPosition(), portal, tesselator);
             RenderSystem.colorMask(true, true, true, true);
             GameRenderer.getRendertypeWaterMaskShader().clear();
 
             // disable stencil writing
-            GL11.glStencilMask(0x00);
             GL11.glStencilFunc(GL11.GL_EQUAL, layer, 0xFF);
+            GL11.glStencilMask(0x00);
 
             GL11.glDisable(GL40.GL_DEPTH_CLAMP);
 
-
             RenderType.waterMask().clearRenderState();
             RenderSystem.enableCull();
+
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
         }
 
         drawing = null;

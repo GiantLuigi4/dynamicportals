@@ -33,14 +33,22 @@ public abstract class AbstractPortalRenderDispatcher {
     public abstract void pop(int layer);
 
     public abstract void draw(
-            Tesselator tesselator,
-            Minecraft mc, MultiBufferSource.BufferSource source,
-            PoseStack pPoseStack, Matrix4f pProjectionMatrix,
-            Frustum frustum, Camera pCamera,
+            // portal info
+            int layer,
             AbstractPortal portal,
+            // buffers
+            Tesselator tesselator,
+            MultiBufferSource.BufferSource source,
+            // mc
+            Minecraft mc,
+            // matrices
+            PoseStack pPoseStack, Matrix4f pProjectionMatrix,
+            // camera
+            Frustum frustum, Camera pCamera,
+            // required for renderer
             GameRenderer pGameRenderer,
-            float pPartialTick,
             LightTexture lightTexture,
+            float pPartialTick,
             boolean renderOutline, long finish
     );
 
