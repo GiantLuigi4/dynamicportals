@@ -127,7 +127,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
                 PoseStack poseCopy = new PoseStack();
                 poseCopy.last().pose().load(pPoseStack.last().pose());
                 poseCopy.last().normal().load(pPoseStack.last().normal());
-                poseCopy.translate(-2, 0, 0);
+                poseCopy.translate(0, 0, 0);
                 dst.prepareCullFrustum(
                         poseCopy,
                         pCamera.getPosition(),
@@ -153,6 +153,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             pPoseStack.popPose();
 
             GL11.glEnable(GL40.GL_DEPTH_CLAMP);
+            RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(GL11.GL_ALWAYS);
 
             GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
@@ -175,7 +176,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             RenderType.waterMask().clearRenderState();
             RenderSystem.enableCull();
 
-            RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(GL11.GL_LEQUAL);
         }
 

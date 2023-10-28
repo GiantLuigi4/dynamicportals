@@ -12,7 +12,7 @@ public class DypoNetworkRegistry {
     public static final String networkingVersion = "1.0.0";
     protected static String serverVersion = "";
     public static final SimpleChannel NETWORK_INSTANCE = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation("smaller_units", "main"),
+            new ResourceLocation("dynamic_portals", "main"),
             () -> networkingVersion,
             (s) -> compareVersionsClient(networkingVersion, s),
             (s) -> compareVersionsServer(networkingVersion, s)
