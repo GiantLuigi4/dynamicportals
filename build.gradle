@@ -1,6 +1,7 @@
 plugins {
     id 'idea'
     id 'net.neoforged.gradle.userdev' version '7.0.80'
+//    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 jarJar.enable()
@@ -26,15 +27,18 @@ runs {
 
     client {
         systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+//        args "-mixin.config=${mod_id}.mixins.json"
     }
 
     server {
         systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
         programArgument '--nogui'
+//        args "-mixin.config=${mod_id}.mixins.json"
     }
 
     gameTestServer {
         systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+//        args "-mixin.config=${mod_id}.mixins.json"
     }
 
     data {
@@ -42,12 +46,13 @@ runs {
     }
 }
 
+//minecraft {
 //    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+//}
 
 //mixin {
 //    add sourceSets.main, "dynamicportals.refmap.json"
-//
-//    config "dynamicportals.mixins.json"
+////    config "dynamicportals.mixins.json"
 //}
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }

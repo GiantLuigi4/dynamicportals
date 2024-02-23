@@ -31,3 +31,6 @@ license="MIT"
     # stop your mod loading on the server for example.
     #[features.dynamicportals]
     #openGLVersion="[3.2,)"
+
+[[mixins]]
+    config="dynamicportals.mixins.json"
