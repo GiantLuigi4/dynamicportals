@@ -12,28 +12,30 @@ import tfc.dynamicportals.network.Packet;
 public class CreateNetworkPacket extends Packet {
 	PortalNet net;
 	CompoundTag tg;
-
+	
 	public CreateNetworkPacket(PortalNet net) {
 		this.net = net;
+		this.tg = new CompoundTag();
+		net.write(tg);
 	}
 	
 	public CreateNetworkPacket(FriendlyByteBuf buf) {
 		tg = buf.readNbt();
-		net = new PortalNet(tg.getUUID("uuid"));
 	}
 	
 	@Override
 	public void writeData(FriendlyByteBuf buf) {
-		CompoundTag tg = new CompoundTag();
-		net.write(tg);
 		buf.writeNbt(tg);
 	}
 	
 	@Override
 	public void handle(PlayPayloadContext ctx) {
 		if (checkClient(ctx)) {
-			net.read((NetworkHolder) Minecraft.getInstance(), (ListTag) tg.get("data"));
-			((NetworkHolder) Minecraft.getInstance()).getPortalNetworks().add(net);
+			ctx.workHandler().execute(() -> {
+				net = new PortalNet(tg.getUUID("uuid"));
+				net.read((NetworkHolder) Minecraft.getInstance(), (ListTag) tg.get("data"));
+				((NetworkHolder) Minecraft.getInstance()).getPortalNetworks().add(net);
+			});
 		}
 	}
 }

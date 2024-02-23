@@ -83,17 +83,19 @@ public class SyncLevelsPacket extends Packet {
     @Override
     public void handle(PlayPayloadContext ctx) {
         if (checkClient(ctx)) {
-            Minecraft mc = Minecraft.getInstance();
-            LevelLoader ldr = ((NetworkHolder) mc).getLoader();
-            if (ldr instanceof ClientLevelLoader cldr) {
-                cldr.dump();
-                for (LevelEntry entry : entries) {
-                    cldr.ensure(vd, sd, entry);
+            ctx.workHandler().execute(() -> {
+                Minecraft mc = Minecraft.getInstance();
+                LevelLoader ldr = ((NetworkHolder) mc).getLoader();
+                if (ldr instanceof ClientLevelLoader cldr) {
+                    cldr.dump();
+                    for (LevelEntry entry : entries) {
+                        cldr.ensure(vd, sd, entry);
+                    }
+                    for (PortalNet portalNetwork : ((NetworkHolder) mc).getPortalNetworks()) {
+                        portalNetwork.correct((NetworkHolder) mc);
+                    }
                 }
-                for (PortalNet portalNetwork : ((NetworkHolder) mc).getPortalNetworks()) {
-                    portalNetwork.correct((NetworkHolder) mc);
-                }
-            }
+            });
         }
     }
 
