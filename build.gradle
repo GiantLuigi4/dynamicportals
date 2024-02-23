@@ -1,83 +1,54 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-        maven { url = 'https://maven.parchmentmc.org' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-        classpath 'org.parchmentmc:librarian:1.+'
-    }
+plugins {
+    id 'idea'
+    id 'net.neoforged.gradle.userdev' version '7.0.80'
 }
-
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 jarJar.enable()
 
-group = 'tfc'
-version = '1.0-SNAPSHOT'
+version = mod_version
+group = mod_group_id
 
 java {
     archivesBaseName = 'dynamicportals'
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
-minecraft {
-    mappings channel: 'parchment', version: '1.18.2-2022.11.06-1.18.2'
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+base {
+    archivesName = mod_id
+}
 
-    runs {
-        client {
-            workingDirectory project.file('run')
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        modSource project.sourceSets.main
+    }
 
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
+    client {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+    }
 
-            mods {
-                dynamicportals {
-                    source sourceSets.main
-                }
-            }
-        }
+    server {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        programArgument '--nogui'
+    }
 
-        server {
-            workingDirectory project.file('run')
+    gameTestServer {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+    }
 
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                dynamicportals {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        data {
-            workingDirectory project.file('run')
-
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            args '--mod', 'dynamicportals', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-
-            mods {
-                dynamicportals {
-                    source sourceSets.main
-                }
-            }
-        }
+    data {
+        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
     }
 }
 
-mixin {
-    add sourceSets.main, "dynamicportals.refmap.json"
+//    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
-    config "dynamicportals.mixins.json"
-}
+//mixin {
+//    add sourceSets.main, "dynamicportals.refmap.json"
+//
+//    config "dynamicportals.mixins.json"
+//}
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
@@ -86,41 +57,38 @@ repositories {
     flatDir {
         dirs 'libs'
     }
+    mavenLocal()
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.2-40.1.19'
+    implementation "net.neoforged:neoforge:${neo_version}"
 
-//    implementation fg.deobf("curse.maven:sodium-574856:3749094")
-//    implementation fg.deobf("curse.maven:iris-581495:3821406")
-    implementation fg.deobf("curse.maven:flywheel-486392:3864518")
-    runtimeOnly fg.deobf("curse.maven:spark-361579:3670050")
+    implementation "curse.maven:spark-361579:4950608"
 
-//    runtimeOnly fg.deobf("curse.maven:chisel_and_bits-231095:3775218")
-////    runtimeOnly fg.deobf("curse.maven:flywheel-486392:3737402")
-////    runtimeOnly fg.deobf("curse.maven:create-328085:3737418")
-    implementation fg.deobf("curse.maven:create-328085:3864525")
-
-//    runtimeOnly fg.deobf("curse.maven:curios-309927:3748873")
-//    runtimeOnly fg.deobf("curse.maven:botania-225643:3789677")
-//    runtimeOnly fg.deobf("curse.maven:patchouli-306770:3809545")
-
-    compileOnly fg.deobf("curse.maven:pehkui-319596:3808012")
-
-//    implementation files("tracky-1.1.jar")
-    implementation fg.deobf("com.tracky:tracky:1.1") {
+    implementation ("com.tracky:tracky:3.0") {
         transitive(false)
     }
-//    jarJar("tracky:tracky:[1.0,)") {
+//    jarJar("tracky:tracky:[3.0,)") {
 //        transitive(false)
-//        jarJar.pin(it, "1.0")
+//        jarJar.pin(it, "3.0")
 //    }
 
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+//    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
-tasks.jarJar.configure {
-    classifier 'all'
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
+            neo_version         : neo_version, neo_version_range: neo_version_range,
+            loader_version_range: loader_version_range,
+            mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors         : mod_authors, mod_description: mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
 }
 
 jar {
@@ -131,10 +99,12 @@ jar {
                 "Specification-Version"   : "1",
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : project.jar.archiveVersion,
-                "Implementation-Vendor"   : "GiantLuigi",
+                "Implementation-Vendor"   : "GiantLuigi4",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
 }
 
-jar.finalizedBy('reobfJar')
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
