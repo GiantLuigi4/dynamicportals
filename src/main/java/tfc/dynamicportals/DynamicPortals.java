@@ -24,7 +24,7 @@ public class DynamicPortals {
 	//private static final Logger LOGGER = LogManager.getLogger();
 	
 	public DynamicPortals(IEventBus bus) {
-		DypoNetworkRegistry.init();
+		DypoNetworkRegistry.init(bus);
 		NeoForge.EVENT_BUS.addListener(DynamicPortals::onPlayerJoined);
 		DypoShaders.init(bus);
 	}

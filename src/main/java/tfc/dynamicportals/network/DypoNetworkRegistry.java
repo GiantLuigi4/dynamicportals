@@ -1,6 +1,7 @@
 package tfc.dynamicportals.network;
 
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
 import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 import tfc.dynamicportals.network.sync.CreateNetworkPacket;
@@ -46,7 +47,8 @@ public class DypoNetworkRegistry {
 		);
 	}
 	
-	public static void init() {
+	public static void init(IEventBus bus) {
+		bus.addListener(DypoNetworkRegistry::register);
 	}
 	
 	public static boolean compareVersionsServer(String str0, String str1) {
