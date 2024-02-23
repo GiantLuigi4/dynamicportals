@@ -2,17 +2,19 @@ package tfc.dynamicportals.network.sync;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelData;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.level.ClientLevelLoader;
@@ -26,7 +28,7 @@ public class SyncLevelsPacket extends Packet {
     int sd;
     ArrayList<LevelEntry> entries = new ArrayList<>();
 
-    public SyncLevelsPacket(int viewDistance, int simulationDistance, RegistryAccess.Frozen registryHolder, MinecraftServer server) {
+    public SyncLevelsPacket(int viewDistance, int simulationDistance, LayeredRegistryAccess<RegistryLayer> registryHolder, MinecraftServer server) {
         vd = viewDistance;
         sd = simulationDistance;
 
@@ -55,15 +57,15 @@ public class SyncLevelsPacket extends Packet {
                     buf.readBoolean(),
                     buf.readBoolean(),
                     buf.readBoolean(),
-                    buf.readWithCodec(DimensionType.CODEC),
-                    ResourceKey.create(Registry.DIMENSION_REGISTRY, buf.readResourceLocation()),
+                    buf.readJsonWithCodec(DimensionType.CODEC),
+                    buf.readResourceKey(Registries.DIMENSION),
                     buf.readLong()
             ));
         }
     }
 
     @Override
-    public void write(FriendlyByteBuf buf) {
+    public void writeData(FriendlyByteBuf buf) {
         buf.writeInt(vd);
         buf.writeInt(sd);
 
@@ -72,14 +74,14 @@ public class SyncLevelsPacket extends Packet {
             buf.writeBoolean(entry.hardcore);
             buf.writeBoolean(entry.debug);
             buf.writeBoolean(entry.flat);
-            buf.writeWithCodec(DimensionType.CODEC, entry.type);
-            buf.writeResourceLocation(entry.dimension.location());
+            buf.writeJsonWithCodec(DimensionType.CODEC, entry.type);
+            buf.writeResourceKey(entry.dimension);
             buf.writeLong(entry.seed);
         }
     }
 
     @Override
-    public void handle(NetworkEvent.Context ctx) {
+    public void handle(PlayPayloadContext ctx) {
         if (checkClient(ctx)) {
             Minecraft mc = Minecraft.getInstance();
             LevelLoader ldr = ((NetworkHolder) mc).getLoader();

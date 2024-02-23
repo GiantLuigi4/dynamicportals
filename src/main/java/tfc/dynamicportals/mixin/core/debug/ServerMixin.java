@@ -1,6 +1,7 @@
 package tfc.dynamicportals.mixin.core.debug;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -27,10 +28,10 @@ public abstract class ServerMixin {
     @Inject(at = @At("RETURN"), method = "createLevels")
     public void preRun(CallbackInfo ci) {
         Level lvl = getLevel(ResourceKey.create(
-                Registry.DIMENSION_REGISTRY, new ResourceLocation("minecraft:overworld")
+                Registries.DIMENSION, new ResourceLocation("minecraft:overworld")
         ));
         Level nether = getLevel(ResourceKey.create(
-                Registry.DIMENSION_REGISTRY, new ResourceLocation("minecraft:the_nether")
+                Registries.DIMENSION, new ResourceLocation("minecraft:the_nether")
         ));
 
         PortalNet net = new PortalNet(new UUID(

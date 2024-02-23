@@ -3,12 +3,14 @@ package tfc.dynamicportals.level;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.WorldEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import tfc.dynamicportals.network.sync.SyncLevelsPacket;
 
 import java.util.HashMap;
@@ -53,7 +55,7 @@ public class ClientLevelLoader extends LevelLoader {
         for (HashMap<ResourceLocation, Level> value : levels.values()) {
             for (Level level : value.values()) {
                 if (level != null)
-                    MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(level));
+                    NeoForge.EVENT_BUS.post(new LevelEvent.Unload(level));
             }
         }
         levels.clear();
@@ -97,7 +99,7 @@ public class ClientLevelLoader extends LevelLoader {
                             world, entry.type,
                             vd, sd,
                             mc::getProfiler,
-                            new LevelRenderer(mc, mc.renderBuffers()),
+                            new LevelRenderer(mc, mc.getEntityRenderDispatcher(), mc.getBlockEntityRenderDispatcher(), mc.renderBuffers()),
                             entry.debug, entry.seed
                     );
                 }
@@ -112,7 +114,7 @@ public class ClientLevelLoader extends LevelLoader {
                 level.dimension().location()
         );
         if (old != null)
-            MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(old));
+            NeoForge.EVENT_BUS.post(new LevelEvent.Unload(old));
         levels.computeIfAbsent(
                 level.dimension().registry(),
                 (k) -> new HashMap<>()

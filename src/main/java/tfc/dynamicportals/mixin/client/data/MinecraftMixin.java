@@ -40,7 +40,7 @@ public class MinecraftMixin implements NetworkHolder {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V")
+    @Inject(at = @At("HEAD"), method = "clearClientLevel")
     public void preClear(CallbackInfo ci) {
 		nets.clear();
         loader.dump();

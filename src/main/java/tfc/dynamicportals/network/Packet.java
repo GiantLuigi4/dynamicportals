@@ -1,42 +1,42 @@
 package tfc.dynamicportals.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.PacketListener;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.PacketDistributor;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-public class Packet implements net.minecraft.network.protocol.Packet {
+public class Packet implements CustomPacketPayload {
 	public Packet() {
 	}
 	
 	public Packet(FriendlyByteBuf buf) {
 	}
 	
-	public void write(FriendlyByteBuf buf) {
+	@Override
+	public ResourceLocation id() {
+		return new ResourceLocation("dynamic_portals:uber");
 	}
 	
-	public void handle(NetworkEvent.Context ctx) {
+	public final void write(FriendlyByteBuf buf) {
+		buf.writeShort(DypoNetworkRegistry.packetId(this));
+		writeData(buf);
 	}
 	
-	public final void handle(PacketListener pHandler) {
+	public void writeData(FriendlyByteBuf buf) {
 	}
 	
-	public boolean isSkippable() {
-		return net.minecraft.network.protocol.Packet.super.isSkippable();
+	public void handle(PlayPayloadContext ctx) {
 	}
 	
-	public boolean checkClient(NetworkEvent.Context ctx) {
-		return ctx.getDirection().getReceptionSide().isClient();
+	public boolean checkClient(PlayPayloadContext ctx) {
+		return ctx.flow().getReceptionSide().isClient();
 	}
 	
-	public boolean checkServer(NetworkEvent.Context ctx) {
-		return ctx.getDirection().getReceptionSide().isServer();
+	public boolean checkServer(PlayPayloadContext ctx) {
+		return ctx.flow().getReceptionSide().isServer();
 	}
 	
-	public void respond(NetworkEvent.Context ctx, Packet packet) {
-		ctx.enqueueWork(() -> {
-			if (checkClient(ctx)) DypoNetworkRegistry.NETWORK_INSTANCE.sendToServer(packet);
-			else DypoNetworkRegistry.NETWORK_INSTANCE.send(PacketDistributor.PLAYER.with(ctx::getSender), packet);
-		});
+	public void respond(PlayPayloadContext ctx, Packet packet) {
+		ctx.workHandler().execute(() -> ctx.replyHandler().send(packet));
 	}
 }
