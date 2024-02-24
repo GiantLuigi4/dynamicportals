@@ -10,6 +10,8 @@ import tfc.dynamicportals.client.AbstractPortalRenderDispatcher;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.util.PortalPacketSender;
 
+import java.util.UUID;
+
 public abstract class AbstractPortal {
     public final Level myLevel;
     // highly double it's possible to have a portal implementation which doesn't need to do stuff upon moving
@@ -18,10 +20,19 @@ public abstract class AbstractPortal {
     public final PortalType<?> type;
 
     PortalNet connectedNetwork;
+    
+    private final UUID uuid;
 
+    public AbstractPortal(Level level, PortalType<?> type, UUID uuid) {
+        this.myLevel = level;
+        this.type = type;
+        this.uuid = uuid;
+    }
+    
     public AbstractPortal(Level level, PortalType<?> type) {
         this.myLevel = level;
         this.type = type;
+        this.uuid = UUID.randomUUID();
     }
 
     public AABB getNetworkBox() {
@@ -71,6 +82,10 @@ public abstract class AbstractPortal {
     public void setPosition(Vec3 vec) {
         this.position = vec;
     }
+    
+    public PortalNet getConnectedNetwork() {
+        return connectedNetwork;
+    }
 
     public void setPosition(double x, double y, double z) {
         this.position = new Vec3(x, y, z);
@@ -79,5 +94,9 @@ public abstract class AbstractPortal {
     /* DISCOURAGED */
     public AbstractPortalRenderDispatcher preferredDispatcher() {
         return null;
+    }
+    
+    public UUID getUUID() {
+        return uuid;
     }
 }

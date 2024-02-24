@@ -22,7 +22,11 @@ public class PortalNet {
     }
 
     UUID uuid;
-
+    
+    public UUID getUUID() {
+        return uuid;
+    }
+    
     public PortalNet(UUID uuid) {
         this.uuid = uuid;
     }
@@ -35,7 +39,8 @@ public class PortalNet {
         portal.connectedNetwork = this;
     }
 
-    private void unlink(AbstractPortal portal) {
+    // I'll make this public for now, because I need the option to delete portals
+    public void unlink(AbstractPortal portal) {
         if (portal.connectedNetwork == this) {
             portal.connectedNetwork = null;
             portals.remove(portal);

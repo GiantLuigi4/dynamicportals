@@ -1,15 +1,24 @@
 package tfc.dynamicportals;
 
+import net.minecraft.commands.synchronization.ArgumentTypeInfo;
+import net.minecraft.commands.synchronization.ArgumentTypeInfos;
+import net.minecraft.commands.synchronization.SingletonArgumentInfo;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.server.command.ModIdArgument;
 import tfc.dynamicportals.api.PortalNet;
+import tfc.dynamicportals.command.DynamicPortalsCommand;
+import tfc.dynamicportals.command.PortalSelectorArgument;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.DypoNetworkRegistry;
 import tfc.dynamicportals.network.sync.CreateNetworkPacket;
@@ -25,8 +34,16 @@ public class DynamicPortals {
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		
 		DypoNetworkRegistry.init(bus);
+		DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, "dynamicportals");
+		COMMAND_ARGUMENT_TYPES.register("portal_selector", () -> ArgumentTypeInfos.registerByClass(PortalSelectorArgument.class, SingletonArgumentInfo.contextFree(PortalSelectorArgument::create)));
+		COMMAND_ARGUMENT_TYPES.register(bus);
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::onPlayerJoined);
+		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::registerCommands);
 		DypoShaders.init(bus);
+	}
+	
+	public static void registerCommands(RegisterCommandsEvent event) {
+		event.getDispatcher().register(DynamicPortalsCommand.build(event.getDispatcher()));
 	}
 	
 	public static void onPlayerJoined(PlayerEvent.PlayerLoggedInEvent event) {
