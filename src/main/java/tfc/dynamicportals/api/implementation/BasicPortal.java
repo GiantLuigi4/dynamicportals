@@ -20,9 +20,10 @@ public class BasicPortal extends AbstractPortal {
 
     @Override
     public AABB getContainingBox() {
+        // TODO: base this off orientation&size
         return new AABB(
-                position.x - 1, position.y - 1, position.z - 1,
-                position.x + 1, position.y + 1, position.z + 1
+                position.x, position.y - 1, position.z - 1,
+                position.x, position.y + 1, position.z + 1
         );
     }
 

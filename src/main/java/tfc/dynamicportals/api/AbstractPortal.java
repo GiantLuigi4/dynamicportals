@@ -25,7 +25,7 @@ public abstract class AbstractPortal {
     }
 
     public AABB getNetworkBox() {
-        return getContainingBox();
+        return getContainingBox().inflate(100);
     }
 
     public abstract AABB getContainingBox();

@@ -6,6 +6,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.*;
+import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Random;
 
 @Mixin(LevelRenderer.class)
-public class LevelRendererMixin {
+public abstract class LevelRendererMixin {
     @Shadow
     @Final
     private Minecraft minecraft;
@@ -32,7 +33,11 @@ public class LevelRendererMixin {
     @Shadow
     @Nullable
     private ClientLevel level;
-
+    
+    @Shadow
+    public static void renderLineBox(PoseStack pPoseStack, VertexConsumer pConsumer, AABB pBox, float pRed, float pGreen, float pBlue, float pAlpha) {
+    }
+    
     @Unique
     private static void drawLine(
             VertexConsumer consumer,
@@ -55,10 +60,11 @@ public class LevelRendererMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;checkPoseStack(Lcom/mojang/blaze3d/vertex/PoseStack;)V", ordinal = 0), method = "renderLevel")
     public void debugDraw(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
-        if (true) return;
+        if (!minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes())
+            return;
         
         MultiBufferSource.BufferSource source = minecraft.renderBuffers().bufferSource();
-        VertexConsumer consumer = source.getBuffer(RenderType.LINES);
+        VertexConsumer consumer = source.getBuffer(RenderType.debugLineStrip(1));
 
         Random rng = new Random(98432);
         for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
@@ -127,7 +133,24 @@ public class LevelRendererMixin {
                 }
             }
         }
-
-        source.getBuffer(RenderType.solid());
+        
+        pPoseStack.pushPose();
+        pPoseStack.translate(
+                -pCamera.getPosition().x,
+                -pCamera.getPosition().y,
+                -pCamera.getPosition().z
+        );
+        for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
+            for (AbstractPortal portal : portalNetwork.getPortals()) {
+                if (portal.myLevel == level) {
+                    renderLineBox(pPoseStack, consumer,  portal.getContainingBox(), 1, 0, 0, 1f);
+                    renderLineBox(pPoseStack, consumer,  portal.getNetworkBox(), 0, 0, 1, 1f);
+                }
+            }
+        }
+        pPoseStack.popPose();
+        
+        source.endBatch();
+        
     }
 }
