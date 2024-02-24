@@ -96,16 +96,19 @@ public class ClientLevelLoader extends LevelLoader {
                     // LevelRenderer pLevelRenderer
                     // boolean pIsDebug
                     // long pBiomeZoomSeed
-                    return new ClientLevel(
+                    LevelRenderer renderer = new LevelRenderer(mc, mc.getEntityRenderDispatcher(), mc.getBlockEntityRenderDispatcher(), mc.renderBuffers());
+                    ClientLevel lvl = new ClientLevel(
                             mc.getConnection(),
                             new ClientLevel.ClientLevelData(Difficulty.NORMAL, entry.hardcore, entry.flat),
                             world,
                             access.registry(Registries.DIMENSION_TYPE).get().getHolder(entry.typeKey).orElseThrow(),
                             vd, sd,
                             mc::getProfiler,
-                            new LevelRenderer(mc, mc.getEntityRenderDispatcher(), mc.getBlockEntityRenderDispatcher(), mc.renderBuffers()),
+                            renderer,
                             entry.debug, entry.seed
                     );
+                    renderer.setLevel(lvl);
+                    return lvl;
                 }
         );
 //        System.out.println("Registered");

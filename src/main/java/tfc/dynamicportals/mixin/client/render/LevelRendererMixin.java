@@ -41,6 +41,8 @@ public class LevelRendererMixin {
     private Frustum cullingFrustum;
     @Unique
     int recurse = 0;
+    @Unique
+    boolean allowRecurse = true;
 
     @Inject(at = @At("HEAD"), method = "renderLevel")
     public void preDrawLevel(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
@@ -60,11 +62,17 @@ public class LevelRendererMixin {
             Tesselator tessel = Tesselator.getInstance();
             for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
                 for (AbstractPortal portal : portalNetwork.getPortals()) {
+                    if (portal.exitOnly()) continue;
+                    
                     if (portal.myLevel == level) {
-                        if (portal.preferredDispatcher() != null)
-                            portal.preferredDispatcher().draw(tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick);
-                        else
-                            renderer.draw(tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick);
+                        AbstractPortalRenderDispatcher dispatcher =
+                                portal.preferredDispatcher() == null ?
+                                        renderer :
+                                        portal.preferredDispatcher()
+                                ;
+                        allowRecurse = dispatcher.supportsRecurse();
+                        dispatcher.draw(tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick);
+                        allowRecurse = true;
                     }
                 }
             }

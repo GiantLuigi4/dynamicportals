@@ -15,7 +15,9 @@
     "client.data.ClientLevelMixin",
     "client.data.MinecraftMixin",
     "client.debug.LevelRendererMixin",
-    "client.render.LevelRendererMixin"
+    "client.render.LevelRendererMixin",
+    "client.access.ClientLevelAccessor",
+    "client.access.MCAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

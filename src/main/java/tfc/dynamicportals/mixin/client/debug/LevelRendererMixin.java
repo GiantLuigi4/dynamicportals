@@ -64,7 +64,7 @@ public abstract class LevelRendererMixin {
             return;
         
         MultiBufferSource.BufferSource source = minecraft.renderBuffers().bufferSource();
-        VertexConsumer consumer = source.getBuffer(RenderType.debugLineStrip(2));
+        VertexConsumer consumer = source.getBuffer(RenderType.debugLineStrip(6));
         
         pPoseStack.pushPose();
         pPoseStack.translate(
@@ -103,6 +103,10 @@ public abstract class LevelRendererMixin {
                         .normal(pPoseStack.last().normal(), (float) Math.abs(thisPortal.getPosition().x - nextPortal.getPosition().x), (float) Math.abs(thisPortal.getPosition().y - nextPortal.getPosition().y), (float) Math.abs(thisPortal.getPosition().z - nextPortal.getPosition().z))
                         .endVertex();
             }
+            
+            // restart batch before moving to the next network
+            source.endBatch();
+            consumer = source.getBuffer(RenderType.debugLineStrip(6));
         }
         
         consumer = source.getBuffer(RenderType.lines());

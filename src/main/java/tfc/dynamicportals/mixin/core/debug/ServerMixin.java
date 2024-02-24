@@ -33,16 +33,47 @@ public abstract class ServerMixin {
         Level nether = getLevel(ResourceKey.create(
                 Registries.DIMENSION, new ResourceLocation("minecraft:the_nether")
         ));
-
-        PortalNet net = new PortalNet(new UUID(
-                98423, 23912
+        Level end = getLevel(ResourceKey.create(
+                Registries.DIMENSION, new ResourceLocation("minecraft:the_end")
         ));
-        BasicPortal bap0 = new BasicPortal(lvl);
-        bap0.setPosition(16, 64, 0);
-        net.link(bap0);
-        BasicPortal bap1 = new BasicPortal(nether);
-        bap1.setPosition(-16, 64, 0);
-        net.link(bap1);
-        ((NetworkHolder) this).getPortalNetworks().add(net);
+        
+        {
+            PortalNet net = new PortalNet(new UUID(
+                    98423, 23912
+            ));
+            BasicPortal bap0 = new BasicPortal(lvl);
+            bap0.setPosition(16, 64, 0);
+            net.link(bap0);
+            BasicPortal bap1 = new BasicPortal(lvl);
+            bap1.setPosition(-16, 64, 0);
+            net.link(bap1);
+            ((NetworkHolder) this).getPortalNetworks().add(net);
+        }
+        
+        {
+            PortalNet net = new PortalNet(new UUID(
+                    98423, 23912
+            ));
+            BasicPortal bap0 = new BasicPortal(lvl);
+            bap0.setPosition(16, 64, 2);
+            net.link(bap0);
+            BasicPortal bap1 = new BasicPortal(end);
+            bap1.setPosition(-16, 64, 2);
+            net.link(bap1);
+            ((NetworkHolder) this).getPortalNetworks().add(net);
+        }
+        
+        {
+            PortalNet net = new PortalNet(new UUID(
+                    98423, 23912
+            ));
+            BasicPortal bap0 = new BasicPortal(lvl);
+            bap0.setPosition(16, 64, -2);
+            net.link(bap0);
+            BasicPortal bap1 = new BasicPortal(nether);
+            bap1.setPosition(-16, 64, -2);
+            net.link(bap1);
+            ((NetworkHolder) this).getPortalNetworks().add(net);
+        }
     }
 }

@@ -37,4 +37,6 @@ public abstract class AbstractPortalRenderDispatcher {
             AbstractPortal portal,
             GameRenderer pGameRenderer,
             float pPartialTick);
+	
+	public abstract boolean supportsRecurse();
 }
