@@ -50,30 +50,30 @@ public abstract class ServerMixin {
             ((NetworkHolder) this).getPortalNetworks().add(net);
         }
         
-        {
-            PortalNet net = new PortalNet(new UUID(
-                    98423, 23912
-            ));
-            BasicPortal bap0 = new BasicPortal(lvl);
-            bap0.setPosition(16, 64, 2);
-            net.link(bap0);
-            BasicPortal bap1 = new BasicPortal(end);
-            bap1.setPosition(-16, 64, 2);
-            net.link(bap1);
-            ((NetworkHolder) this).getPortalNetworks().add(net);
-        }
-        
-        {
-            PortalNet net = new PortalNet(new UUID(
-                    98423, 23912
-            ));
-            BasicPortal bap0 = new BasicPortal(lvl);
-            bap0.setPosition(16, 64, -2);
-            net.link(bap0);
-            BasicPortal bap1 = new BasicPortal(nether);
-            bap1.setPosition(-16, 64, -2);
-            net.link(bap1);
-            ((NetworkHolder) this).getPortalNetworks().add(net);
-        }
+//        {
+//            PortalNet net = new PortalNet(new UUID(
+//                    98423, 23912
+//            ));
+//            BasicPortal bap0 = new BasicPortal(lvl);
+//            bap0.setPosition(16, 64, 2);
+//            net.link(bap0);
+//            BasicPortal bap1 = new BasicPortal(end);
+//            bap1.setPosition(-16, 64, 2);
+//            net.link(bap1);
+//            ((NetworkHolder) this).getPortalNetworks().add(net);
+//        }
+//
+//        {
+//            PortalNet net = new PortalNet(new UUID(
+//                    98423, 23912
+//            ));
+//            BasicPortal bap0 = new BasicPortal(lvl);
+//            bap0.setPosition(16, 64, -2);
+//            net.link(bap0);
+//            BasicPortal bap1 = new BasicPortal(nether);
+//            bap1.setPosition(-16, 64, -2);
+//            net.link(bap1);
+//            ((NetworkHolder) this).getPortalNetworks().add(net);
+//        }
     }
 }

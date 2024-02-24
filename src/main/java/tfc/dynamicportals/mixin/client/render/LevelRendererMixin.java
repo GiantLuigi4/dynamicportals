@@ -1,15 +1,19 @@
 package tfc.dynamicportals.mixin.client.render;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,6 +25,7 @@ import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.client.AbstractPortalRenderDispatcher;
 import tfc.dynamicportals.itf.NetworkHolder;
+import tfc.dynamicportals.util.RenderUtil;
 
 import javax.annotation.Nullable;
 
@@ -40,23 +45,30 @@ public class LevelRendererMixin {
     @Shadow
     private Frustum cullingFrustum;
     @Unique
-    int recurse = 0;
+    private static int recurse = 0;
     @Unique
-    boolean allowRecurse = true;
+    private static boolean allowRecurse = true;
 
+    @Unique
+    private static final int MAX_RECURSE = 4;
+    
     @Inject(at = @At("HEAD"), method = "renderLevel")
     public void preDrawLevel(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
         recurse++;
+        RenderUtil.activeLayer = recurse - 1;
     }
 
     @Inject(at = @At("RETURN"), method = "renderLevel")
     public void postDrawLevel(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
         recurse--;
+        RenderUtil.activeLayer = recurse - 1;
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endBatch(Lnet/minecraft/client/renderer/RenderType;)V", ordinal = 3), method = "renderLevel")
     public void drawPortals(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
-        if (recurse == 1) {
+        if (recurse <= MAX_RECURSE && allowRecurse) {
+            GL11.glEnable(GL11.GL_STENCIL_TEST);
+        
             AbstractPortalRenderDispatcher renderer = AbstractPortalRenderDispatcher.getSelected();
             renderer.push(recurse - 1);
             Tesselator tessel = Tesselator.getInstance();
@@ -78,6 +90,30 @@ public class LevelRendererMixin {
             }
             renderer.pop(recurse - 1);
             minecraft.renderBuffers().bufferSource().endBatch();
+            
+            RenderUtil.activeLayer = recurse - 1;
+            
+            if (recurse == 1) {
+                GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
+                
+                GL11.glStencilMask(0xFF);
+                GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
+                GL11.glStencilMask(0x00);
+                
+                GL11.glDisable(GL11.GL_STENCIL_TEST);
+            }
+            
+            // reset fog
+            {
+                float renderDist = pGameRenderer.getRenderDistance();
+                Minecraft mc = this.minecraft;
+                boolean foggy = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
+                FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_TERRAIN, Math.max(renderDist, 32.0F), foggy, pPartialTick);
+                FogRenderer.setupColor(pCamera, pPartialTick, mc.level, mc.options.getEffectiveRenderDistance(), pGameRenderer.getDarkenWorldAmount(pPartialTick));
+                FogRenderer.levelFogColor();
+                
+                RenderSystem.setShaderColor(1, 1, 1, 1);
+            }
         }
     }
 }

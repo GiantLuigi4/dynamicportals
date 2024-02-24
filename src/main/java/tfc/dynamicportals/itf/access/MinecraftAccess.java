@@ -1,4 +1,4 @@
-package tfc.dynamicportals.itf;
+package tfc.dynamicportals.itf.access;
 
 import net.minecraft.client.renderer.LevelRenderer;
 

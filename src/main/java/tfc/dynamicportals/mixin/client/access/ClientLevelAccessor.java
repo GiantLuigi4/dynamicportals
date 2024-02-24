@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import tfc.dynamicportals.itf.ClientLevelAccess;
+import tfc.dynamicportals.itf.access.ClientLevelAccess;
 
 @Mixin(ClientLevel.class)
 public class ClientLevelAccessor implements ClientLevelAccess {

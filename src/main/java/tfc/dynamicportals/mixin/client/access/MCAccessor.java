@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
-import tfc.dynamicportals.itf.MinecraftAccess;
+import tfc.dynamicportals.itf.access.MinecraftAccess;
 
 @Mixin(Minecraft.class)
 public class MCAccessor implements MinecraftAccess {

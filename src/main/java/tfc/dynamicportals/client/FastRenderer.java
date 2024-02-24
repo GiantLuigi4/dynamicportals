@@ -8,14 +8,16 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.Level;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL40;
 import tfc.dynamicportals.api.AbstractPortal;
-import tfc.dynamicportals.itf.ClientLevelAccess;
-import tfc.dynamicportals.itf.MinecraftAccess;
+import tfc.dynamicportals.itf.access.ClientLevelAccess;
+import tfc.dynamicportals.itf.access.GameRendererAccessor;
+import tfc.dynamicportals.itf.access.LevelRendererAccessor;
+import tfc.dynamicportals.itf.access.MinecraftAccess;
 import tfc.dynamicportals.util.DypoShaders;
+import tfc.dynamicportals.util.RenderUtil;
 
 public class FastRenderer extends AbstractPortalRenderDispatcher {
 	int layer = 0;
@@ -39,10 +41,8 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			RenderType.waterMask().setupRenderState();
 			GL40.glEnable(GL40.GL_DEPTH_CLAMP);
 			
-			GL11.glEnable(GL11.GL_STENCIL_TEST);
-			
 			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_INCR);
-			GL11.glStencilFunc(GL11.GL_ALWAYS, layer, 0xFF); // all fragments should pass the stencil test
+			GL11.glStencilFunc(GL11.GL_EQUAL, layer, 0xFF); // all fragments should pass the stencil test
 			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
 			// draw stencil
 			GameRenderer.getRendertypeWaterMaskShader().apply();
@@ -54,7 +54,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glStencilMask(0x00);
 			
 			// draw world
-			// TODO: actually draw a world
 			{
 				AbstractPortal target = null;
 				for (AbstractPortal abstractPortal : portal.getConnectedNetwork().getPortals())
@@ -69,11 +68,11 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 				float renderDist = pGameRenderer.getRenderDistance();
 				boolean foggy = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
 				
-				FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, renderDist, foggy, pPartialTick);
-				RenderSystem.setShader(GameRenderer::getPositionShader);
-				
 				// clear depth&draw background
 				{
+					FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, renderDist, foggy, pPartialTick);
+					RenderSystem.setShader(GameRenderer::getPositionShader);
+					
 					FogRenderer.setupColor(pCamera, pPartialTick, mc.level, mc.options.getEffectiveRenderDistance(), pGameRenderer.getDarkenWorldAmount(pPartialTick));
 					FogRenderer.levelFogColor();
 					GL11.glDepthFunc(GL11.GL_ALWAYS);
@@ -92,41 +91,61 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 					RenderSystem.setShaderColor(1, 1, 1, 1);
 				}
 				
-				// draw sky
-				RenderSystem.setShader(GameRenderer::getPositionShader);
-				mc.levelRenderer.renderSky(
-						pPoseStack, pProjectionMatrix, pPartialTick,
-						pCamera, false,
-						() -> FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, renderDist, foggy, pPartialTick)
-				);
-				
-				// draw clouds
-				FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_TERRAIN, Math.max(renderDist, 32.0F), foggy, pPartialTick);
-				FogRenderer.setupColor(pCamera, pPartialTick, mc.level, mc.options.getEffectiveRenderDistance(), pGameRenderer.getDarkenWorldAmount(pPartialTick));
-				FogRenderer.levelFogColor();
-				RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
-				mc.levelRenderer.renderClouds(
-						pPoseStack, pProjectionMatrix, pPartialTick,
-						pCamera.getPosition().x, pCamera.getPosition().y, pCamera.getPosition().z
-				);
+				// actually draw the world
+				{
+					Frustum frust = mc.levelRenderer.getFrustum();
+					
+					PoseStack rsStack = RenderSystem.getModelViewStack();
+					
+					// TODO: investigate NaNs in projection matrix
+					Matrix4f portalProj = RenderUtil.getProjectionMatrix(pCamera, pPartialTick, pGameRenderer, mc);
+					if (!Double.isNaN(pProjectionMatrix.determinant())) {
+						boolean valid = true;
+						l:
+						for (int i = 0; i < 4; i++) {
+							for (int i1 = 0; i1 < 4; i1++) {
+								if (Double.isNaN(pProjectionMatrix.get(i, i1))) {
+									valid = false;
+									break l;
+								}
+							}
+						}
+						if (valid)
+							portalProj = new Matrix4f(pProjectionMatrix);
+					}
+					
+					RenderSystem.modelViewStack = new PoseStack();
+					PoseStack poseCopy = new PoseStack();
+					poseCopy.last().pose().set(pPoseStack.last().pose());
+					poseCopy.last().normal().set(pPoseStack.last().normal());
+					poseCopy.translate(-2, 0, 0);
+					mc.levelRenderer.prepareCullFrustum(
+							poseCopy,
+							pCamera.getPosition(),
+							portalProj
+					);
+					mc.levelRenderer.renderLevel(
+							poseCopy, pPartialTick,
+							System.nanoTime(), // idk
+							true, // TODO: take this from the arguments of the render level method
+							pCamera, pGameRenderer,
+							mc.gameRenderer.lightTexture(),
+							portalProj
+					);
+					
+					RenderSystem.modelViewStack = rsStack;
+					
+					((LevelRendererAccessor) mc.levelRenderer).dynamic_portals$setFrustum(frust);
+				}
 				
 				((MinecraftAccess) mc).dynamic_portals$setLevelRenderer(from);
 				mc.level = lvl;
-				
-			}
-			// reset fog
-			{
-				float renderDist = pGameRenderer.getRenderDistance();
-				boolean foggy = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
-				FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_TERRAIN, Math.max(renderDist, 32.0F), foggy, pPartialTick);
-				FogRenderer.setupColor(pCamera, pPartialTick, mc.level, mc.options.getEffectiveRenderDistance(), pGameRenderer.getDarkenWorldAmount(pPartialTick));
-				FogRenderer.levelFogColor();
-				
-				RenderSystem.setShaderColor(1, 1, 1, 1);
 			}
 			
+			// TODO: this doesn't work with multiple portals
+			//       fix!
 			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
-			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0x00); // all fragments should pass the stencil test
+			GL11.glStencilFunc(GL11.GL_ALWAYS, layer + 1, 0x00); // all fragments should pass the stencil test
 			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
 			// draw stencil
 			GameRenderer.getRendertypeWaterMaskShader().apply();
@@ -137,14 +156,10 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			RenderType.waterMask().clearRenderState();
 			GameRenderer.getRendertypeWaterMaskShader().clear();
 			
-			GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
-			
-			GL11.glStencilMask(0xFF);
-			GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
-			GL11.glStencilMask(0x00);
-			
-			GL11.glDisable(GL11.GL_STENCIL_TEST);
 			GL11.glDisable(GL40.GL_DEPTH_CLAMP);
+			
+			GL11.glStencilFunc(GL11.GL_EQUAL, layer, 0xFF);
+			GL11.glStencilMask(0x00);
 		}
 	}
 	
