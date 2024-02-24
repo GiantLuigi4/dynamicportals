@@ -64,8 +64,15 @@ public abstract class LevelRendererMixin {
             return;
         
         MultiBufferSource.BufferSource source = minecraft.renderBuffers().bufferSource();
-        VertexConsumer consumer = source.getBuffer(RenderType.debugLineStrip(1));
-
+        VertexConsumer consumer = source.getBuffer(RenderType.debugLineStrip(2));
+        
+        pPoseStack.pushPose();
+        pPoseStack.translate(
+                -pCamera.getPosition().x,
+                -pCamera.getPosition().y,
+                -pCamera.getPosition().z
+        );
+        
         Random rng = new Random(98432);
         for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
             List<AbstractPortal> portals = portalNetwork.getPortals();
@@ -77,9 +84,9 @@ public abstract class LevelRendererMixin {
                 consumer
                         .vertex(
                                 pPoseStack.last().pose(),
-                                (float) (thisPortal.getPosition().x - pCamera.getPosition().x),
-                                (float) (thisPortal.getPosition().y - pCamera.getPosition().y),
-                                (float) (thisPortal.getPosition().z - pCamera.getPosition().z)
+                                (float) (thisPortal.getPosition().x),
+                                (float) (thisPortal.getPosition().y),
+                                (float) (thisPortal.getPosition().z)
                         )
                         .color(colGen.nextInt(), colGen.nextInt(), colGen.nextInt(), 255)
                         .normal(pPoseStack.last().normal(), (float) Math.abs(thisPortal.getPosition().x - nextPortal.getPosition().x), (float) Math.abs(thisPortal.getPosition().y - nextPortal.getPosition().y), (float) Math.abs(thisPortal.getPosition().z - nextPortal.getPosition().z))
@@ -88,17 +95,17 @@ public abstract class LevelRendererMixin {
                 consumer
                         .vertex(
                                 pPoseStack.last().pose(),
-                                (float) (nextPortal.getPosition().x - pCamera.getPosition().x),
-                                (float) (nextPortal.getPosition().y - pCamera.getPosition().y),
-                                (float) (nextPortal.getPosition().z - pCamera.getPosition().z)
+                                (float) (nextPortal.getPosition().x),
+                                (float) (nextPortal.getPosition().y),
+                                (float) (nextPortal.getPosition().z)
                         )
                         .color(colGen.nextInt(), colGen.nextInt(), colGen.nextInt(), 255)
                         .normal(pPoseStack.last().normal(), (float) Math.abs(thisPortal.getPosition().x - nextPortal.getPosition().x), (float) Math.abs(thisPortal.getPosition().y - nextPortal.getPosition().y), (float) Math.abs(thisPortal.getPosition().z - nextPortal.getPosition().z))
                         .endVertex();
             }
         }
-
-        consumer = source.getBuffer(RenderType.LINES);
+        
+        consumer = source.getBuffer(RenderType.lines());
         for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
             for (AbstractPortal portal : portalNetwork.getPortals()) {
                 if (portal.myLevel != level) {
@@ -107,39 +114,33 @@ public abstract class LevelRendererMixin {
 
                     drawLine(
                             consumer, pPoseStack,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1, portal.getPosition().z - pCamera.getPosition().z,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1.1, portal.getPosition().z - pCamera.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 1, portal.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 1.1, portal.getPosition().z,
                             r, 0, g
                     );
                     drawLine(
                             consumer, pPoseStack,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1.3, portal.getPosition().z - pCamera.getPosition().z,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 2, portal.getPosition().z - pCamera.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 1.3, portal.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 2, portal.getPosition().z,
                             r, 0, g
                     );
                 } else {
                     drawLine(
                             consumer, pPoseStack,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y, portal.getPosition().z - pCamera.getPosition().z,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1, portal.getPosition().z - pCamera.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y, portal.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 1, portal.getPosition().z,
                             1, 1, 1
                     );
                     drawLine(
                             consumer, pPoseStack,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1, portal.getPosition().z - pCamera.getPosition().z,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1.1, portal.getPosition().z - pCamera.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 1, portal.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 1.1, portal.getPosition().z,
                             0, 1, 0
                     );
                 }
             }
         }
         
-        pPoseStack.pushPose();
-        pPoseStack.translate(
-                -pCamera.getPosition().x,
-                -pCamera.getPosition().y,
-                -pCamera.getPosition().z
-        );
         for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
             for (AbstractPortal portal : portalNetwork.getPortals()) {
                 if (portal.myLevel == level) {
