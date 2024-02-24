@@ -1,5 +1,5 @@
 modLoader="javafml" #mandatory
-loaderVersion="${loader_version_range}" #mandatory
+loaderVersion="[39,)" #mandatory
 license="MIT"
 
 [[mods]] #mandatory
@@ -15,16 +15,18 @@ license="MIT"
     description='''${mod_description}'''
 
     [[dependencies.dynamicportals]] #optional
-        modId="neoforge" #mandatory
+        modId="forge" #mandatory
         type="required" #mandatory
-        versionRange="${neo_version_range}" #mandatory
+        versionRange="[39,)" #mandatory
         ordering="NONE"
+        mandatory=true
         side="BOTH"
     [[dependencies.dynamicportals]]
         modId="minecraft"
         type="required"
-        versionRange="${minecraft_version_range}"
+        versionRange="[1.20,1.20.1]"
         ordering="NONE"
+        mandatory=true
         side="BOTH"
     # Features are specific properties of the game environment, that you may want to declare you require. This example declares
     # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't

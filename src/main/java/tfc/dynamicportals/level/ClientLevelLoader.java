@@ -3,14 +3,14 @@ package tfc.dynamicportals.level;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.level.LevelEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.level.LevelEvent;
 import tfc.dynamicportals.network.sync.SyncLevelsPacket;
 
 import java.util.HashMap;
@@ -55,13 +55,13 @@ public class ClientLevelLoader extends LevelLoader {
         for (HashMap<ResourceLocation, Level> value : levels.values()) {
             for (Level level : value.values()) {
                 if (level != null)
-                    NeoForge.EVENT_BUS.post(new LevelEvent.Unload(level));
+                    MinecraftForge.EVENT_BUS.post(new LevelEvent.Unload(level));
             }
         }
         levels.clear();
     }
 
-    public void ensure(int vd, int sd, SyncLevelsPacket.LevelEntry entry) {
+    public void ensure(RegistryAccess access, int vd, int sd, SyncLevelsPacket.LevelEntry entry) {
         ResourceKey<Level> world = entry.dimension;
 
         Level mcLvl = mc.level;
@@ -76,6 +76,9 @@ public class ClientLevelLoader extends LevelLoader {
             return;
         }
 
+//        if (entry.type.unwrap().right().isPresent()) {
+//            System.out.println("Present " + entry.type.unwrap().right().get());
+//        }
         //noinspection resource
         levels.computeIfAbsent(
                 world.registry(),
@@ -96,7 +99,15 @@ public class ClientLevelLoader extends LevelLoader {
                     return new ClientLevel(
                             mc.getConnection(),
                             new ClientLevel.ClientLevelData(Difficulty.NORMAL, entry.hardcore, entry.flat),
-                            world, entry.type,
+                            world,
+                            
+                            // MOJANG
+//                            access.registry(Registries.DIMENSION_TYPE)
+//                                    .get().getHolder(
+//                                            access.registry(Registries.DIMENSION_TYPE).get().getResourceKey(entry.type.get()).get()
+//                                    ).get(),
+                            access.registry(Registries.DIMENSION_TYPE).get().getHolder(entry.typeKey).orElseThrow(),
+                            
                             vd, sd,
                             mc::getProfiler,
                             new LevelRenderer(mc, mc.getEntityRenderDispatcher(), mc.getBlockEntityRenderDispatcher(), mc.renderBuffers()),
@@ -104,6 +115,7 @@ public class ClientLevelLoader extends LevelLoader {
                     );
                 }
         );
+//        System.out.println("Registered");
     }
 
     public void update(ClientLevel level) {
@@ -114,7 +126,7 @@ public class ClientLevelLoader extends LevelLoader {
                 level.dimension().location()
         );
         if (old != null)
-            NeoForge.EVENT_BUS.post(new LevelEvent.Unload(old));
+            MinecraftForge.EVENT_BUS.post(new LevelEvent.Unload(old));
         levels.computeIfAbsent(
                 level.dimension().registry(),
                 (k) -> new HashMap<>()

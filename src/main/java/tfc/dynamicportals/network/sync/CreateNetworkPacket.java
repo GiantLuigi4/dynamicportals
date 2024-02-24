@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.minecraftforge.network.NetworkEvent;
 import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.Packet;
@@ -29,9 +29,9 @@ public class CreateNetworkPacket extends Packet {
 	}
 	
 	@Override
-	public void handle(PlayPayloadContext ctx) {
+	public void handle(NetworkEvent.Context ctx) {
 		if (checkClient(ctx)) {
-			ctx.workHandler().execute(() -> {
+			ctx.enqueueWork(() -> {
 				net = new PortalNet(tg.getUUID("uuid"));
 				net.read((NetworkHolder) Minecraft.getInstance(), (ListTag) tg.get("data"));
 				((NetworkHolder) Minecraft.getInstance()).getPortalNetworks().add(net);

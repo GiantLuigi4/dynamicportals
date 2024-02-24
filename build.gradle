@@ -1,59 +1,98 @@
-plugins {
-    id 'idea'
-    id 'net.neoforged.gradle.userdev' version '7.0.80'
-//    id 'org.spongepowered.mixin' version '0.7.+'
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        maven { url = 'https://maven.parchmentmc.org' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+        classpath 'org.parchmentmc:librarian:1.+'
+    }
 }
+
+plugins {
+//    id 'idea'
+//    id 'net.neoforged.gradle.userdev' version '7.0.80'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 jarJar.enable()
 
 version = mod_version
 group = mod_group_id
+base.archivesName = mod_id
 
 java {
     archivesBaseName = 'dynamicportals'
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
-base {
-    archivesName = mod_id
-}
+//configurations {
+//    modImpl {}
+//    implementation.extendsFrom modImpl
+//}
 
-runs {
-    configureEach {
-        systemProperty 'forge.logging.markers', 'REGISTRIES'
-        systemProperty 'forge.logging.console.level', 'debug'
-        modSource project.sourceSets.main
-    }
-
-    client {
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-//        args "-mixin.config=${mod_id}.mixins.json"
-    }
-
-    server {
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-        programArgument '--nogui'
-//        args "-mixin.config=${mod_id}.mixins.json"
-    }
-
-    gameTestServer {
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-//        args "-mixin.config=${mod_id}.mixins.json"
-    }
-
-    data {
-        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+dependencies {
+//    compileOnly "curse.maven:spark-361579:4950608"
+    implementation fg.deobf("com.tracky:tracky:3.0") {
+        transitive(false)
     }
 }
 
-//minecraft {
+minecraft {
+    mappings channel: 'parchment', version: "${mcMap}-${mapVer}-${minecraft_version}"
+
 //    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-//}
 
-//mixin {
-//    add sourceSets.main, "dynamicportals.refmap.json"
-////    config "dynamicportals.mixins.json"
-//}
+    runs {
+//        configureEach {
+//            systemProperty 'forge.logging.markers', 'REGISTRIES'
+//            systemProperty 'forge.logging.console.level', 'debug'
+//            modSource project.sourceSets.main
+//        }
+
+        client {
+            workingDirectory project.file('runs/client')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                dynamicportals {
+                    source sourceSets.main
+                }
+            }
+
+//            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+//            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+//            programArgument '--nogui'
+
+            workingDirectory project.file('runs/server')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                dynamicportals {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, "dynamicportals.refmap.json"
+    config "dynamicportals.mixins.json"
+}
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
@@ -66,19 +105,14 @@ repositories {
 }
 
 dependencies {
-    implementation "net.neoforged:neoforge:${neo_version}"
+    minecraft 'net.minecraftforge:forge:1.20-46.0.14'
 
-    implementation "curse.maven:spark-361579:4950608"
-
-    implementation ("com.tracky:tracky:3.0") {
-        transitive(false)
-    }
 //    jarJar("tracky:tracky:[3.0,)") {
 //        transitive(false)
 //        jarJar.pin(it, "3.0")
 //    }
 
-//    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
 tasks.withType(ProcessResources).configureEach {

@@ -1,5 +1,6 @@
 package tfc.dynamicportals.api;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;

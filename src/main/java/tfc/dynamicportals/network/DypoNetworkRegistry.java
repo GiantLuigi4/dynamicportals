@@ -1,9 +1,10 @@
 package tfc.dynamicportals.network;
 
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
-import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.simple.SimpleChannel;
 import tfc.dynamicportals.network.sync.CreateNetworkPacket;
 import tfc.dynamicportals.network.sync.SyncLevelsPacket;
 
@@ -14,16 +15,24 @@ public class DypoNetworkRegistry {
 	public static final String networkingVersion = "1.0.0";
 	protected static String serverVersion = "";
 	
+	public static final SimpleChannel NETWORK_INSTANCE = NetworkRegistry.newSimpleChannel(
+			new ResourceLocation("smaller_units", "main"),
+			() -> networkingVersion,
+			(s) -> compareVersionsClient(networkingVersion, s),
+			(s) -> compareVersionsServer(networkingVersion, s)
+	);
+	
 	static HashMap<Class<?>, Integer> idsByClass = new HashMap<>();
 	
 	protected static int packetId(Packet pkt) {
 		return idsByClass.get(pkt.getClass());
 	}
 	
-	public static void register(RegisterPayloadHandlerEvent event) {
-		IPayloadRegistrar registrar =
-				event.registrar("dynamic_portals")
-						.versioned(networkingVersion);
+	//public static void register(RegisterPayloadHandlerEvent event) {
+	public static void register() {
+//		IPayloadRegistrar registrar =
+//				event.registrar("dynamic_portals")
+//						.versioned(networkingVersion);
 		
 		ArrayList<NetworkEntry<?>> entries = new ArrayList<>();
 		entries.add(new NetworkEntry<>(CreateNetworkPacket.class, CreateNetworkPacket::new));
@@ -35,20 +44,32 @@ public class DypoNetworkRegistry {
 			entriesByClass.put(entry.clazz, entry);
 			idsByClass.put(entry.clazz, i);
 		}
-		
-		registrar.play(
-				new ResourceLocation("dynamic_portals:uber"),
-				(pkt) -> {
-					short s = pkt.readShort();
-					NetworkEntry<?> entry = entries.get(s);
-					return entry.fabricator.apply(pkt);
-				},
-				Packet::handle
-		);
+
+//		registrar.play(
+//				new ResourceLocation("dynamic_portals:uber"),
+//				(pkt) -> {
+//					short s = pkt.readShort();
+//					NetworkEntry<?> entry = entries.get(s);
+//					return entry.fabricator.apply(pkt);
+//				},
+//				Packet::handle
+//		);
+		int idx = 0;
+		for (NetworkEntry<?> entry : entries) {
+			NETWORK_INSTANCE
+					.messageBuilder((Class<Packet>) entry.clazz, idx++)
+					.encoder(Packet::writeData)
+					.decoder((d) -> entry.fabricator.apply(d))
+					.consumerNetworkThread((pkt, ctx) -> {
+						pkt.handle(ctx.get());
+					})
+					.add();
+		}
 	}
 	
 	public static void init(IEventBus bus) {
-		bus.addListener(DypoNetworkRegistry::register);
+//		bus.addListener(DypoNetworkRegistry::register);
+		register();
 	}
 	
 	public static boolean compareVersionsServer(String str0, String str1) {
@@ -122,5 +143,13 @@ public class DypoNetworkRegistry {
 			}
 		}
 		return strs;
+	}
+	
+	public static void sendToServer(Packet packet) {
+		NETWORK_INSTANCE.sendToServer(packet);
+	}
+	
+	public static void send(Packet packet, PacketDistributor.PacketTarget target) {
+		NETWORK_INSTANCE.send(target, packet);
 	}
 }

@@ -1,18 +1,40 @@
 package tfc.dynamicportals.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
 
-public class Packet implements CustomPacketPayload {
+public class Packet {
 	public Packet() {
 	}
 	
 	public Packet(FriendlyByteBuf buf) {
 	}
 	
-	@Override
+	public void writeData(FriendlyByteBuf buf) {
+	}
+	
+	public void handle(NetworkEvent.Context ctx) {
+	}
+	
+	public boolean checkClient(NetworkEvent.Context ctx) {
+		return ctx.getDirection().getReceptionSide().isClient();
+	}
+	
+	public boolean checkServer(NetworkEvent.Context ctx) {
+		return ctx.getDirection().getReceptionSide().isServer();
+	}
+	
+	public void respond(NetworkEvent.Context ctx, Packet packet) {
+		ctx.enqueueWork(() -> {
+			if (checkServer(ctx))
+				DypoNetworkRegistry.send(packet, PacketDistributor.PLAYER.with(ctx::getSender));
+			else DypoNetworkRegistry.sendToServer(packet);
+		});
+	}
+	
+	// for 1.20.4
 	public ResourceLocation id() {
 		return new ResourceLocation("dynamic_portals:uber");
 	}
@@ -20,23 +42,5 @@ public class Packet implements CustomPacketPayload {
 	public final void write(FriendlyByteBuf buf) {
 		buf.writeShort(DypoNetworkRegistry.packetId(this));
 		writeData(buf);
-	}
-	
-	public void writeData(FriendlyByteBuf buf) {
-	}
-	
-	public void handle(PlayPayloadContext ctx) {
-	}
-	
-	public boolean checkClient(PlayPayloadContext ctx) {
-		return ctx.flow().getReceptionSide().isClient();
-	}
-	
-	public boolean checkServer(PlayPayloadContext ctx) {
-		return ctx.flow().getReceptionSide().isServer();
-	}
-	
-	public void respond(PlayPayloadContext ctx, Packet packet) {
-		ctx.workHandler().execute(() -> ctx.replyHandler().send(packet));
 	}
 }
