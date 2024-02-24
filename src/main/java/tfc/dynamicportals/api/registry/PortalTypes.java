@@ -3,6 +3,7 @@ package tfc.dynamicportals.api.registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.itf.NetworkHolder;
 
@@ -10,12 +11,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 // TODO: convert to deferred register?
-public class BasicPortalTypes {
+public class PortalTypes {
     public static final PortalType<BasicPortal> BASIC;
 
     protected static Map<ResourceLocation, PortalType<?>> TYPES = new HashMap<>();
 
-    public static <T extends BasicPortal> PortalType<T> register(ResourceLocation location, PortalType<T> type) {
+    public static <T extends AbstractPortal> PortalType<T> register(ResourceLocation location, PortalType<T> type) {
         TYPES.put(location, type);
         type.name = location;
         return type;
@@ -39,7 +40,7 @@ public class BasicPortalTypes {
         );
     }
 
-    public static BasicPortal createPortal(ResourceLocation type, NetworkHolder holder, CompoundTag tag) {
+    public static AbstractPortal createPortal(ResourceLocation type, NetworkHolder holder, CompoundTag tag) {
         return TYPES.get(type).fromNbt.apply(holder, tag);
     }
 }

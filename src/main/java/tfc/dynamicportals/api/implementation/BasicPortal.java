@@ -5,7 +5,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.AbstractPortal;
-import tfc.dynamicportals.api.registry.BasicPortalTypes;
+import tfc.dynamicportals.api.registry.PortalTypes;
 import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.itf.NetworkHolder;
 
@@ -15,7 +15,7 @@ public class BasicPortal extends AbstractPortal {
     }
 
     public BasicPortal(Level level) {
-        super(level, BasicPortalTypes.BASIC);
+        super(level, PortalTypes.BASIC);
     }
 
     @Override

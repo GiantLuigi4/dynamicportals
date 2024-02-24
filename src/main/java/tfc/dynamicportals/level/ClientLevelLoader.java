@@ -100,14 +100,7 @@ public class ClientLevelLoader extends LevelLoader {
                             mc.getConnection(),
                             new ClientLevel.ClientLevelData(Difficulty.NORMAL, entry.hardcore, entry.flat),
                             world,
-                            
-                            // MOJANG
-//                            access.registry(Registries.DIMENSION_TYPE)
-//                                    .get().getHolder(
-//                                            access.registry(Registries.DIMENSION_TYPE).get().getResourceKey(entry.type.get()).get()
-//                                    ).get(),
                             access.registry(Registries.DIMENSION_TYPE).get().getHolder(entry.typeKey).orElseThrow(),
-                            
                             vd, sd,
                             mc::getProfiler,
                             new LevelRenderer(mc, mc.getEntityRenderDispatcher(), mc.getBlockEntityRenderDispatcher(), mc.renderBuffers()),

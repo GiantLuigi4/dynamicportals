@@ -31,6 +31,7 @@ public class CreateNetworkPacket extends Packet {
 	@Override
 	public void handle(NetworkEvent.Context ctx) {
 		if (checkClient(ctx)) {
+			ctx.setPacketHandled(true);
 			ctx.enqueueWork(() -> {
 				net = new PortalNet(tg.getUUID("uuid"));
 				net.read((NetworkHolder) Minecraft.getInstance(), (ListTag) tg.get("data"));

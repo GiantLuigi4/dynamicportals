@@ -105,6 +105,7 @@ public class SyncLevelsPacket extends Packet {
 	@Override
 	public void handle(NetworkEvent.Context ctx) {
 		if (checkClient(ctx)) {
+			ctx.setPacketHandled(true);
 			ctx.enqueueWork(() -> {
 				Minecraft mc = Minecraft.getInstance();
 				LevelLoader ldr = ((NetworkHolder) mc).getLoader();

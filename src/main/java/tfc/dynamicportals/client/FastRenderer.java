@@ -30,10 +30,9 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 	public void draw(Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick) {
 		if (frustum.isVisible(portal.getContainingBox())) {
 			Minecraft.getInstance().getMainRenderTarget().enableStencil();
-			
-			VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 			source.endBatch();
 			
+			RenderType.waterMask().setupRenderState();
 			GL40.glEnable(GL40.GL_DEPTH_CLAMP);
 			
 			GL11.glEnable(GL11.GL_STENCIL_TEST);
@@ -43,17 +42,12 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
 			// draw stencil
 			GameRenderer.getRendertypeWaterMaskShader().apply();
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthFunc(GL11.GL_LEQUAL);
-			GL11.glColorMask(false, false, false, true);
-			GL11.glDepthMask(false);
 			drawStencil(pPoseStack, pCamera, portal, tesselator);
 			GL11.glColorMask(true, true, true, true);
 			GameRenderer.getRendertypeWaterMaskShader().clear();
 			
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF);
 			GL11.glStencilMask(0x00);
-			GL11.glDepthMask(true);
 			
 			GL11.glDepthFunc(GL11.GL_ALWAYS);
 			RenderSystem.setShader(DypoShaders::getDepthClear);
@@ -69,31 +63,35 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GL11.glDepthFunc(GL11.GL_LEQUAL);
 			
 			// draw world
-			RenderSystem.setShader(GameRenderer::getPositionShader);
-			mc.levelRenderer.renderSky(
-					pPoseStack,
-					pProjectionMatrix, pPartialTick,
-					pCamera, false, () -> {
-						float f = pGameRenderer.getRenderDistance();
-						boolean flag2 = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
-						FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, f, flag2, pPartialTick);
-					}
-			);
-			mc.levelRenderer.renderClouds(
-					pPoseStack, pProjectionMatrix,
-					pPartialTick, pCamera.getPosition().x, pCamera.getPosition().y, pCamera.getPosition().z
-			);
+			// TODO: actually draw a world
+			{
+				FogRenderer.levelFogColor();
+				float renderDist = pGameRenderer.getRenderDistance();
+				boolean foggy = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
+				FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, renderDist, foggy, pPartialTick);
+				RenderSystem.setShader(GameRenderer::getPositionShader);
+				mc.levelRenderer.renderSky(
+						pPoseStack,
+						pProjectionMatrix, pPartialTick,
+						pCamera, false, () -> FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, renderDist, foggy, pPartialTick)
+				);
+				GL11.glColorMask(true, true, true, true);
+				FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_TERRAIN, Math.max(renderDist, 32.0F), foggy, pPartialTick);
+				RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
+				mc.levelRenderer.renderClouds(
+						pPoseStack, pProjectionMatrix,
+						pPartialTick, pCamera.getPosition().x, pCamera.getPosition().y, pCamera.getPosition().z
+				);
+			}
 			
 			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0x00); // all fragments should pass the stencil test
 			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
 			// draw stencil
 			GameRenderer.getRendertypeWaterMaskShader().apply();
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthFunc(GL11.GL_LEQUAL);
-			GL11.glColorMask(false, false, false, false);
+			RenderType.waterMask().setupRenderState();
 			drawStencil(pPoseStack, pCamera, portal, tesselator);
-			GL11.glColorMask(true, true, true, true);
+			RenderType.waterMask().clearRenderState();
 			GameRenderer.getRendertypeWaterMaskShader().clear();
 			
 			GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
