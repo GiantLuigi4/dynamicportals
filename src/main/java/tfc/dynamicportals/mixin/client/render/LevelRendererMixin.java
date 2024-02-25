@@ -85,10 +85,11 @@ public class LevelRendererMixin {
                         allowRecurse = dispatcher.supportsRecurse();
                         dispatcher.draw(tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick);
                         allowRecurse = true;
+                        
+                        renderer.pop(recurse - 1);
                     }
                 }
             }
-            renderer.pop(recurse - 1);
             minecraft.renderBuffers().bufferSource().endBatch();
             
             RenderUtil.activeLayer = recurse - 1;

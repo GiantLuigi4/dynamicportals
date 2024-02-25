@@ -60,7 +60,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 		PoseStack poseCopy = new PoseStack();
 		poseCopy.last().pose().set(pPoseStack.last().pose());
 		poseCopy.last().normal().set(pPoseStack.last().normal());
-		poseCopy.translate(5, 0, 0);
+		poseCopy.translate(4, 0, 0);
 		mc.levelRenderer.prepareCullFrustum(
 				poseCopy,
 				pCamera.getPosition(),
@@ -109,6 +109,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 	
 	@Override
 	public void draw(Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick) {
+		int layer = this.layer;
 		if (frustum.isVisible(portal.getContainingBox())) {
 			// translate
 			pPoseStack.pushPose();
@@ -180,11 +181,13 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 					RenderSystem.setShaderColor(1, 1, 1, 1);
 				}
 				
+				GL40.glDisable(GL40.GL_DEPTH_CLAMP);
 				pPoseStack.popPose();
 				
 				// TODO: draw skybox on final iteration
 				//       elsewise, draw world
-				if (RenderUtil.activeLayer == 0) {
+				if (RenderUtil.activeLayer != 3) {
+//				if (true) {
 					draw(mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
 				} else {
 					drawSkybox(mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
@@ -202,13 +205,16 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 					-pCamera.getPosition().z
 			);
 			
+			GL11.glEnable(GL40.GL_DEPTH_CLAMP);
+			
+			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF);
 			RenderSystem.disableDepthTest();
 			renderer.drawOverlay(source, pPoseStack, pCamera, portal, tesselator);
 			
 			// TODO: this doesn't work with multiple portals
 			//       fix!
 			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_DECR);
-			GL11.glStencilFunc(GL11.GL_ALWAYS, layer + 1, 0x00); // all fragments should pass the stencil test
+			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF); // all fragments should pass the stencil test
 			GL11.glStencilMask(0xFF); // enable writing to the stencil buffer
 			// draw stencil
 			GameRenderer.getRendertypeWaterMaskShader().apply();

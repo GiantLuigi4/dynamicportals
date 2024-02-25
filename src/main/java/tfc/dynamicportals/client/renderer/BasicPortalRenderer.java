@@ -15,6 +15,7 @@ import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.util.render.BlendFunctions;
+import tfc.dynamicportals.util.render.RenderUtil;
 
 public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
 	public BasicPortalRenderer(PortalType<BasicPortal> type) {
@@ -117,6 +118,7 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
 		
 //		alpha = 0.2f;
 		alpha = 1f;
+//		alpha = (4 - RenderUtil.activeLayer) / 4f;
 		
 		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
 		

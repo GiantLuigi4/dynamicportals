@@ -45,7 +45,7 @@ public abstract class ServerMixin {
                     98423, 23912
             ));
             BasicPortal bap0 = new BasicPortal(lvl);
-            bap0.setPosition(16, 64, 0);
+            bap0.setPosition(15.5, 64, 0);
             bap0.setOrientation(new Quaterniond(0, -1, 0, 1).normalize());
             bap0.setSize(new Vector2d(2, 2));
             net.link(bap0);
