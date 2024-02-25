@@ -186,8 +186,8 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 				
 				// TODO: draw skybox on final iteration
 				//       elsewise, draw world
-				if (RenderUtil.activeLayer != 3) {
-//				if (true) {
+//				if (RenderUtil.activeLayer != 3) {
+				if (RenderUtil.activeLayer == 0) {
 					draw(mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
 				} else {
 					drawSkybox(mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
