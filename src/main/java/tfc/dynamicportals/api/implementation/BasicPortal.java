@@ -8,10 +8,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniond;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.registry.PortalTypes;
-import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.itf.NetworkHolder;
-
-import java.util.UUID;
 
 public class BasicPortal extends AbstractPortal {
     public BasicPortal(Level level) {
@@ -75,7 +72,7 @@ public class BasicPortal extends AbstractPortal {
                 Double.longBitsToDouble(coords[1]),
                 Double.longBitsToDouble(coords[2])
         );
-        long[] orentiations = tag.getLongArray("orentiation");
+        long[] orentiations = tag.getLongArray("orientation");
         orientation = new Quaterniond(
                 Double.longBitsToDouble(orentiations[0]),
                 Double.longBitsToDouble(orentiations[1]),

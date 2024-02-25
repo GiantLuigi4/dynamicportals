@@ -16,6 +16,7 @@ import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.api.registry.PortalTypes;
+import tfc.dynamicportals.command.arg.OrientationArgument;
 import tfc.dynamicportals.command.registry.PortalTypeCommands;
 import tfc.dynamicportals.itf.NetworkHolder;
 
@@ -34,7 +35,7 @@ public class DynamicPortalsCommand {
 	public static int createStandardPortal(PortalType<?> type, CommandContext<CommandSourceStack> context) {
 		Vec3 position = getArgumentOrDefault(context, "position", Vec3.class, context.getSource().getPosition());
 		Vec2 size = getArgumentOrDefault(context, "size", Vec2.class, new Vec2(2, 2));
-		Vec3 rotation = getArgumentOrDefault(context, "rotation", Vec3.class, Vec3.directionFromRotation(context.getSource().getRotation()));
+		Vec3 rotation = OrientationArgument.getRotation(context, "rotation");
 		
 		ServerLevel lvl = context.getSource().getLevel();
 		NetworkHolder netHolder = (NetworkHolder) lvl;
