@@ -1,4 +1,4 @@
-package tfc.dynamicportals.command;
+package tfc.dynamicportals.command.arg;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -12,6 +12,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.PortalNet;
+import tfc.dynamicportals.command.PortalNetFilter;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 import java.util.ArrayList;

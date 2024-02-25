@@ -14,9 +14,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaterniond;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.api.registry.PortalTypes;
+import tfc.dynamicportals.command.arg.OrientationArgument;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 import java.util.ArrayList;
@@ -45,12 +47,34 @@ public class DynamicPortalsCommand {
 		levelTag.putString("location", lvl.dimension().location().toString());
 		CompoundTag tag = new CompoundTag();
 		tag.put("level", levelTag);
+		// position
 		tag.putLongArray("coords",
 				new long[]{
 						Double.doubleToLongBits(position.x),
 						Double.doubleToLongBits(position.y),
 						Double.doubleToLongBits(position.z)
 				});
+		
+		// size
+		tag.putLongArray("size",
+				new long[]{
+						Double.doubleToLongBits(size.x),
+						Double.doubleToLongBits(size.y)
+				});
+		
+		// orientation
+		Quaterniond orientation = new Quaterniond();
+		orientation.rotateAxis(rotation.x, 1, 0, 0);
+		orientation.rotateAxis(rotation.y, 0, 1, 0);
+		orientation.rotateAxis(rotation.z, 0, 0, 1);
+		tag.putLongArray("orientation",
+				new long[]{
+						Double.doubleToLongBits(orientation.x),
+						Double.doubleToLongBits(orientation.y),
+						Double.doubleToLongBits(orientation.z),
+						Double.doubleToLongBits(orientation.w)
+				});
+		
 		AbstractPortal newPortal = PortalTypes.createPortal(type, netHolder, tag);
 		
 		PortalNet newNet = optionalNet.orElseGet(() -> new PortalNet(UUID.randomUUID()));
@@ -90,7 +114,7 @@ public class DynamicPortalsCommand {
 							.executes(DynamicPortalsCommand::createPortal)
 						.then(argument("size", Vec2Argument.vec2())
 							.executes(DynamicPortalsCommand::createPortal)
-						.then(argument("rotation", Vec3Argument.vec3())
+						.then(argument("rotation", OrientationArgument.vec3())
 							.executes(DynamicPortalsCommand::createPortal)))))
 		).then(
 				literal("target")

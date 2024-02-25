@@ -15,10 +15,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.server.command.ModIdArgument;
 import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.command.DynamicPortalsCommand;
-import tfc.dynamicportals.command.PortalSelectorArgument;
+import tfc.dynamicportals.command.arg.PortalSelectorArgument;
+import tfc.dynamicportals.command.arg.OrientationArgument;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.DypoNetworkRegistry;
 import tfc.dynamicportals.network.sync.CreateNetworkPacket;
@@ -34,9 +34,12 @@ public class DynamicPortals {
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		
 		DypoNetworkRegistry.init(bus);
+		
 		DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, "dynamicportals");
 		COMMAND_ARGUMENT_TYPES.register("portal_selector", () -> ArgumentTypeInfos.registerByClass(PortalSelectorArgument.class, SingletonArgumentInfo.contextFree(PortalSelectorArgument::create)));
+		COMMAND_ARGUMENT_TYPES.register("orientation", () -> ArgumentTypeInfos.registerByClass(OrientationArgument.class, SingletonArgumentInfo.contextFree(OrientationArgument::vec3)));
 		COMMAND_ARGUMENT_TYPES.register(bus);
+		
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::onPlayerJoined);
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::registerCommands);
 		DypoShaders.init(bus);
