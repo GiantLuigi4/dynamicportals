@@ -5,6 +5,9 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "dynamicportals.refmap.json",
   "mixins": [
+    "core.collision.N",
+    "core.collision.N1",
+    "core.collision.ShapesMixin",
     "core.data.LevelMixin",
     "core.data.PlayerListMixin",
     "core.data.ServerLevelMixin",
@@ -14,8 +17,8 @@
   "client": [
     "client.access.ClientLevelAccessor",
     "client.access.GameRenderAccess",
-    "client.access.MCAccessor",
     "client.access.LevelRenderAccess",
+    "client.access.MCAccessor",
     "client.data.ClientLevelMixin",
     "client.data.MinecraftMixin",
     "client.debug.LevelRendererMixin",
