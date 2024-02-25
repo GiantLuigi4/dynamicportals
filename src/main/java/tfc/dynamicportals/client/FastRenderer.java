@@ -32,6 +32,80 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 		this.layer = layer;
 	}
 	
+	protected void draw(Minecraft mc, Matrix4f pProjectionMatrix, float pPartialTick, Camera pCamera, GameRenderer pGameRenderer, PoseStack pPoseStack) {
+		// actually draw the world
+		Frustum frust = mc.levelRenderer.getFrustum();
+		
+		PoseStack rsStack = RenderSystem.getModelViewStack();
+		
+		// TODO: investigate NaNs in projection matrix
+		Matrix4f portalProj = RenderUtil.getProjectionMatrix(pCamera, pPartialTick, pGameRenderer, mc);
+		if (!Double.isNaN(pProjectionMatrix.determinant())) {
+			boolean valid = true;
+			l:
+			for (int i = 0; i < 4; i++) {
+				for (int i1 = 0; i1 < 4; i1++) {
+					if (Double.isNaN(pProjectionMatrix.get(i, i1))) {
+						valid = false;
+						break l;
+					}
+				}
+			}
+			if (valid)
+				portalProj = new Matrix4f(pProjectionMatrix);
+		}
+		
+		RenderSystem.modelViewStack = new PoseStack();
+		PoseStack poseCopy = new PoseStack();
+		poseCopy.last().pose().set(pPoseStack.last().pose());
+		poseCopy.last().normal().set(pPoseStack.last().normal());
+		poseCopy.translate(-2, 0, 0);
+		mc.levelRenderer.prepareCullFrustum(
+				poseCopy,
+				pCamera.getPosition(),
+				portalProj
+		);
+		mc.levelRenderer.renderLevel(
+				poseCopy, pPartialTick,
+				System.nanoTime(), // idk
+				true, // TODO: take this from the arguments of the render level method
+				pCamera, pGameRenderer,
+				mc.gameRenderer.lightTexture(),
+				portalProj
+		);
+		
+		RenderSystem.modelViewStack = rsStack;
+		
+		((LevelRendererAccessor) mc.levelRenderer).dynamic_portals$setFrustum(frust);
+	}
+	
+	protected void drawSkybox(Minecraft mc, Matrix4f pProjectionMatrix, float pPartialTick, Camera pCamera, GameRenderer pGameRenderer, PoseStack pPoseStack) {
+		float renderDist = pGameRenderer.getRenderDistance();
+		boolean foggy = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
+		
+		FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, renderDist, foggy, pPartialTick);
+		RenderSystem.setShader(GameRenderer::getPositionShader);
+		// draw sky
+		RenderSystem.setShader(GameRenderer::getPositionShader);
+		mc.levelRenderer.renderSky(
+				pPoseStack,
+				pProjectionMatrix, pPartialTick,
+				pCamera, false,
+				() -> FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_SKY, renderDist, foggy, pPartialTick)
+		);
+		GL11.glColorMask(true, true, true, true);
+		
+		// draw clouds
+		FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_TERRAIN, Math.max(renderDist, 32.0F), foggy, pPartialTick);
+		FogRenderer.setupColor(pCamera, pPartialTick, mc.level, mc.options.getEffectiveRenderDistance(), pGameRenderer.getDarkenWorldAmount(pPartialTick));
+		FogRenderer.levelFogColor();
+		RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
+		mc.levelRenderer.renderClouds(
+				pPoseStack, pProjectionMatrix, pPartialTick,
+				pCamera.getPosition().x, pCamera.getPosition().y, pCamera.getPosition().z
+		);
+	}
+	
 	@Override
 	public void draw(Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick) {
 		if (frustum.isVisible(portal.getContainingBox())) {
@@ -91,51 +165,12 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 					RenderSystem.setShaderColor(1, 1, 1, 1);
 				}
 				
-				// actually draw the world
-				{
-					Frustum frust = mc.levelRenderer.getFrustum();
-					
-					PoseStack rsStack = RenderSystem.getModelViewStack();
-					
-					// TODO: investigate NaNs in projection matrix
-					Matrix4f portalProj = RenderUtil.getProjectionMatrix(pCamera, pPartialTick, pGameRenderer, mc);
-					if (!Double.isNaN(pProjectionMatrix.determinant())) {
-						boolean valid = true;
-						l:
-						for (int i = 0; i < 4; i++) {
-							for (int i1 = 0; i1 < 4; i1++) {
-								if (Double.isNaN(pProjectionMatrix.get(i, i1))) {
-									valid = false;
-									break l;
-								}
-							}
-						}
-						if (valid)
-							portalProj = new Matrix4f(pProjectionMatrix);
-					}
-					
-					RenderSystem.modelViewStack = new PoseStack();
-					PoseStack poseCopy = new PoseStack();
-					poseCopy.last().pose().set(pPoseStack.last().pose());
-					poseCopy.last().normal().set(pPoseStack.last().normal());
-					poseCopy.translate(-2, 0, 0);
-					mc.levelRenderer.prepareCullFrustum(
-							poseCopy,
-							pCamera.getPosition(),
-							portalProj
-					);
-					mc.levelRenderer.renderLevel(
-							poseCopy, pPartialTick,
-							System.nanoTime(), // idk
-							true, // TODO: take this from the arguments of the render level method
-							pCamera, pGameRenderer,
-							mc.gameRenderer.lightTexture(),
-							portalProj
-					);
-					
-					RenderSystem.modelViewStack = rsStack;
-					
-					((LevelRendererAccessor) mc.levelRenderer).dynamic_portals$setFrustum(frust);
+				// TODO: draw skybox on final iteration
+				//       elsewise, draw world
+				if (false) {
+					draw(mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
+				} else {
+					drawSkybox(mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
 				}
 				
 				((MinecraftAccess) mc).dynamic_portals$setLevelRenderer(from);
