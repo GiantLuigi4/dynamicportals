@@ -20,19 +20,10 @@ public abstract class AbstractPortal {
     public final PortalType<?> type;
 
     PortalNet connectedNetwork;
-    
-    private final UUID uuid;
 
-    public AbstractPortal(Level level, PortalType<?> type, UUID uuid) {
-        this.myLevel = level;
-        this.type = type;
-        this.uuid = uuid;
-    }
-    
     public AbstractPortal(Level level, PortalType<?> type) {
         this.myLevel = level;
         this.type = type;
-        this.uuid = UUID.randomUUID();
     }
 
     public AABB getNetworkBox() {
@@ -95,8 +86,5 @@ public abstract class AbstractPortal {
     public AbstractPortalRenderDispatcher preferredDispatcher() {
         return null;
     }
-    
-    public UUID getUUID() {
-        return uuid;
-    }
+
 }

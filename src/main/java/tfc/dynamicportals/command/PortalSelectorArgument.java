@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import tfc.dynamicportals.api.AbstractPortal;
+import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 import java.util.ArrayList;
@@ -21,8 +22,9 @@ import java.util.concurrent.CompletableFuture;
 import static net.minecraft.commands.arguments.selector.EntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE;
 import static net.minecraft.commands.arguments.selector.options.EntitySelectorOptions.ERROR_UNKNOWN_OPTION;
 
-public class PortalSelectorArgument implements ArgumentType<PortalFilter> {
-	public List<String> options = List.of("uuid", "id", "type");
+public class PortalSelectorArgument implements ArgumentType<PortalNetFilter> {
+	public List<String> portalTypes = List.of("basic", "nether", "end", "mirror");
+	public List<String> selectorOptions = List.of("id", "type");
 	
 	public PortalSelectorArgument() {
 	}
@@ -32,7 +34,7 @@ public class PortalSelectorArgument implements ArgumentType<PortalFilter> {
 	}
 	
 	@Override
-	public PortalFilter parse(StringReader reader) throws CommandSyntaxException {
+	public PortalNetFilter parse(StringReader reader) throws CommandSyntaxException {
 		if (reader.canRead()) {
 			if (reader.peek() == '@') {
 				reader.skip();
@@ -46,25 +48,18 @@ public class PortalSelectorArgument implements ArgumentType<PortalFilter> {
 						}
 						if (reader.canRead() && reader.peek() == ']') {
 							reader.skip();
-							PortalFilter filter = (portals, ctx) -> portals.toArray(new AbstractPortal[0]);
+							PortalNetFilter filter = (net, ctx) -> net.getPortals().toArray(new AbstractPortal[0]);
 							for (String[] split : selectors) {
-								PortalFilter oldFilter = filter;
-								filter = (portals, ctx) -> {
+								PortalNetFilter oldFilter = filter;
+								filter = (net, ctx) -> {
 									ArrayList<AbstractPortal> output = new ArrayList<>();
-									for (AbstractPortal portal : oldFilter.apply(portals, ctx)) {
+									for (AbstractPortal portal : oldFilter.apply(net, ctx)) {
 										switch (split[0]) {
 											case "type" -> {
 												if (portal.type.getRegistryName().getPath().equals(split[1])) output.add(portal);
 											}
-//											case "id" -> {
-//												try {
-//													if (portal.myId() == Integer.parseInt(split[1])) output.add(portal);
-//												} catch (Throwable ignored) {
-//													//TODO: deal with erroneous behaviour?
-//												}
-//											}
-											case "uuid" -> {
-												if (portal.getUUID().toString().equals(split[1])) output.add(portal);
+											case "id" -> {
+												if (Integer.parseInt(split[1]) < net.getPortals().size()) output.add(net.getPortals().get(Integer.parseInt(split[1])));
 											}
 										}
 									}
@@ -76,28 +71,14 @@ public class PortalSelectorArgument implements ArgumentType<PortalFilter> {
 							throw new SimpleCommandExceptionType(Component.translatable("dynamicportals.command.cheese.invalid_argument")).createWithContext(reader);
 						}
 					} else if (reader.peek() == ' ') {
-						return (portals, context) -> portals.toArray(new AbstractPortal[0]);
+						return (net, context) -> net.getPortals().toArray(new AbstractPortal[0]);
 					} else {
 						throw ERROR_MISSING_SELECTOR_TYPE.createWithContext(reader);
 					}
 				} else {
-					return (portals, context) -> portals.toArray(new AbstractPortal[0]);
+					return (net, context) -> net.getPortals().toArray(new AbstractPortal[0]);
 				}
 			}
-//			else {
-//				String r = reader.readString();
-//				try {
-//					int id = Integer.parseInt(r);
-//					return (portals, context) -> {
-//						for (AbstractPortal portal : portals)
-//							if (portal.myId() == id)
-//								return new AbstractPortal[]{portal};
-//						return new AbstractPortal[0];
-//					};
-//				} catch (Throwable ignored) {
-//				}
-//				throw new SimpleCommandExceptionType(Component.translatable("dynamicportals.command.cheese.invalid_simple_id", r)).createWithContext(reader);
-//			}
 		} else {
 			throw ERROR_MISSING_SELECTOR_TYPE.createWithContext(reader);
 		}
@@ -107,7 +88,7 @@ public class PortalSelectorArgument implements ArgumentType<PortalFilter> {
 	public String[] parseSingleFilter(StringReader reader) throws CommandSyntaxException {
 		String option = reader.readString();
 		if (option.isEmpty()) throw new SimpleCommandExceptionType(Component.translatable("dynamicportals.command.cheese.empty_option")).createWithContext(reader);
-		else if (!options.contains(option)) throw ERROR_UNKNOWN_OPTION.createWithContext(reader, option);
+		else if (!selectorOptions.contains(option)) throw ERROR_UNKNOWN_OPTION.createWithContext(reader, option);
 		if (reader.peek() == '=') {
 			reader.skip();
 			String argument = reader.readString();
@@ -120,9 +101,6 @@ public class PortalSelectorArgument implements ArgumentType<PortalFilter> {
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
 		if (context.getSource() instanceof SharedSuggestionProvider) {
 			String selector = builder.getRemaining();
-			ArrayList<AbstractPortal> portals = new ArrayList<>();
-			//TODO: uhm idk if I should reference the freaking Minecraft class lmao
-			((NetworkHolder) Minecraft.getInstance().level).getPortalNetworks().forEach((net) -> portals.addAll(net.getPortals()));
 			if (selector.equals("@")) {
 				return SharedSuggestionProvider.suggest(new String[]{"@["}, builder);
 			} else if (selector.startsWith("@[")) {
@@ -135,18 +113,14 @@ public class PortalSelectorArgument implements ArgumentType<PortalFilter> {
 				
 				if (selectorStart < selectorEnd) {
 					if (selectorType.startsWith("type=")) {
-//						options.addAll(List.of());
-					} else if (selectorType.startsWith("uuid=")) {
-						for (AbstractPortal p : portals)
-							options.add(p.getUUID().toString());
+						options.addAll(portalTypes);
+					} else if (selectorType.startsWith("id=")) {
+						//TODO: uhm idk if I should reference the freaking Minecraft class lmao
+						PortalNet net = ((NetworkHolder) Minecraft.getInstance().level).getPortalNetworks().stream().filter((n) -> n.getUUID().toString().equals(context.getArgument("portal_net", String.class))).findFirst().get();
+						for (int i = 0; i < net.getPortals().size(); i++) options.add(Integer.toString(i));
 					}
-//					else if (selectorType.startsWith("id=")) {
-//						for (AbstractPortal p : portals)
-//							if (p instanceof AbstractPortal)
-//								options.add(Integer.toString(((AbstractPortal) p).myId()));
-//					}
 				} else {
-					for (String o : this.options)
+					for (String o : this.selectorOptions)
 						options.add(o + "=");
 				}
 				
@@ -158,11 +132,7 @@ public class PortalSelectorArgument implements ArgumentType<PortalFilter> {
 				
 				return SharedSuggestionProvider.suggest(options, builder.createOffset(builder.getStart() + (selectorEnd < 0 ? selectorStart : selectorEnd) + 1));
 			}
-			List<String> ids = new ArrayList<>(List.of("@"));
-			for (AbstractPortal p : portals) {
-				ids.add(p.getUUID().toString());
-			}
-			return SharedSuggestionProvider.suggest(ids, builder);
+			return SharedSuggestionProvider.suggest(List.of("@"), builder);
 		} else {
 			return Suggestions.empty();
 		}
