@@ -10,12 +10,17 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(Shapes.class)
 public class ShapesMixin {
 	@Unique
-	private static AABB bound = new AABB(10, 63, -1, 10 + 0.5, 64 + 1, 0 + 1);
+	private static AABB bound = new AABB(10, 63, -1, 10 + 0.5, 64 + 1, 1);
+	
+	private static final double[] orientation = new double[]{
+			-1, 0, 1,
+			0, 1, 0,
+			-1, 0, -1
+	};
 	
 	private static boolean checkShape(VoxelShape sp) {
-		if (sp.bounds().intersects(bound))
-			return true;
-		return false;
+//		return sp.bounds().intersects(bound);
+		return sp.bounds().minY >= 63 && sp.bounds().maxY <= 65;
 	}
 	
 	private static boolean isVanilla(VoxelShape sp) {
@@ -28,10 +33,29 @@ public class ShapesMixin {
 		return false;
 	}
 	
+	private static void rotate(double[] crd) {
+		crd[0] -= 10.5;
+		crd[1] -= 63;
+		crd[2] -= 0;
+		
+		double x = crd[0];
+		double y = crd[1];
+		double z = crd[2];
+		
+		crd[0] = x * orientation[0] + y * orientation[1] + z * orientation[2];
+		crd[1] = x * orientation[3] + y * orientation[4] + z * orientation[5];
+		crd[2] = x * orientation[6] + y * orientation[7] + z * orientation[8];
+	}
+	
 	private static boolean checkCollider(AABB from) {
-		if (from.maxY > 63 && from.minY < 65) {
-			if (from.maxZ > -1 && from.minZ < 1) {
-				if (from.maxX <= 11.5) {
+		double[] min = new double[]{from.minX, from.minY, from.minZ};
+		double[] max = new double[]{from.maxX, from.maxY, from.maxZ};
+		rotate(min);
+		rotate(max);
+		
+		if (min[1] >= 0 && max[1] <= 2) {
+			if (min[2] >= -1 && max[2] <= 1) {
+				if (min[0] <= 0.5) {
 					return true;
 				}
 			}
@@ -50,25 +74,12 @@ public class ShapesMixin {
 				return 0.0D;
 			}
 			
-			if (checkCollider(pCollisionBox)) {
-				if (pMovementAxis.equals(Direction.Axis.X)) {
-					if (checkShape(voxelshape)) {
-						double oset = voxelshape.collide(pMovementAxis, pCollisionBox, pDesiredOffset);
-						
-						boolean sign = pDesiredOffset > 0;
-						double crd = sign ? pCollisionBox.max(pMovementAxis) : pCollisionBox.min(pMovementAxis);
-						crd += oset;
-						
-						if (crd > 10.5)
-							pDesiredOffset += 10.5 - crd;
-					} else pDesiredOffset = voxelshape.collide(pMovementAxis, pCollisionBox, pDesiredOffset);
-				} else {
-					if (checkShape(voxelshape)) {
-						continue;
-					}
-					pDesiredOffset = voxelshape.collide(pMovementAxis, pCollisionBox, pDesiredOffset);
-				}
-			} else pDesiredOffset = voxelshape.collide(pMovementAxis, pCollisionBox, pDesiredOffset);
+//			if (checkCollider(pCollisionBox)) {
+//				if (checkShape(voxelshape)) {
+//					// no-op
+//				} else pDesiredOffset = voxelshape.collide(pMovementAxis, pCollisionBox, pDesiredOffset);
+//			} else
+				pDesiredOffset = voxelshape.collide(pMovementAxis, pCollisionBox, pDesiredOffset);
 		}
 		
 		return pDesiredOffset;
