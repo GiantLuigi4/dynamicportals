@@ -3,7 +3,9 @@ package tfc.dynamicportals.api.implementation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaterniond;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.registry.PortalTypes;
 import tfc.dynamicportals.api.registry.PortalType;
@@ -15,7 +17,18 @@ public class BasicPortal extends AbstractPortal {
     public BasicPortal(Level level) {
         super(level, PortalTypes.BASIC);
     }
-
+    
+    protected Quaterniond orientation;
+    protected Vec2 size;
+    
+    public void setOrientation(Quaterniond orientation) {
+        this.orientation = orientation;
+    }
+    
+    public void setSize(Vec2 size) {
+        this.size = size;
+    }
+    
     @Override
     public AABB getContainingBox() {
         // TODO: base this off orientation&size
@@ -36,6 +49,22 @@ public class BasicPortal extends AbstractPortal {
                         Double.doubleToLongBits(position.z)
                 }
         );
+        tag.putLongArray(
+                "orentiation",
+                new long[] {
+                        Double.doubleToLongBits(orientation.x),
+                        Double.doubleToLongBits(orientation.y),
+                        Double.doubleToLongBits(orientation.z),
+                        Double.doubleToLongBits(orientation.w)
+                }
+        );
+        tag.putLongArray(
+                "size",
+                new long[] {
+                        Double.doubleToLongBits(size.x),
+                        Double.doubleToLongBits(size.y)
+                }
+        );
     }
 
     @Override
@@ -45,6 +74,18 @@ public class BasicPortal extends AbstractPortal {
                 Double.longBitsToDouble(coords[0]),
                 Double.longBitsToDouble(coords[1]),
                 Double.longBitsToDouble(coords[2])
+        );
+        long[] orentiations = tag.getLongArray("orentiation");
+        orientation = new Quaterniond(
+                Double.longBitsToDouble(orentiations[0]),
+                Double.longBitsToDouble(orentiations[1]),
+                Double.longBitsToDouble(orentiations[2]),
+                Double.longBitsToDouble(orentiations[3])
+        );
+        long[] sizes = tag.getLongArray("size");
+        size = new Vec2(
+                sizes[0],
+                sizes[1]
         );
     }
 }
