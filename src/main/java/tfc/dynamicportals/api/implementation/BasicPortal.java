@@ -6,6 +6,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniond;
+import org.joml.Vector2d;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.registry.PortalTypes;
 import tfc.dynamicportals.itf.NetworkHolder;
@@ -16,13 +17,13 @@ public class BasicPortal extends AbstractPortal {
     }
     
     protected Quaterniond orientation;
-    protected Vec2 size;
+    protected Vector2d size;
     
     public void setOrientation(Quaterniond orientation) {
         this.orientation = orientation;
     }
     
-    public void setSize(Vec2 size) {
+    public void setSize(Vector2d size) {
         this.size = size;
     }
     
@@ -47,7 +48,7 @@ public class BasicPortal extends AbstractPortal {
                 }
         );
         tag.putLongArray(
-                "orentiation",
+                "orientation",
                 new long[] {
                         Double.doubleToLongBits(orientation.x),
                         Double.doubleToLongBits(orientation.y),
@@ -72,17 +73,25 @@ public class BasicPortal extends AbstractPortal {
                 Double.longBitsToDouble(coords[1]),
                 Double.longBitsToDouble(coords[2])
         );
-        long[] orentiations = tag.getLongArray("orientation");
+        long[] orientations = tag.getLongArray("orientation");
         orientation = new Quaterniond(
-                Double.longBitsToDouble(orentiations[0]),
-                Double.longBitsToDouble(orentiations[1]),
-                Double.longBitsToDouble(orentiations[2]),
-                Double.longBitsToDouble(orentiations[3])
+                Double.longBitsToDouble(orientations[0]),
+                Double.longBitsToDouble(orientations[1]),
+                Double.longBitsToDouble(orientations[2]),
+                Double.longBitsToDouble(orientations[3])
         );
         long[] sizes = tag.getLongArray("size");
-        size = new Vec2(
-                sizes[0],
-                sizes[1]
+        size = new Vector2d(
+                Double.longBitsToDouble(sizes[0]),
+                Double.longBitsToDouble(sizes[1])
         );
     }
+	
+	public Quaterniond getOrientation() {
+        return orientation;
+	}
+	
+	public Vector2d getSize() {
+        return size;
+	}
 }

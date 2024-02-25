@@ -13,9 +13,13 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.DeferredRegister;
 import tfc.dynamicportals.api.PortalNet;
+import tfc.dynamicportals.api.registry.PortalType;
+import tfc.dynamicportals.api.registry.PortalTypes;
+import tfc.dynamicportals.client.renderer.BasicPortalRenderer;
 import tfc.dynamicportals.command.DynamicPortalsCommand;
 import tfc.dynamicportals.command.arg.PortalSelectorArgument;
 import tfc.dynamicportals.command.arg.OrientationArgument;
@@ -43,6 +47,10 @@ public class DynamicPortals {
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::onPlayerJoined);
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::registerCommands);
 		DypoShaders.init(bus);
+		
+		if (FMLEnvironment.dist.isClient()) {
+			new BasicPortalRenderer(PortalTypes.BASIC);
+		}
 	}
 	
 	public static void registerCommands(RegisterCommandsEvent event) {

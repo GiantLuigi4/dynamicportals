@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public abstract class AbstractPortal {
     public final Level myLevel;
-    // highly double it's possible to have a portal implementation which doesn't need to do stuff upon moving
+    // highly doubt it's possible to have a portal implementation which doesn't need to do stuff upon moving
     // thus, this field is encapsulated
     protected Vec3 position;
     public final PortalType<?> type;

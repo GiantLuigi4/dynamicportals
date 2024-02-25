@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Quaterniond;
+import org.joml.Vector2d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -45,13 +46,13 @@ public abstract class ServerMixin {
             ));
             BasicPortal bap0 = new BasicPortal(lvl);
             bap0.setPosition(16, 64, 0);
-            bap0.setOrientation(new Quaterniond(0, 0, 0, 1));
-            bap0.setSize(new Vec2(2, 2));
+            bap0.setOrientation(new Quaterniond(0, -1, 0, 1).normalize());
+            bap0.setSize(new Vector2d(2, 2));
             net.link(bap0);
             BasicPortal bap1 = new BasicPortal(lvl);
             bap1.setPosition(-16, 64, 0);
-            bap1.setOrientation(new Quaterniond(0, 0, 0, 1));
-            bap1.setSize(new Vec2(2, 2));
+            bap1.setOrientation(new Quaterniond(0, -1, 0, 1).normalize());
+            bap1.setSize(new Vector2d(2, 2));
             net.link(bap1);
             ((NetworkHolder) this).getPortalNetworks().add(net);
         }

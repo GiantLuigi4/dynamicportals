@@ -25,7 +25,7 @@ import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.client.AbstractPortalRenderDispatcher;
 import tfc.dynamicportals.itf.NetworkHolder;
-import tfc.dynamicportals.util.RenderUtil;
+import tfc.dynamicportals.util.render.RenderUtil;
 
 import javax.annotation.Nullable;
 

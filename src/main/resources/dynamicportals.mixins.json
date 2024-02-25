@@ -23,7 +23,8 @@
     "client.data.MinecraftMixin",
     "client.debug.LevelRendererMixin",
     "client.render.LevelRendererMixin",
-    "client.render.gl.RenderSystemMixin"
+    "client.render.gl.RenderSystemMixin",
+    "client.ClientPortalTypeAttachments"
   ],
   "injectors": {
     "defaultRequire": 1
