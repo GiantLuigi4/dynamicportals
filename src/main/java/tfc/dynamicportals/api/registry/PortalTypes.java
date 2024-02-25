@@ -24,7 +24,7 @@ public class PortalTypes {
 
     static {
         BASIC = register(
-                new ResourceLocation("dynamic_portals:basic"), new PortalType<>((holder, tag) -> {
+                new ResourceLocation("dynamicportals:basic"), new PortalType<>((holder, tag) -> {
                     CompoundTag key = tag.getCompound("level");
                     BasicPortal bp = new BasicPortal(
                             holder.getLoader().get(

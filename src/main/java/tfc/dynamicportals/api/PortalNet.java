@@ -39,7 +39,6 @@ public class PortalNet {
         portal.connectedNetwork = this;
     }
 
-    // I'll make this public for now, because I need the option to delete portals
     public void unlink(AbstractPortal portal) {
         if (portal.connectedNetwork == this) {
             portal.connectedNetwork = null;

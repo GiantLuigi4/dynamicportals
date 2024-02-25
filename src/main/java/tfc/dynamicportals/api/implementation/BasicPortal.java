@@ -12,16 +12,8 @@ import tfc.dynamicportals.itf.NetworkHolder;
 import java.util.UUID;
 
 public class BasicPortal extends AbstractPortal {
-    public BasicPortal(Level level, PortalType<?> type) {
-        super(level, type);
-    }
-
     public BasicPortal(Level level) {
         super(level, PortalTypes.BASIC);
-    }
-    
-    public BasicPortal(Level level, UUID uuid) {
-        super(level, PortalTypes.BASIC, uuid);
     }
 
     @Override

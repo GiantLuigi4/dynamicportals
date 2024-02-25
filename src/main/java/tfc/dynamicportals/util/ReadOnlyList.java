@@ -1,11 +1,6 @@
 package tfc.dynamicportals.util;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 public class ReadOnlyList<T> implements List<T> {
     List<T> internal;
@@ -29,21 +24,19 @@ public class ReadOnlyList<T> implements List<T> {
         return internal.contains(o);
     }
 
-    @NotNull
     @Override
     public Iterator<T> iterator() {
         return internal.iterator();
     }
 
-    @NotNull
     @Override
     public Object[] toArray() {
         return internal.toArray();
     }
 
-    @NotNull
+    
     @Override
-    public <T1> T1[] toArray(@NotNull T1[] a) {
+    public <T1> T1[] toArray(T1 [] a) {
         return internal.toArray(a);
     }
 
@@ -58,27 +51,27 @@ public class ReadOnlyList<T> implements List<T> {
     }
 
     @Override
-    public boolean containsAll(@NotNull Collection<?> c) {
-        return internal.containsAll(c);
+    public boolean containsAll(Collection<?> c) {
+        return new HashSet<>(internal).containsAll(c);
     }
 
     @Override
-    public boolean addAll(@NotNull Collection<? extends T> c) {
+    public boolean addAll(Collection<? extends T> c) {
         throw new RuntimeException("Unsupported operation: addAll");
     }
 
     @Override
-    public boolean addAll(int index, @NotNull Collection<? extends T> c) {
+    public boolean addAll(int index, Collection<? extends T> c) {
         throw new RuntimeException("Unsupported operation: addAll");
     }
 
     @Override
-    public boolean removeAll(@NotNull Collection<?> c) {
+    public boolean removeAll(Collection<?> c) {
         throw new RuntimeException("Unsupported operation: removeAll");
     }
 
     @Override
-    public boolean retainAll(@NotNull Collection<?> c) {
+    public boolean retainAll(Collection<?> c) {
         throw new RuntimeException("Unsupported operation: retainAll");
     }
 
@@ -111,25 +104,22 @@ public class ReadOnlyList<T> implements List<T> {
     public int indexOf(Object o) {
         return internal.indexOf(o);
     }
-
+    
     @Override
     public int lastIndexOf(Object o) {
         return internal.lastIndexOf(o);
     }
-
-    @NotNull
+    
     @Override
     public ListIterator<T> listIterator() {
         return internal.listIterator();
     }
-
-    @NotNull
+    
     @Override
     public ListIterator<T> listIterator(int index) {
         return internal.listIterator(index);
     }
-
-    @NotNull
+    
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
         return new ReadOnlyList<>(internal.subList(fromIndex, toIndex));
