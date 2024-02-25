@@ -67,7 +67,6 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
 		r = (r + 1) / 2;
 		b = (b + 1) / 2;
 		
-		float alpha = 1;
 		BufferBuilder builder = tesselator.getBuilder();
 		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 		builder.vertex(
@@ -117,7 +116,7 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
 		float mU = delta + (1 / 32f);
 		
 //		alpha = 0.2f;
-		alpha = 1f;
+		float alpha = 1f;
 //		alpha = (4 - RenderUtil.activeLayer) / 4f;
 		
 		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
