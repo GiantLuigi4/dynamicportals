@@ -32,7 +32,6 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
 		}
 		
 		pPoseStack.pushPose();
-		portal.setSize(new Vector2d(2, 2));
 		pPoseStack.translate(portal.getPosition().x, portal.getPosition().y, portal.getPosition().z);
 		pPoseStack.mulPose(new Quaternionf(
 				portal.getOrientation().x,

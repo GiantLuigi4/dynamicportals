@@ -25,6 +25,9 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 	public void drawOverlay(MultiBufferSource.BufferSource source, PoseStack pPoseStack, Camera pCamera, BasicPortal portal, Tesselator tesselator) {
 		setupRender(pPoseStack, portal);
 		
+		int xInt = (int) portal.getSize().x;
+		int yInt = (int) portal.getSize().y;
+		
 		double xSize = portal.getSize().x / 2;
 		double ySize = portal.getSize().y / 2;
 		
@@ -36,7 +39,6 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		
 		BlendFunctions.multiplyBlend();
 
-//		float r = (Minecraft.getInstance().level.getGameTime() % 1000) / 1000f, b = r, g = b, a = g;
 		float r = 1, b = r, g = b, a = 0.25f;
 		r = 120 / 255f;
 		g = 0.5f;
@@ -75,16 +77,7 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
 		RenderSystem.getShader().apply();
 
-//		RenderSystem.blendFunc(
-//				GL11.GL_DST_COLOR,
-//				GL11.GL_ONE
-//		);
-		RenderSystem.blendFunc(
-				GL11.GL_DST_COLOR,
-				GL11.GL_SRC_ALPHA
-		);
-//		BlendFunctions.alphaBlend();
-//		BlendFunctions.multiplyBlend();
+		BlendFunctions.exposeBlend();
 		
 		long frame = Minecraft.getInstance().level.getGameTime();
 		frame /= 1;
@@ -92,14 +85,12 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		float delta = frame / 32f;
 		float mU = delta + (1 / 32f);
 
-//		float alpha = 0.75f;
 		float alpha = 1f;
-//		alpha = (4 - RenderUtil.activeLayer) / 4f;
 		
 		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
 		
-		for (int x = 0; x < 2; x++) {
-			for (int y = 0; y < 2; y++) {
+		for (int x = 0; x < xInt; x++) {
+			for (int y = 0; y < yInt; y++) {
 				builder.vertex(
 						pPoseStack.last().pose(),
 						(float) (-xSize + x),
@@ -129,9 +120,11 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		
 		tesselator.end();
 		
+		BlendFunctions.alphaBlend();
+		
 		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
 		
-		for (int x = 0; x < 2; x++) {
+		for (int x = 0; x < xInt; x++) {
 			builder.vertex(
 					pPoseStack.last().pose(),
 					(float) (-xSize + x),
@@ -156,9 +149,116 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 					(float) (-ySize + 0),
 					(float) (0)
 			).color(1, 1, 1, alpha).uv(1, delta).endVertex();
+			
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + x),
+					(float) (-ySize + yInt - 1),
+					(float) (0)
+			).color(1, 1, 1, 0).uv(0, delta).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + x),
+					(float) (-ySize + yInt),
+					(float) (0)
+			).color(1, 1, 1, alpha).uv(0, mU).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + x + 1),
+					(float) (-ySize + yInt),
+					(float) (0)
+			).color(1, 1, 1, alpha).uv(1, mU).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + x + 1),
+					(float) (-ySize + yInt - 1),
+					(float) (0)
+			).color(1, 1, 1, 0).uv(1, delta).endVertex();
+		}
+		
+		for (int y = 0; y < yInt; y++) {
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + 0),
+					(float) (-ySize + y),
+					(float) (0)
+			).color(1, 1, 1, alpha).uv(0, delta).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + 0),
+					(float) (-ySize + y + 1),
+					(float) (0)
+			).color(1, 1, 1, alpha).uv(0, mU).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + 0 + 1),
+					(float) (-ySize + y + 1),
+					(float) (0)
+			).color(1, 1, 1, 0).uv(1, mU).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + 0 + 1),
+					(float) (-ySize + y),
+					(float) (0)
+			).color(1, 1, 1, 0).uv(1, delta).endVertex();
+			
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + xInt - 1),
+					(float) (-ySize + y),
+					(float) (0)
+			).color(1, 1, 1, 0).uv(0, delta).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + xInt - 1),
+					(float) (-ySize + y + 1),
+					(float) (0)
+			).color(1, 1, 1, 0).uv(0, mU).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + xInt),
+					(float) (-ySize + y + 1),
+					(float) (0)
+			).color(1, 1, 1, alpha).uv(1, mU).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + xInt),
+					(float) (-ySize + y),
+					(float) (0)
+			).color(1, 1, 1, alpha).uv(1, delta).endVertex();
 		}
 		
 		tesselator.end();
+		
+		// TODO: decide if this should be used or not
+//		BlendFunctions.exposeBlend();
+//		alpha = 0.75f;
+//		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+//		builder.vertex(
+//				pPoseStack.last().pose(),
+//				(float) (-xSize),
+//				(float) (-ySize),
+//				(float) (0)
+//		).color(1, 1, 1, alpha).uv(0, delta).endVertex();
+//		builder.vertex(
+//				pPoseStack.last().pose(),
+//				(float) (-xSize),
+//				(float) (ySize),
+//				(float) (0)
+//		).color(1, 1, 1, alpha).uv(0, mU).endVertex();
+//		builder.vertex(
+//				pPoseStack.last().pose(),
+//				(float) (xSize),
+//				(float) (ySize),
+//				(float) (0)
+//		).color(1, 1, 1, alpha).uv(1, mU).endVertex();
+//		builder.vertex(
+//				pPoseStack.last().pose(),
+//				(float) (xSize),
+//				(float) (-ySize),
+//				(float) (0)
+//		).color(1, 1, 1, alpha).uv(1, delta).endVertex();
+//		tesselator.end();
 		
 		BlendFunctions.alphaBlend();
 		RenderSystem.disableBlend();
