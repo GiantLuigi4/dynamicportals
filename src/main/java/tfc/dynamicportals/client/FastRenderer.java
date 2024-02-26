@@ -77,6 +77,8 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 		poseCopy.translate(pCamera.getPosition().x, pCamera.getPosition().y, pCamera.getPosition().z);
 		
 		
+		AbstractPortal from = RenderUtil.rendering;
+		RenderUtil.rendering = target;
 		mc.levelRenderer.prepareCullFrustum(
 				poseCopy,
 				pCamera.getPosition(),
@@ -90,6 +92,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 				mc.gameRenderer.lightTexture(),
 				portalProj
 		);
+		RenderUtil.rendering = from;
 		
 		RenderSystem.modelViewStack = rsStack;
 		
@@ -126,8 +129,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 	@Override
 	public void draw(Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick) {
 		int layer = this.layer;
-		
-		if (layer != 0) return;
 		
 		if (frustum.isVisible(portal.getContainingBox())) {
 			// translate

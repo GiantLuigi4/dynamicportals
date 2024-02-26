@@ -65,13 +65,11 @@ public class LevelRendererMixin {
         RenderUtil.activeLayer = recurse - 1;
     }
 
-    private static final ArrayDeque<AbstractPortal> rendering = new ArrayDeque<>();
-    
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endBatch(Lnet/minecraft/client/renderer/RenderType;)V", ordinal = 3), method = "renderLevel")
     public void drawPortals(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
         if (recurse <= MAX_RECURSE && allowRecurse) {
             GL11.glEnable(GL11.GL_STENCIL_TEST);
-        
+            
             AbstractPortalRenderDispatcher renderer = AbstractPortalRenderDispatcher.getSelected();
             renderer.push(recurse - 1);
             Tesselator tessel = Tesselator.getInstance();
@@ -79,12 +77,10 @@ public class LevelRendererMixin {
                 for (AbstractPortal portal : portalNetwork.getPortals()) {
                     if (portal.exitOnly()) continue;
                     
-                    if (!rendering.isEmpty() && rendering.peek() == portal)
+                    if (RenderUtil.rendering == portal)
                         continue;
                     
                     if (portal.myLevel == level) {
-                        rendering.push(portal);
-                        
                         AbstractPortalRenderDispatcher dispatcher =
                                 portal.preferredDispatcher() == null ?
                                         renderer :
@@ -95,8 +91,6 @@ public class LevelRendererMixin {
                         allowRecurse = true;
                         
                         renderer.pop(recurse - 1);
-                        
-                        rendering.pop();
                     }
                 }
             }
