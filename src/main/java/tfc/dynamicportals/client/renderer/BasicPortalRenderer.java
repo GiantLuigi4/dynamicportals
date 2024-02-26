@@ -27,6 +27,8 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
 	protected void setupRender(PoseStack pPoseStack, BasicPortal portal) {
 		if (portal.isDoubleSided()) {
 			GL11.glDisable(GL11.GL_CULL_FACE);
+		} else {
+			GL11.glEnable(GL11.GL_CULL_FACE);
 		}
 		
 		pPoseStack.pushPose();
@@ -44,7 +46,7 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
 		pPoseStack.popPose();
 		
 		if (portal.isDoubleSided()) {
-			GL11.glDisable(GL11.GL_CULL_FACE);
+			GL11.glEnable(GL11.GL_CULL_FACE);
 		}
 	}
 	
@@ -66,7 +68,8 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
 		stack.translate(position.x, position.y, position.z);
 		// rotate
 		Quaterniond quaternion = portal.getOrientation();
-		if (portal.getConnectedNetwork().getPortals().size() == 1) quaternion.mul(new Quaterniond(0, 0, 0, 1).rotateAxis((float) Math.toRadians(-90), 0, 1, 0));
+		if (portal.getConnectedNetwork().getPortals().size() == 1)
+			quaternion.mul(new Quaterniond(0, 0, 0, 1).rotateAxis((float) Math.toRadians(-90), 0, 1, 0));
 		stack.mulPose(new Quaternionf(
 				quaternion.x,
 				quaternion.y,
