@@ -1,5 +1,6 @@
 package tfc.dynamicportals.command.registry;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
@@ -20,17 +21,25 @@ public class PortalTypeCommands {
 	static HashMap<String, Consumer<ArgumentBuilder<CommandSourceStack, ?>>> consumers = new HashMap<>();
 	
 	public static void fillDefault(PortalType<?> type, ArgumentBuilder<CommandSourceStack, ?> builder) {
+		//@formatter:off
 		builder
 				.then(argument("position", Vec3Argument.vec3())
-						.then(argument("size", Vec2Argument.vec2())
-								.then(argument("rotation", OrientationArgument.vec3())
-										.executes((ctx) -> DynamicPortalsCommand.createStandardPortal(type, ctx)))));
+				.then(argument("size", Vec2Argument.vec2())
+				.then(argument("rotation", OrientationArgument.vec3())
+						.executes((ctx) -> DynamicPortalsCommand.createStandardPortal(type, ctx))
+				.then(argument("double_sided", BoolArgumentType.bool())
+						.executes((ctx) -> DynamicPortalsCommand.createStandardPortal(type, ctx))
+				))));
+		//@formatter:on
 	}
 	
 	static {
-		add(PortalTypes.BASIC, (builder) -> {
-			fillDefault(PortalTypes.BASIC, builder);
-		});
+		for (PortalType<?> portalType : new PortalType[]{
+				PortalTypes.BASIC,
+				PortalTypes.NETHER
+		}) {
+			add(portalType, (builder) -> fillDefault(portalType, builder));
+		}
 	}
 	
 	public static void add(

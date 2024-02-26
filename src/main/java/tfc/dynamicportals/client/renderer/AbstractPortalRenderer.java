@@ -45,4 +45,9 @@ public abstract class AbstractPortalRenderer<T extends AbstractPortal> {
 		).color(255, 0, 0, 255).endVertex();
 		tesselator.end();
 	}
+	
+	
+	public abstract void setupMatrix(T portal, PoseStack stack);
+	
+	public abstract void setupAsTarget(T portal, PoseStack stack);
 }

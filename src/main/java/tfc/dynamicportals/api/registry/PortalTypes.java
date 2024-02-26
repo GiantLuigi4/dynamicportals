@@ -13,6 +13,7 @@ import java.util.Map;
 // TODO: convert to deferred register?
 public class PortalTypes {
     public static final PortalType<BasicPortal> BASIC;
+    public static final PortalType<BasicPortal> NETHER;
 
     protected static Map<ResourceLocation, PortalType<?>> TYPES = new HashMap<>();
 
@@ -38,6 +39,26 @@ public class PortalTypes {
                     return bp;
                 })
         );
+        {
+            PortalType<BasicPortal>[] lambdasAreStupid = new PortalType[1];
+            NETHER = register(
+                    new ResourceLocation("dynamicportals:nether"), new PortalType<>((holder, tag) -> {
+                        CompoundTag key = tag.getCompound("level");
+                        BasicPortal bp = new BasicPortal(
+                                holder.getLoader().get(
+                                        ResourceKey.create(
+                                                ResourceKey.createRegistryKey(new ResourceLocation(key.getString("registry"))),
+                                                new ResourceLocation(key.getString("location"))
+                                        )
+                                ),
+                                lambdasAreStupid[0]
+                        );
+                        bp.load(holder, tag);
+                        return bp;
+                    })
+            );
+            lambdasAreStupid[0] = NETHER;
+        }
     }
 
     public static AbstractPortal createPortal(ResourceLocation type, NetworkHolder holder, CompoundTag tag) {

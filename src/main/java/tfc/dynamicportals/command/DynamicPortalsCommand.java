@@ -36,6 +36,7 @@ public class DynamicPortalsCommand {
 		Vec3 position = getArgumentOrDefault(context, "position", Vec3.class, context.getSource().getPosition());
 		Vec2 size = getArgumentOrDefault(context, "size", Vec2.class, new Vec2(2, 2));
 		Vec3 rotation = OrientationArgument.getRotation(context, "rotation");
+		Boolean doubleSided = getArgumentOrDefault(context, "double_sided", Boolean.class, true);
 		
 		ServerLevel lvl = context.getSource().getLevel();
 		NetworkHolder netHolder = (NetworkHolder) lvl;
@@ -73,6 +74,8 @@ public class DynamicPortalsCommand {
 						Double.doubleToLongBits(orientation.w)
 				});
 		
+		tag.putBoolean("double_sided", doubleSided);
+		
 		AbstractPortal newPortal = PortalTypes.createPortal(type.getRegistryName(), netHolder, tag);
 		
 		PortalNet newNet = optionalNet.orElseGet(() -> new PortalNet(UUID.randomUUID()));
@@ -95,7 +98,6 @@ public class DynamicPortalsCommand {
 	}
 	
 	public static LiteralArgumentBuilder<CommandSourceStack> build() {
-		LiteralArgumentBuilder<CommandSourceStack> typeRoot;
 		LiteralArgumentBuilder<CommandSourceStack> dynamicportalsBuilder = literal("dynamicportals").executes(context -> {
 			context.getSource().sendSuccess(() -> Component.translatable("dynamicportals.command.bread.help"), true);
 			return 0;
@@ -108,7 +110,19 @@ public class DynamicPortalsCommand {
 		}).then(
 				PortalTypeCommands.fill(literal("create"))
 		).then(
-				literal("target")
+				literal("destroy")
+						.executes((ctx) -> {
+							ServerLevel lvl = ctx.getSource().getLevel();
+							NetworkHolder netHolder = (NetworkHolder) lvl;
+							Optional<PortalNet> optionalNet = netHolder.getPortalNetworks().stream().filter((net) -> net.getUUID().equals(UuidArgument.getUuid(ctx, "portal_net"))).findFirst();
+							if (optionalNet.isPresent()) {
+								netHolder.getPortalNetworks().remove(optionalNet.get());
+								ctx.getSource().sendSuccess(() -> Component.literal("Successfully destroyed network %s.".formatted(optionalNet.get().getUUID())), false);
+								return 1;
+							}
+							ctx.getSource().sendSuccess(() -> Component.literal("Network no exist!"), false);
+							return 0;
+						})
 		));
 		
 		return dynamicportalsBuilder;

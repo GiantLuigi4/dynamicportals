@@ -20,6 +20,7 @@ import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.api.registry.PortalTypes;
 import tfc.dynamicportals.client.renderer.BasicPortalRenderer;
+import tfc.dynamicportals.client.renderer.NetherPortalRenderer;
 import tfc.dynamicportals.command.DynamicPortalsCommand;
 import tfc.dynamicportals.command.arg.PortalSelectorArgument;
 import tfc.dynamicportals.command.arg.OrientationArgument;
@@ -50,6 +51,7 @@ public class DynamicPortals {
 		
 		if (FMLEnvironment.dist.isClient()) {
 			new BasicPortalRenderer(PortalTypes.BASIC);
+			new NetherPortalRenderer(PortalTypes.NETHER);
 		}
 	}
 	

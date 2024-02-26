@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tfc.dynamicportals.api.PortalNet;
 import tfc.dynamicportals.api.implementation.BasicPortal;
+import tfc.dynamicportals.api.registry.PortalTypes;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 import javax.annotation.Nullable;
@@ -44,14 +45,14 @@ public abstract class ServerMixin {
             PortalNet net = new PortalNet(new UUID(
                     98423, 23912
             ));
-            BasicPortal bap0 = new BasicPortal(lvl);
+            BasicPortal bap0 = new BasicPortal(lvl, PortalTypes.NETHER);
             bap0.setPosition(15.5, 64, 0);
             bap0.setOrientation(new Quaterniond(0, -1, 0, 1).normalize());
             bap0.setSize(new Vector2d(2, 2));
             net.link(bap0);
             BasicPortal bap1 = new BasicPortal(lvl);
-            bap1.setPosition(-16, 64, 0);
-            bap1.setOrientation(new Quaterniond(0, -1, 0, 1).normalize());
+            bap1.setPosition(-15.5, 64, 0);
+            bap1.setOrientation(new Quaterniond(0, 1, 0, 1).normalize());
             bap1.setSize(new Vector2d(2, 2));
             net.link(bap1);
             ((NetworkHolder) this).getPortalNetworks().add(net);

@@ -8,6 +8,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniond;
 import org.joml.Vector2d;
 import tfc.dynamicportals.api.AbstractPortal;
+import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.api.registry.PortalTypes;
 import tfc.dynamicportals.itf.NetworkHolder;
 
@@ -15,17 +16,14 @@ public class BasicPortal extends AbstractPortal {
     public BasicPortal(Level level) {
         super(level, PortalTypes.BASIC);
     }
+	
+    public BasicPortal(Level level, PortalType<BasicPortal> type) {
+        super(level, type);
+    }
     
     protected Quaterniond orientation;
     protected Vector2d size;
-    
-    public void setOrientation(Quaterniond orientation) {
-        this.orientation = orientation;
-    }
-    
-    public void setSize(Vector2d size) {
-        this.size = size;
-    }
+    protected boolean doubleSided = true;
     
     @Override
     public AABB getContainingBox() {
@@ -63,6 +61,7 @@ public class BasicPortal extends AbstractPortal {
                         Double.doubleToLongBits(size.y)
                 }
         );
+        tag.putBoolean("double_sided", this.doubleSided);
     }
 
     @Override
@@ -85,6 +84,7 @@ public class BasicPortal extends AbstractPortal {
                 Double.longBitsToDouble(sizes[0]),
                 Double.longBitsToDouble(sizes[1])
         );
+        this.doubleSided = tag.getBoolean("double_sided");
     }
 	
 	public Quaterniond getOrientation() {
@@ -94,4 +94,20 @@ public class BasicPortal extends AbstractPortal {
 	public Vector2d getSize() {
         return size;
 	}
+    
+    public void setOrientation(Quaterniond orientation) {
+        this.orientation = orientation;
+    }
+    
+    public void setSize(Vector2d size) {
+        this.size = size;
+    }
+    
+    public boolean isDoubleSided() {
+        return doubleSided;
+    }
+    
+    public void setDoubleSided(boolean doubleSided) {
+        this.doubleSided = doubleSided;
+    }
 }

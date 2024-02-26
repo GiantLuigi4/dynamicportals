@@ -1,5 +1,6 @@
 package tfc.dynamicportals.client;
 
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
@@ -9,6 +10,7 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL40;
 import tfc.dynamicportals.api.AbstractPortal;
@@ -33,7 +35,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 		this.layer = layer;
 	}
 	
-	protected void draw(Minecraft mc, Matrix4f pProjectionMatrix, float pPartialTick, Camera pCamera, GameRenderer pGameRenderer, PoseStack pPoseStack) {
+	protected void draw(AbstractPortalRenderer renderer, AbstractPortal portal, Minecraft mc, Matrix4f pProjectionMatrix, float pPartialTick, Camera pCamera, GameRenderer pGameRenderer, PoseStack pPoseStack) {
 		// actually draw the world
 		Frustum frust = mc.levelRenderer.getFrustum();
 		
@@ -60,7 +62,21 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 		PoseStack poseCopy = new PoseStack();
 		poseCopy.last().pose().set(pPoseStack.last().pose());
 		poseCopy.last().normal().set(pPoseStack.last().normal());
-		poseCopy.translate(4, 0, 0);
+		
+		
+		AbstractPortal target = null;
+		for (AbstractPortal abstractPortal : portal.getConnectedNetwork().getPortals())
+			if (abstractPortal != portal) target = abstractPortal;
+		if (target == null) target = portal;
+		
+		
+		// setup render translations
+		poseCopy.translate(-pCamera.getPosition().x, -pCamera.getPosition().y, -pCamera.getPosition().z);
+		renderer.setupMatrix(portal, poseCopy);
+		((ClientPortalType) target.type).getRenderer().setupAsTarget(target, poseCopy);
+		poseCopy.translate(pCamera.getPosition().x, pCamera.getPosition().y, pCamera.getPosition().z);
+		
+		
 		mc.levelRenderer.prepareCullFrustum(
 				poseCopy,
 				pCamera.getPosition(),
@@ -80,7 +96,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 		((LevelRendererAccessor) mc.levelRenderer).dynamic_portals$setFrustum(frust);
 	}
 	
-	protected void drawSkybox(Minecraft mc, Matrix4f pProjectionMatrix, float pPartialTick, Camera pCamera, GameRenderer pGameRenderer, PoseStack pPoseStack) {
+	protected void drawSkybox(AbstractPortalRenderer renderer, AbstractPortal portal, Minecraft mc, Matrix4f pProjectionMatrix, float pPartialTick, Camera pCamera, GameRenderer pGameRenderer, PoseStack pPoseStack) {
 		float renderDist = pGameRenderer.getRenderDistance();
 		boolean foggy = mc.level.effects().isFoggyAt(Mth.floor(pCamera.getPosition().x), Mth.floor(pCamera.getPosition().z)) || mc.gui.getBossOverlay().shouldCreateWorldFog();
 		
@@ -110,6 +126,9 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 	@Override
 	public void draw(Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick) {
 		int layer = this.layer;
+		
+		if (layer != 0) return;
+		
 		if (frustum.isVisible(portal.getContainingBox())) {
 			// translate
 			pPoseStack.pushPose();
@@ -188,9 +207,9 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 				//       elsewise, draw world
 //				if (RenderUtil.activeLayer != 3) {
 				if (RenderUtil.activeLayer == 0) {
-					draw(mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
+					draw(renderer, portal, mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
 				} else {
-					drawSkybox(mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
+					drawSkybox(renderer, portal, mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
 				}
 				
 				((MinecraftAccess) mc).dynamic_portals$setLevelRenderer(from);
@@ -237,6 +256,9 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			
 			// remove translation
 			pPoseStack.popPose();
+			
+			// fix lighting
+			Lighting.setupLevel(pPoseStack.last().pose());
 		}
 	}
 	
