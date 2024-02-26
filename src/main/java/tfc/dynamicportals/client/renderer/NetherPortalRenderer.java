@@ -35,8 +35,9 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		RenderSystem.enableBlend();
 		
 		BlendFunctions.multiplyBlend();
-		
-		float r = 1, b = r, g = b, a = g;
+
+//		float r = (Minecraft.getInstance().level.getGameTime() % 1000) / 1000f, b = r, g = b, a = g;
+		float r = 1, b = r, g = b, a = 0.25f;
 		r = 120 / 255f;
 		g = 0.5f;
 		b = 250 / 255f;
@@ -91,7 +92,7 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		float delta = frame / 32f;
 		float mU = delta + (1 / 32f);
 
-//		alpha = 0.2f;
+//		float alpha = 0.75f;
 		float alpha = 1f;
 //		alpha = (4 - RenderUtil.activeLayer) / 4f;
 		
@@ -104,26 +105,57 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 						(float) (-xSize + x),
 						(float) (-ySize + y),
 						(float) (0)
-				).color(2, 2, 2, alpha).uv(0, delta).endVertex();
+				).color(1, 1, 1, alpha).uv(0, delta).endVertex();
 				builder.vertex(
 						pPoseStack.last().pose(),
 						(float) (-xSize + x),
 						(float) (-ySize + y + 1),
 						(float) (0)
-				).color(2, 2, 2, alpha).uv(0, mU).endVertex();
+				).color(1, 1, 1, alpha).uv(0, mU).endVertex();
 				builder.vertex(
 						pPoseStack.last().pose(),
 						(float) (-xSize + x + 1),
 						(float) (-ySize + y + 1),
 						(float) (0)
-				).color(2, 2, 2, alpha).uv(1, mU).endVertex();
+				).color(1, 1, 1, alpha).uv(1, mU).endVertex();
 				builder.vertex(
 						pPoseStack.last().pose(),
 						(float) (-xSize + x + 1),
 						(float) (-ySize + y),
 						(float) (0)
-				).color(2, 2, 2, alpha).uv(1, delta).endVertex();
+				).color(1, 1, 1, alpha).uv(1, delta).endVertex();
 			}
+		}
+		
+		tesselator.end();
+		
+		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+		
+		for (int x = 0; x < 2; x++) {
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + x),
+					(float) (-ySize + 0),
+					(float) (0)
+			).color(1, 1, 1, alpha).uv(0, delta).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + x),
+					(float) (-ySize + 0 + 1),
+					(float) (0)
+			).color(1, 1, 1, 0).uv(0, mU).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + x + 1),
+					(float) (-ySize + 0 + 1),
+					(float) (0)
+			).color(1, 1, 1, 0).uv(1, mU).endVertex();
+			builder.vertex(
+					pPoseStack.last().pose(),
+					(float) (-xSize + x + 1),
+					(float) (-ySize + 0),
+					(float) (0)
+			).color(1, 1, 1, alpha).uv(1, delta).endVertex();
 		}
 		
 		tesselator.end();

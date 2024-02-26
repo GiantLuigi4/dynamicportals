@@ -29,4 +29,11 @@ public class BlendFunctions {
 				GL11.GL_ONE_MINUS_SRC_COLOR
 		);
 	}
+	
+	public static void exposeBlend() {
+		RenderSystem.blendFunc(
+				GL11.GL_DST_COLOR,
+				GL11.GL_SRC_ALPHA
+		);
+	}
 }

@@ -68,8 +68,6 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 		for (AbstractPortal abstractPortal : portal.getConnectedNetwork().getPortals())
 			if (abstractPortal != portal) target = abstractPortal;
 		if (target == null) target = portal;
-		
-		
 		// setup render translations
 		poseCopy.translate(-pCamera.getPosition().x, -pCamera.getPosition().y, -pCamera.getPosition().z);
 		renderer.setupMatrix(portal, poseCopy);
