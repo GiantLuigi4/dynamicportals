@@ -34,6 +34,11 @@ public class PortalNet {
         this.uuid = uuid;
     }
 
+    public PortalNet(UUID uuid, String cmdIdentifier) {
+        this.uuid = uuid;
+        this.commandIdentifier = cmdIdentifier;
+    }
+
     public void link(AbstractPortal portal) {
         if (portal.connectedNetwork != null) {
             portal.connectedNetwork.unlink(portal);

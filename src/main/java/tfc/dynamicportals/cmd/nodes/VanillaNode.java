@@ -1,7 +1,9 @@
 package tfc.dynamicportals.cmd.nodes;
 
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -22,6 +24,12 @@ public class VanillaNode<T, A> extends DypoNode<T, A, A> {
 
     public static <Q, D> VanillaNode<Q, D> literal(String text) {
         return (VanillaNode<Q, D>) new VanillaNode<>(LiteralArgumentBuilder.literal(text).build());
+    }
+
+    public static <Q, D> VanillaNode<Q, D> stringArg(String argName) {
+        return (VanillaNode<Q, D>) new VanillaNode<>(
+                RequiredArgumentBuilder.argument(argName, StringArgumentType.word()).build()
+        );
     }
 
     @Override

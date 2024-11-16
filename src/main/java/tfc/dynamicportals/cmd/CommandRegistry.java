@@ -21,6 +21,17 @@ public class CommandRegistry {
         DypoNode root = VanillaNode.literal("dynamic_portals");
         {
             DypoNode network = VanillaNode.literal("network");
+
+            DypoNode create = VanillaNode.literal("create").postAction((t, a) -> DypoCommand.createNetwork((CommandContext<?>) t));
+            DypoNode delete = VanillaNode.literal("delete").setAction((a) -> {
+                CommandNodeAccessor.throwUnchecked(new DypoException("NYI"));
+                throw new RuntimeException("wth");
+            });
+            network.addArg(create);
+            network.addArg(delete);
+            DypoNode networkName = VanillaNode.stringArg("network");
+            create.addArg(networkName);
+
             root.addArg(network);
         }
         {
@@ -29,6 +40,8 @@ public class CommandRegistry {
             DypoNode create = VanillaNode.literal("create")
                     .setAction((a) -> new CompoundTag())
                     .postAction((ctx, tag) -> DypoCommand.createPortal((CommandContext<?>) ctx, (CompoundTag) tag));
+            DypoNode networkName = VanillaNode.stringArg("network");
+            create.addArg(networkName);
 
             DypoNode modify = VanillaNode.literal("modify").setAction((a) -> {
                 CommandNodeAccessor.throwUnchecked(new DypoException("NYI"));
@@ -53,7 +66,7 @@ public class CommandRegistry {
 
                     v.fillCommand(branchCreate, branchModif);
 
-                    create.addArg(branchCreate);
+                    networkName.addArg(branchCreate);
                     modify.addArg(branchModif);
                 }
             });

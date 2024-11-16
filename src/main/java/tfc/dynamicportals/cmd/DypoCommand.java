@@ -14,29 +14,60 @@ import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 import javax.json.JsonObject;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class DypoCommand<T> implements Command<T> {
+    public static <T> Integer createNetwork(CommandContext<T> ctx) {
+        CommandSourceStack stack = (CommandSourceStack) ctx.getSource();
+        NetworkHolder holder = (NetworkHolder) stack.getUnsidedLevel();
+
+        String name = ctx.getArgument("network", String.class);
+        for (PortalNet portalNetwork : holder.getPortalNetworks()) {
+            String identifier = portalNetwork.getCommandIdentifier();
+            if (identifier == null) continue;
+            if (identifier.equals(name)) {
+                stack.sendFailure(new TranslatableComponent(
+                        "dynamicportals.command.cheese.already_network",
+                        name
+                ));
+                return 0;
+            }
+        }
+
+        holder.getPortalNetworks().add(new PortalNet(UUID.randomUUID(), name));
+        stack.sendSuccess(
+                new TranslatableComponent(
+                        "dynamicportals.command.bread.network.success",
+                        name
+                ),
+                true
+        );
+
+        return 1;
+    }
+
     public static <V> Integer createPortal(CommandContext<V> ctx, CompoundTag tag) {
         CommandSourceStack stack = (CommandSourceStack) ctx.getSource();
         NetworkHolder holder = (NetworkHolder) stack.getUnsidedLevel();
 
         PortalNet bindTo = null;
+        String network = ctx.getArgument("network", String.class);
         for (PortalNet portalNetwork : holder.getPortalNetworks()) {
             String identifier = portalNetwork.getCommandIdentifier();
             if (identifier == null) continue;
-            if (identifier.equals(
-                    "test"
-            )) {
+            if (identifier.equals(network)) {
                 bindTo = portalNetwork;
             }
         }
 
         if (bindTo == null) {
             stack.sendFailure(new TranslatableComponent(
-                    "dynamicportals.command.cheese.no_network"
+                    "dynamicportals.command.cheese.no_network",
+                    network
             ));
+            return 0;
         }
 
         BasicPortal portal = BasicPortalTypes.createPortal(
