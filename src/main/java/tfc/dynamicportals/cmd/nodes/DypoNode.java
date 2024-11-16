@@ -29,6 +29,7 @@ public abstract class DypoNode<T> {
             DypoContextBuilder dpbuilder
     ) {
         if (!children.isEmpty() && reader.canRead()) {
+            int c0 = reader.getCursor();
             reader.skipWhitespace();
             for (DypoNode<T> child : children) {
                 int cursor = reader.getCursor();
@@ -46,8 +47,9 @@ public abstract class DypoNode<T> {
 
                 reader.setCursor(cursor);
             }
+            reader.setCursor(c0);
         }
-        return null; // TODO
+        return null; // TODO: rethrow exception if children attempted to be parsed but failed
     }
 
     public abstract boolean isValidInput(String input);

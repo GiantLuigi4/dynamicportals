@@ -77,7 +77,7 @@ public class DypoCmdNode<T> extends LiteralCommandNode<T> {
                 (c) -> 0,
                 (c) -> true,
                 null, null,
-                false
+                false, this
         );
         holderNode.dctx = contextBuilder1;
         holderNode.len = reader.getCursor();
@@ -106,6 +106,7 @@ public class DypoCmdNode<T> extends LiteralCommandNode<T> {
                             reader,
                             builder1
                     );
+                    reader.skipWhitespace();
                 } catch (Throwable err) {
                 }
                 context = builder1.build(context.getInput());
@@ -122,6 +123,10 @@ public class DypoCmdNode<T> extends LiteralCommandNode<T> {
                     ctx = dhn.dctx;
                     cursor = dhn.len;
                 }
+            }
+
+            if (context.getInput().charAt(cursor) == ' ') {
+                cursor += 1;
             }
 
             if (ctx == null || cursor <= getName().length() + 1) {
