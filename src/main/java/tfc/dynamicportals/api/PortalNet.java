@@ -24,6 +24,7 @@ public class PortalNet {
     }
 
     UUID uuid;
+    String commandIdentifier = null;
 
     public PortalNet(UUID uuid) {
         this.uuid = uuid;
@@ -64,11 +65,15 @@ public class PortalNet {
         }
         tag.putUUID("uuid", uuid);
         tag.put("data", tags);
+        if (commandIdentifier != null)
+            tag.putString("cmd_name", commandIdentifier);
     }
 
     public static PortalNet load(NetworkHolder holder, CompoundTag tag) {
         PortalNet net = new PortalNet(tag.getUUID("uuid"));
         net.read(holder, (ListTag) tag.get("data"));
+        if (tag.contains("cmd_name", Tag.TAG_STRING))
+            net.commandIdentifier = tag.getString("cmd_name");
         return net;
     }
 

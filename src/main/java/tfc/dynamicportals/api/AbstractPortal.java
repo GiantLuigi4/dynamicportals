@@ -10,6 +10,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.client.AbstractPortalRenderDispatcher;
+import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.mixin.client.data.access.ClientLevelAccessor;
 import tfc.dynamicportals.network.util.PortalPacketSender;

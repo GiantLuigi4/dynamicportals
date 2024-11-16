@@ -1,6 +1,5 @@
 package tfc.dynamicportals.cmd.nodes;
 
-import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
@@ -8,165 +7,89 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.brigadier.tree.CommandNode;
 import tfc.dynamicportals.cmd.DypoContextBuilder;
-import tfc.dynamicportals.cmd.DypoExceptionType;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class DypoNode<T> {
-    protected List<DypoNode<T>> children = new ArrayList<>();
+    List<DypoNode<T>> children = new ArrayList<>();
 
-    public DypoNode<T> addChild(DypoNode<T> child) {
-        children.add(child);
+    public abstract CommandSyntaxException parse(
+            StringReader reader,
+            CommandContextBuilder<T> builder,
+            DypoContextBuilder dpbuilder
+    );
+
+    public CommandSyntaxException parseChildren(
+            StringReader reader,
+            CommandContextBuilder<T> builder,
+            DypoContextBuilder dpbuilder
+    ) {
+        if (!children.isEmpty() && reader.canRead()) {
+            reader.skipWhitespace();
+            for (DypoNode<T> child : children) {
+                int cursor = reader.getCursor();
+
+                CommandContextBuilder<T> cpy = builder.copy();
+                DypoContextBuilder dctx = new DypoContextBuilder(child, dpbuilder);
+                CommandSyntaxException ex = child.parse(reader, cpy, dctx);
+                if (ex == null)
+                    ex = child.parseChildren(reader, cpy, dctx);
+                if (ex == null) {
+                    dpbuilder.set(reader.getCursor(), dctx);
+                    CommandNodeAccessor.setCtx(builder, cpy);
+                    return null;
+                }
+
+                reader.setCursor(cursor);
+            }
+        }
+        return null; // TODO
+    }
+
+    public abstract boolean isValidInput(String input);
+
+    public boolean isValidInput(StringReader input) {
+        return isValidInput(input.getRemaining());
+    }
+
+    public DypoNode<T> addArg(DypoNode<T> test) {
+        children.add(test);
         return this;
     }
 
-    public abstract void _parse(
-            StringReader reader,
-            CommandContextBuilder<T> contextBuilder,
-            DypoContextBuilder dypoContextBuilder
-    ) throws CommandSyntaxException;
+    public abstract CompletableFuture<Suggestions> mySuggestions(CommandContext<T> context, SuggestionsBuilder builder, DypoContextBuilder ctx);
 
-    public CommandContextBuilder<T> parse(
-            StringReader reader,
-            CommandContextBuilder<T> contextBuilder,
-            DypoContextBuilder dypoContextBuilder,
-            CommandContextBuilder<T>[] bOut
-    ) throws CommandSyntaxException {
-        _parse(reader, contextBuilder, dypoContextBuilder);
-
-        if (reader.canRead()) {
-            CommandSyntaxException err = null;
-            CommandContextBuilder<T> tctx = null;
-            DypoContextBuilder dtctx = null;
-            int maxLength = 0;
-
-            if (!children.isEmpty())
-                dypoContextBuilder.setPropagate();
-
-            for (DypoNode<T> child : children) {
-                int cursor = reader.getCursor();
-                CommandContextBuilder<T> ctx = contextBuilder.copy();
-                DypoContextBuilder dctx = new DypoContextBuilder(child, dypoContextBuilder);
-                reader.skipWhitespace();
-
-                try {
-                    if (child.isValidInput(reader)) {
-                        tctx = ctx = child.parse(reader, ctx, dctx, null);
-                        dctx.setPropagate();
-                        dypoContextBuilder.propagate(dctx);
-                        return ctx;
-                    }
-                } catch (CommandSyntaxException err1) {
-                    if (reader.getCursor() > maxLength) {
-                        tctx = ctx;
-                        dtctx = dctx;
-//                        dtctx.setPropagate();
-                        maxLength = reader.getCursor();
-                        err = err1;
-                    }
-                }
-
-                dypoContextBuilder.set(dctx);
-                reader.setCursor(cursor);
-            }
-
-            if (tctx != null) {
-                reader.setCursor(maxLength);
-                CommandNodeAccessor.setCtx(contextBuilder, tctx);
-                if (dtctx.isPropagate()) {
-                    dypoContextBuilder.set(dtctx);
-                }
-            }
-            if (err != null) {
-                if (bOut != null)
-                    bOut[0] = contextBuilder;
-                CommandNodeAccessor.rethrow(err);
-            }
-
-            throw new CommandSyntaxException(
-                    new DypoExceptionType(),
-                    new LiteralMessage("Incorrect argument for command"),
-                    reader.getString(),
-                    reader.getCursor()
-            );
-        }
-
-        return contextBuilder;
-    }
-
-    public abstract boolean isValidInput(String string);
-
-    public boolean isValidInput(StringReader reader) {
-        return isValidInput(reader.getString().substring(reader.getCursor()));
-    }
-
-    public abstract Collection<String> getExamples();
-
-    public abstract CompletableFuture<Suggestions> _listSuggestions(
-            final CommandContext<T> context,
-            final SuggestionsBuilder builder,
-            DypoContextBuilder dypoContextBuilder
-    ) throws CommandSyntaxException;
-
-    public CompletableFuture<Suggestions> listSuggestions(
-            final CommandContext<T> context,
-            final SuggestionsBuilder builder,
-            DypoContextBuilder dypoContextBuilder
-    ) throws CommandSyntaxException {
+    public CompletableFuture<Suggestions> fillSuggestions(CommandContext<T> context, SuggestionsBuilder builder, DypoContextBuilder ctx) {
         try {
-            int offset = dypoContextBuilder.getSuggestionOffset();
-
-            SuggestionsBuilder builder1 = new SuggestionsBuilder(
-                    builder.getInput(), builder.getStart()
-            );
-            builder1 = builder1.createOffset(offset);
-            CompletableFuture<Suggestions> cfuture = _listSuggestions(
-                    context, builder1,
-                    dypoContextBuilder
-            );
-            List<CompletableFuture<Suggestions>> childSuggestions = new ArrayList<>();
+            List<Suggestions> childSuggestions = new ArrayList<>();
             for (DypoNode<T> child : children) {
-                builder1 = new SuggestionsBuilder(
-                        builder.getInput(), builder.getStart()
-                );
-                builder1 = builder1.createOffset(offset);
-                childSuggestions.add(child._listSuggestions(context, builder1, dypoContextBuilder));
+                SuggestionsBuilder builder1 = new SuggestionsBuilder(
+                        builder.getInput(),
+                        ctx.getSuggestionOffset()
+                ).createOffset(ctx.getSuggestionOffset());
+                CompletableFuture<Suggestions> cSuggestions = child.mySuggestions(context, builder1, ctx);
+                try {
+                    childSuggestions.add(cSuggestions.get());
+                } catch (Throwable err) {
+                    err.printStackTrace();
+                }
             }
 
-            SuggestionsBuilder builder2 = new SuggestionsBuilder(
-                    builder.getInput(), offset
-            );
-            try  {
-                Suggestions suggestions = cfuture.get();
-                for (Suggestion suggestion : suggestions.getList()) {
-                    builder2.suggest(
-                            suggestion.getText(),
-                            suggestion.getTooltip()
-                    );
+            builder = builder.createOffset(ctx.getSuggestionOffset());
+            for (Suggestions childSuggestion : childSuggestions) {
+                for (Suggestion suggestion : childSuggestion.getList()) {
+                    builder.suggest(suggestion.getText(), suggestion.getTooltip());
                 }
-                for (CompletableFuture<Suggestions> childSuggestion : childSuggestions) {
-                    suggestions = childSuggestion.get();
-                    for (Suggestion suggestion : suggestions.getList()) {
-                        builder2.suggest(
-                                suggestion.getText(),
-                                suggestion.getTooltip()
-                        );
-                    }
-                }
-            } catch (Throwable err) {
-                err.printStackTrace();
             }
 
-            return CompletableFuture.completedFuture(builder2.build());
+            return CompletableFuture.completedFuture(builder.build());
         } catch (Throwable err) {
-            return CompletableFuture.completedFuture(Suggestions.create(context.getRootNode().getName(), Collections.emptyList()));
+            err.printStackTrace();
+            return CompletableFuture.completedFuture(builder.build());
         }
     }
-
-    public abstract String getName();
 }

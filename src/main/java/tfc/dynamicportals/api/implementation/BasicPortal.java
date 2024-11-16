@@ -7,6 +7,7 @@ import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.registry.BasicPortalTypes;
 import tfc.dynamicportals.api.registry.PortalType;
+import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 public class BasicPortal extends AbstractPortal {

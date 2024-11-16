@@ -5,12 +5,14 @@ import org.jetbrains.annotations.Nullable;
 import tfc.dynamicportals.cmd.nodes.DypoNode;
 
 import java.util.HashMap;
+import java.util.Stack;
 
 public class DypoContextBuilder {
     @NotNull DypoNode lastNode;
-    boolean propagate = false;
     DypoContextBuilder parent;
     int suggestionOffset;
+    Stack<DypoNode> nodes = new Stack<>();
+    Stack<Integer> ends = new Stack<>();
 
     public DypoContextBuilder(@NotNull DypoNode lastNode, DypoContextBuilder parent) {
         this.lastNode = lastNode;
@@ -39,27 +41,26 @@ public class DypoContextBuilder {
         this.data.put(node, data);
     }
 
-    public void set(DypoContextBuilder dctx) {
+    public void set(int cursor, DypoContextBuilder dctx) {
+        nodes.push(lastNode);
+        ends.push(cursor);
+
+        for (DypoNode node : dctx.nodes)
+            nodes.push(node);
+        for (Integer end : dctx.ends)
+            ends.push(end);
+
         this.lastNode = dctx.lastNode;
         data.clear();
         data.putAll(dctx.data);
     }
 
-    public void setPropagate() {
-        propagate = true;
-    }
-
-    public void propagate(DypoContextBuilder ctx) {
-        if (ctx.propagate) {
-            this.lastNode = ctx.lastNode;
-        }
+    public void finish(int cursor) {
+        nodes.push(lastNode);
+        ends.push(cursor);
     }
 
     public int getSuggestionOffset() {
         return suggestionOffset;
-    }
-
-    public boolean isPropagate() {
-        return propagate;
     }
 }

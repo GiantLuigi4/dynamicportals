@@ -9,6 +9,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Predicate;
 
 public class DypoBuilder<S> extends LiteralArgumentBuilder<S> {
@@ -41,7 +42,7 @@ public class DypoBuilder<S> extends LiteralArgumentBuilder<S> {
 
     @Override
     public Collection<CommandNode<S>> getArguments() {
-        return super.getArguments();
+        return Collections.singleton(node);
     }
 
     @Override

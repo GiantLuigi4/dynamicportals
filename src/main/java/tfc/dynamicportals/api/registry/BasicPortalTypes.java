@@ -4,10 +4,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import tfc.dynamicportals.api.implementation.BasicPortal;
+import tfc.dynamicportals.cmd.CommandRegistry;
+import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 // TODO: convert to deferred register?
 public class BasicPortalTypes {
@@ -35,11 +38,25 @@ public class BasicPortalTypes {
                     );
                     bp.load(holder, tag);
                     return bp;
-                })
+                }) {
+                    @Override
+                    public boolean supportsCommand() {
+                        return true;
+                    }
+
+                    @Override
+                    public <T> void fillCommand(DypoNode<T> create, DypoNode<T> modify) {
+                        CommandRegistry.fillDefault(create, modify);
+                    }
+                }
         );
     }
 
     public static BasicPortal createPortal(ResourceLocation type, NetworkHolder holder, CompoundTag tag) {
         return TYPES.get(type).fromNbt.apply(holder, tag);
+    }
+
+    public static void forEach(BiConsumer<ResourceLocation, PortalType<?>> consumer) {
+        TYPES.forEach(consumer);
     }
 }

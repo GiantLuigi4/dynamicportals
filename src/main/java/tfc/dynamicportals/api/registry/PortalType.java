@@ -3,6 +3,7 @@ package tfc.dynamicportals.api.registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import tfc.dynamicportals.api.implementation.BasicPortal;
+import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 import java.util.function.BiFunction;
@@ -17,5 +18,12 @@ public class PortalType<T extends BasicPortal> {
 	
 	public ResourceLocation getRegistryName() {
 		return name;
+	}
+
+	public boolean supportsCommand() {
+		return false;
+	}
+
+	public <T> void fillCommand(DypoNode<T> create, DypoNode<T> modify) {
 	}
 }

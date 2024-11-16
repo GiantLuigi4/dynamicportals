@@ -8,54 +8,43 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import tfc.dynamicportals.cmd.DypoContextBuilder;
 
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class VanillaNode<T> extends DypoNode<T> {
-    CommandNode<T> node;
+    CommandNode<T> vanilla;
 
-    public VanillaNode(LiteralCommandNode<?> node) {
-        this.node = (CommandNode<T>) node;
+    public VanillaNode(CommandNode<T> vanilla) {
+        this.vanilla = vanilla;
     }
 
-    public static <T> VanillaNode<T> literal(String text) {
-        return new VanillaNode<>(
-                LiteralArgumentBuilder.literal(text).build()
-        );
-    }
-
-    @Override
-    public void _parse(
-            StringReader reader,
-            CommandContextBuilder<T> contextBuilder,
-            DypoContextBuilder dypoContextBuilder
-    ) throws CommandSyntaxException {
-        node.parse(reader, contextBuilder);
-    }
-
-    public boolean isValidInput(String string) {
-        return CommandNodeAccessor.isValidInput(node, string);
+    public static <Q> VanillaNode<Q> literal(String text) {
+        return (VanillaNode<Q>) new VanillaNode<>(LiteralArgumentBuilder.literal(text).build());
     }
 
     @Override
-    public Collection<String> getExamples() {
-        return node.getExamples();
+    public CommandSyntaxException parse(StringReader reader, CommandContextBuilder<T> builder, DypoContextBuilder dpbuilder) {
+        try {
+            vanilla.parse(reader, builder);
+            return null; // successful parse
+        } catch (CommandSyntaxException exception) {
+            return exception;
+        }
     }
 
     @Override
-    public CompletableFuture<Suggestions> _listSuggestions(
-            CommandContext<T> context,
-            SuggestionsBuilder builder,
-            DypoContextBuilder contextBuilder
-    ) throws CommandSyntaxException {
-        return CommandNodeAccessor.listSuggestions(node, context, builder);
+    public boolean isValidInput(String input) {
+        return CommandNodeAccessor.isValidInput(vanilla, input);
     }
 
     @Override
-    public String getName() {
-        return node.getName();
+    public CompletableFuture<Suggestions> mySuggestions(CommandContext<T> context, SuggestionsBuilder builder, DypoContextBuilder ctx) {
+        try {
+            return CommandNodeAccessor.listSuggestions(vanilla, context, builder);
+        } catch (Throwable err) {
+            err.printStackTrace();
+            return builder.buildFuture();
+        }
     }
 }
