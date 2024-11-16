@@ -7,15 +7,21 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import com.mojang.brigadier.tree.CommandNode;
+import tfc.dynamicportals.cmd.CommandNodeAccessor;
 import tfc.dynamicportals.cmd.DypoContextBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-public abstract class DypoNode<T> {
-    List<DypoNode<T>> children = new ArrayList<>();
+public abstract class DypoNode<T, A, B> {
+    List<DypoNode<T, B, ?>> children = new ArrayList<>();
+    @SuppressWarnings("unchecked")
+    BiFunction<T, A, B> action = (t, a) -> (B) a;
+    BiFunction<T, ?, Integer> postAction = null;
 
     public abstract CommandSyntaxException parse(
             StringReader reader,
@@ -31,7 +37,7 @@ public abstract class DypoNode<T> {
         if (!children.isEmpty() && reader.canRead()) {
             int c0 = reader.getCursor();
             reader.skipWhitespace();
-            for (DypoNode<T> child : children) {
+            for (DypoNode<T, B, ?> child : children) {
                 int cursor = reader.getCursor();
 
                 CommandContextBuilder<T> cpy = builder.copy();
@@ -58,7 +64,7 @@ public abstract class DypoNode<T> {
         return isValidInput(input.getRemaining());
     }
 
-    public DypoNode<T> addArg(DypoNode<T> test) {
+    public DypoNode<T, A, B> addArg(DypoNode<T, B, ?> test) {
         children.add(test);
         return this;
     }
@@ -68,7 +74,7 @@ public abstract class DypoNode<T> {
     public CompletableFuture<Suggestions> fillSuggestions(CommandContext<T> context, SuggestionsBuilder builder, DypoContextBuilder ctx) {
         try {
             List<Suggestions> childSuggestions = new ArrayList<>();
-            for (DypoNode<T> child : children) {
+            for (DypoNode<T, B, ?> child : children) {
                 SuggestionsBuilder builder1 = new SuggestionsBuilder(
                         builder.getInput(),
                         ctx.getSuggestionOffset()
@@ -93,5 +99,28 @@ public abstract class DypoNode<T> {
             err.printStackTrace();
             return CompletableFuture.completedFuture(builder.build());
         }
+    }
+
+    public B execute(T t, A obj) {
+        return action.apply(t, obj);
+    }
+
+    public DypoNode<T, A, B> setAction(BiFunction<T, A, B> action) {
+        this.action = action;
+        return this;
+    }
+
+    public DypoNode<T, A, B> setAction(Function<A, B> action) {
+        this.action = (t, a) -> action.apply(a);
+        return this;
+    }
+
+    public DypoNode<T, A, B> postAction(BiFunction<T, ?, Integer> action) {
+        postAction = action;
+        return this;
+    }
+
+    public BiFunction<T, ?, Integer> getPostAction() {
+        return postAction;
     }
 }

@@ -13,9 +13,9 @@ import java.util.Collections;
 import java.util.function.Predicate;
 
 public class DypoBuilder<S> extends LiteralArgumentBuilder<S> {
-    DypoCmdNode<S> node;
+    DypoCmdNode<S, ?, ?> node;
 
-    public DypoBuilder(DypoCmdNode<S> node) {
+    public DypoBuilder(DypoCmdNode<S, ?, ?> node) {
         super(node.getName());
         this.node = node;
     }

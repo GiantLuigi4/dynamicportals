@@ -8,6 +8,7 @@ import tfc.dynamicportals.cmd.CommandRegistry;
 import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 
+import javax.json.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -42,11 +43,6 @@ public class BasicPortalTypes {
                     @Override
                     public boolean supportsCommand() {
                         return true;
-                    }
-
-                    @Override
-                    public <T> void fillCommand(DypoNode<T> create, DypoNode<T> modify) {
-                        CommandRegistry.fillDefault(create, modify);
                     }
                 }
         );

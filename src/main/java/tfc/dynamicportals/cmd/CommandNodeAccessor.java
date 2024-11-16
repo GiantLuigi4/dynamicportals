@@ -1,12 +1,14 @@
-package tfc.dynamicportals.cmd.nodes;
+package tfc.dynamicportals.cmd;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
+import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import sun.misc.Unsafe;
+import tfc.dynamicportals.cmd.exception.DypoException;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -79,5 +81,28 @@ public class CommandNodeAccessor {
         contextBuilder.getArguments().putAll(builder.getArguments());
         contextBuilder.withCommand(builder.getCommand());
         contextBuilder.withSource(builder.getSource());
+    }
+
+    static <T> DataHolderNode getDpCtx(CommandContext<T> context) {
+        for (int i = context.getNodes().size() - 1; i >= 0; i--) {
+            ParsedCommandNode<T> node = context.getNodes().get(i);
+            if (node.getNode().getName().startsWith("__dypo_holder_node__")) {
+                return ((DataHolderNode) node.getNode());
+            }
+        }
+        try {
+            throw new DypoException("Missing dypo holder node");
+        } catch (CommandSyntaxException err) {
+            theUnsafe.throwException(err);
+            throw new RuntimeException("wth");
+        }
+    }
+
+    public static void throwUnchecked(CommandSyntaxException nyi) {
+        try {
+            throw nyi;
+        } catch (CommandSyntaxException exception) {
+            theUnsafe.throwException(exception);
+        }
     }
 }

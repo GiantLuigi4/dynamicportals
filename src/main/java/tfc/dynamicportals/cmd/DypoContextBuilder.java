@@ -30,13 +30,13 @@ public class DypoContextBuilder {
         this.data = new HashMap<>();
     }
 
-    HashMap<DypoNode<?>, Object> data;
+    HashMap<DypoNode<?, ?, ?>, Object> data;
 
-    public @Nullable <T, V> T getData(DypoNode<V> node) {
+    public @Nullable <T, V> T getData(DypoNode<V, ?, ?> node) {
         return (T) data.get(node);
     }
 
-    public <T, V> void setData(DypoNode<T> node, @NotNull V data) {
+    public <T, V> void setData(DypoNode<T, ?, ?> node, @NotNull V data) {
         if (data == null) throw new RuntimeException("Data provided is null");
         this.data.put(node, data);
     }

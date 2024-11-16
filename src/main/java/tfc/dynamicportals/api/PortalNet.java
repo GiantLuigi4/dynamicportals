@@ -26,6 +26,10 @@ public class PortalNet {
     UUID uuid;
     String commandIdentifier = null;
 
+    public String getCommandIdentifier() {
+        return commandIdentifier;
+    }
+
     public PortalNet(UUID uuid) {
         this.uuid = uuid;
     }

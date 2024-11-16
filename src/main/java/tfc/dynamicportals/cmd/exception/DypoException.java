@@ -27,4 +27,10 @@ public class DypoException extends CommandSyntaxException {
                 reader.getString(), reader.getCursor()
         );
     }
+
+    public DypoException(String message) {
+        super(
+                DypoExceptionType.INSTANCE, new LiteralMessage(message)
+        );
+    }
 }

@@ -10,8 +10,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.client.resources.language.I18n;
-import tfc.dynamicportals.cmd.nodes.CommandNodeAccessor;
 import tfc.dynamicportals.cmd.nodes.DypoNode;
 
 import java.util.Collection;
@@ -19,15 +17,15 @@ import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-public class DypoCmdNode<T> extends LiteralCommandNode<T> {
+public class DypoCmdNode<T, A, B> extends LiteralCommandNode<T> {
     String name;
-    DypoNode<T> node;
+    DypoNode<T, A, B> node;
     CommandDispatcher<T> dispatcher;
 
     public DypoCmdNode(
             CommandDispatcher<T> dispatcher,
             String name,
-            DypoNode<T> node,
+            DypoNode<T, A, B> node,
             Command<T> command,
             Predicate<T> requirement,
             CommandNode<T> redirect,
@@ -125,8 +123,12 @@ public class DypoCmdNode<T> extends LiteralCommandNode<T> {
                 }
             }
 
-            if (context.getInput().charAt(cursor) == ' ') {
-                cursor += 1;
+            try {
+                if (context.getInput().charAt(cursor) == ' ') {
+                    cursor += 1;
+                }
+            } catch (Throwable err) {
+                return CompletableFuture.completedFuture(builder.build());
             }
 
             if (ctx == null || cursor <= getName().length() + 1) {

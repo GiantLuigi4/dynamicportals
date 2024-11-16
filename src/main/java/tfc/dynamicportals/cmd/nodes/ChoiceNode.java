@@ -13,13 +13,13 @@ import tfc.dynamicportals.cmd.exception.DypoExceptionType;
 
 import java.util.concurrent.CompletableFuture;
 
-public class ChoiceNode<T> extends DypoNode<T> {
+public class ChoiceNode<T, A, B> extends DypoNode<T, A, B> {
     public ChoiceNode() {
     }
 
     @Override
     public CommandSyntaxException parse(StringReader reader, CommandContextBuilder<T> builder, DypoContextBuilder dpbuilder) {
-        for (DypoNode<T> child : children) {
+        for (DypoNode<T, B, ?> child : children) {
             int cursor = reader.getCursor();
             CommandSyntaxException ex = child.parse(reader, builder.copy(), new DypoContextBuilder(child, dpbuilder));
             if (ex == null) {
@@ -42,6 +42,5 @@ public class ChoiceNode<T> extends DypoNode<T> {
     @Override
     public CompletableFuture<Suggestions> mySuggestions(CommandContext<T> context, SuggestionsBuilder builder, DypoContextBuilder ctx) {
         return fillSuggestions(context, builder, ctx);
-//        return CompletableFuture.completedFuture(builder.build());
     }
 }

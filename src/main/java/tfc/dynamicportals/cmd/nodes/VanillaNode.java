@@ -8,19 +8,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
+import tfc.dynamicportals.cmd.CommandNodeAccessor;
 import tfc.dynamicportals.cmd.DypoContextBuilder;
 
 import java.util.concurrent.CompletableFuture;
 
-public class VanillaNode<T> extends DypoNode<T> {
+public class VanillaNode<T, A> extends DypoNode<T, A, A> {
     CommandNode<T> vanilla;
 
     public VanillaNode(CommandNode<T> vanilla) {
         this.vanilla = vanilla;
     }
 
-    public static <Q> VanillaNode<Q> literal(String text) {
-        return (VanillaNode<Q>) new VanillaNode<>(LiteralArgumentBuilder.literal(text).build());
+    public static <Q, D> VanillaNode<Q, D> literal(String text) {
+        return (VanillaNode<Q, D>) new VanillaNode<>(LiteralArgumentBuilder.literal(text).build());
     }
 
     @Override
