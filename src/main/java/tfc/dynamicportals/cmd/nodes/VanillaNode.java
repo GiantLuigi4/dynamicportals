@@ -9,6 +9,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import tfc.dynamicportals.cmd.DypoContextBuilder;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +28,11 @@ public class VanillaNode<T> extends DypoNode<T> {
     }
 
     @Override
-    public void parse(StringReader reader, CommandContextBuilder<T> contextBuilder) throws CommandSyntaxException {
+    public void _parse(
+            StringReader reader,
+            CommandContextBuilder<T> contextBuilder,
+            DypoContextBuilder dypoContextBuilder
+    ) throws CommandSyntaxException {
         node.parse(reader, contextBuilder);
     }
 
@@ -41,7 +46,16 @@ public class VanillaNode<T> extends DypoNode<T> {
     }
 
     @Override
-    public CompletableFuture<Suggestions> listSuggestions(CommandContext<T> context, SuggestionsBuilder builder) throws CommandSyntaxException {
+    public CompletableFuture<Suggestions> _listSuggestions(
+            CommandContext<T> context,
+            SuggestionsBuilder builder,
+            DypoContextBuilder contextBuilder
+    ) throws CommandSyntaxException {
         return CommandNodeAccessor.listSuggestions(node, context, builder);
+    }
+
+    @Override
+    public String getName() {
+        return node.getName();
     }
 }

@@ -10,7 +10,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.commands.CommandSourceStack;
 import tfc.dynamicportals.cmd.nodes.CommandNodeAccessor;
 import tfc.dynamicportals.cmd.nodes.DypoNode;
 
@@ -54,14 +53,19 @@ public class DypoCmdNode<T> extends LiteralCommandNode<T> {
 
     @Override
     public void parse(StringReader reader, CommandContextBuilder<T> contextBuilder) throws CommandSyntaxException {
-        // TODO: do this properly
-        node.parse(reader, contextBuilder);
+        DypoContextBuilder contextBuilder1 = new DypoContextBuilder();
+        CommandContextBuilder<T> builder = node.parse(reader, contextBuilder, contextBuilder1);
+        contextBuilder.getNodes().addAll(builder.getNodes());
+        contextBuilder.getArguments().putAll(builder.getArguments());
+        contextBuilder.withCommand(builder.getCommand());
+        contextBuilder.withSource(builder.getSource());
     }
 
     @Override
     public CompletableFuture<Suggestions> listSuggestions(CommandContext<T> context, SuggestionsBuilder builder) {
         try {
-            return node.listSuggestions(context, builder);
+            // TODO
+            return node.listSuggestions(context, builder, null);
         } catch (CommandSyntaxException err) {
             CommandNodeAccessor.rethrow(err);
             throw new RuntimeException("wth");
