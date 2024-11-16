@@ -1,6 +1,7 @@
 package tfc.dynamicportals.cmd.nodes;
 
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -71,5 +72,12 @@ public class CommandNodeAccessor {
 
     public static void rethrow(CommandSyntaxException err) {
         theUnsafe.throwException(err);
+    }
+
+    public static <T> void setCtx(CommandContextBuilder<T> contextBuilder, CommandContextBuilder<T> builder) {
+        contextBuilder.getNodes().addAll(builder.getNodes());
+        contextBuilder.getArguments().putAll(builder.getArguments());
+        contextBuilder.withCommand(builder.getCommand());
+        contextBuilder.withSource(builder.getSource());
     }
 }

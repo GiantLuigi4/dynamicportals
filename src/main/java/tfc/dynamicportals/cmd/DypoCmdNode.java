@@ -4,9 +4,11 @@ import com.mojang.brigadier.*;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
+import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.client.resources.language.I18n;
@@ -53,19 +55,77 @@ public class DypoCmdNode<T> extends LiteralCommandNode<T> {
 
     @Override
     public void parse(StringReader reader, CommandContextBuilder<T> contextBuilder) throws CommandSyntaxException {
-        DypoContextBuilder contextBuilder1 = new DypoContextBuilder();
-        CommandContextBuilder<T> builder = node.parse(reader, contextBuilder, contextBuilder1);
-        contextBuilder.getNodes().addAll(builder.getNodes());
-        contextBuilder.getArguments().putAll(builder.getArguments());
-        contextBuilder.withCommand(builder.getCommand());
-        contextBuilder.withSource(builder.getSource());
+        DypoContextBuilder contextBuilder1 = new DypoContextBuilder(node);
+        CommandContextBuilder<T>[] builder = new CommandContextBuilder[1];
+        CommandSyntaxException err = null;
+
+        try {
+            builder[0] = node.parse(reader, contextBuilder, contextBuilder1, builder);
+        } catch (CommandSyntaxException exception) {
+            err = exception;
+        }
+
+        CommandNodeAccessor.setCtx(contextBuilder, builder[0]);
+        DataHolderNode<T> holderNode = new DataHolderNode<>(
+                "__dypo_holder_node__",
+                (c) -> 0,
+                (c) -> true,
+                null, null,
+                false
+        );
+        holderNode.dctx = contextBuilder1;
+        holderNode.len = reader.getCursor();
+        contextBuilder.withNode(
+                holderNode,
+                contextBuilder.getRange()
+        );
+
+        if (err != null) {
+            CommandNodeAccessor.rethrow(err);
+        }
     }
 
     @Override
     public CompletableFuture<Suggestions> listSuggestions(CommandContext<T> context, SuggestionsBuilder builder) {
         try {
-            // TODO
-            return node.listSuggestions(context, builder, null);
+            if (context.getNodes().isEmpty()) {
+                CommandContextBuilder<T> builder1 = new CommandContextBuilder<>(
+                        null, context.getSource(),
+                        context.getRootNode(), 1
+                );
+                try {
+                    StringReader reader = new StringReader(context.getInput());
+                    reader.read();
+                    parse(
+                            reader,
+                            builder1
+                    );
+                } catch (Throwable err) {
+                }
+                context = builder1.build(context.getInput());
+            }
+
+            int cursor = 0;
+
+            DypoContextBuilder ctx = null;
+            for (ParsedCommandNode<T> contextNode : context.getNodes()) {
+                if (
+                        contextNode.getNode().getName().startsWith("__dypo_holder_node__") &&
+                                contextNode.getNode() instanceof DataHolderNode<T> dhn
+                ) {
+                    ctx = dhn.dctx;
+                    cursor = dhn.len;
+                }
+            }
+            if (ctx == null) {
+                if (getName().startsWith(builder.getRemainingLowerCase())) {
+                    return builder.suggest(getName()).buildFuture();
+                } else {
+                    return builder.buildFuture();
+                }
+            }
+            ctx.suggestionOffset = cursor;
+            return ctx.lastNode.listSuggestions(context, builder, ctx);
         } catch (CommandSyntaxException err) {
             CommandNodeAccessor.rethrow(err);
             throw new RuntimeException("wth");
@@ -74,7 +134,7 @@ public class DypoCmdNode<T> extends LiteralCommandNode<T> {
 
     @Override
     public LiteralArgumentBuilder<T> createBuilder() {
-        // dummy builder so the game doesn't crash
+        // dummy builder that redirects to this object's methods
         return new DypoBuilder<>(this);
     }
 
