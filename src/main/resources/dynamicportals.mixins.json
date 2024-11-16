@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "tfc.dynamicportals.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_17",
   "refmap": "dynamicportals.refmap.json",
   "mixins": [
     "core.data.LevelMixin",

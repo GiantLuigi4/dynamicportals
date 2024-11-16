@@ -8,6 +8,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import tfc.dynamicportals.api.PortalNet;
+import tfc.dynamicportals.cmd.CommandRegistry;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.DypoNetworkRegistry;
 import tfc.dynamicportals.network.sync.CreateNetworkPacket;
@@ -22,6 +23,7 @@ public class DynamicPortals {
 	public DynamicPortals() {
 		DypoNetworkRegistry.init();
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::onPlayerJoined);
+		MinecraftForge.EVENT_BUS.addListener(CommandRegistry::register);
 		DypoShaders.init();
 	}
 	
