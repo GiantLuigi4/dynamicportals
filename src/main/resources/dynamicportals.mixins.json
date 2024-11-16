@@ -18,8 +18,8 @@
     "client.data.access.ClientLevelAccessor",
     "client.data.access.LevelRendererAccessor",
     "client.data.access.FrustumAccessor",
-    "client.debug.LevelRendererMixin",
-    "client.debug.LevelRendererMixin2",
+    "client.render.debug.LevelRendererMixin",
+    "client.render.debug.LevelRendererMixin2",
     "client.render.GlStateManagerMixin",
     "client.render.LevelRendererMixin"
   ],

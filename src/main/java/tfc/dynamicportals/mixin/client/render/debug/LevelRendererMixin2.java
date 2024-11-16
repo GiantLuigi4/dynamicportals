@@ -1,4 +1,4 @@
-package tfc.dynamicportals.mixin.client.debug;
+package tfc.dynamicportals.mixin.client.render.debug;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tfc.dynamicportals.mixin.client.data.access.FrustumAccessor;
-import tfc.dynamicportals.util.debug.FrustumDrawer;
+import tfc.dynamicportals.client.render.debug.FrustumDrawer;
 
 import javax.annotation.Nullable;
 

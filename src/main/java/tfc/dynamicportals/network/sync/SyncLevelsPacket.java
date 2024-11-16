@@ -92,6 +92,7 @@ public class SyncLevelsPacket extends Packet {
                     portalNetwork.correct((NetworkHolder) mc);
                 }
             }
+            ctx.setPacketHandled(true);
         }
     }
 

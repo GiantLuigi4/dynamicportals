@@ -1,25 +1,20 @@
 package tfc.dynamicportals.client;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL40;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.mixin.client.data.access.CameraAccessor;
 import tfc.dynamicportals.mixin.client.data.access.LevelRendererAccessor;
-import tfc.dynamicportals.util.DypoShaders;
+import tfc.dynamicportals.client.render.DypoShaders;
 
 public class FastRenderer extends AbstractPortalRenderDispatcher {
     int layer = 0;
@@ -54,6 +49,8 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             float pPartialTick,
             boolean renderOutline, long finish
     ) {
+        if (true) return;
+
         if (frustum.isVisible(portal.getContainingBox())) {
             pPoseStack.pushPose();
 
@@ -127,7 +124,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
                 PoseStack poseCopy = new PoseStack();
                 poseCopy.last().pose().load(pPoseStack.last().pose());
                 poseCopy.last().normal().load(pPoseStack.last().normal());
-                poseCopy.translate(0, 0, 0);
+                poseCopy.translate(-10, 0, 0);
                 dst.prepareCullFrustum(
                         poseCopy,
                         pCamera.getPosition(),

@@ -66,6 +66,12 @@ public class PortalNet {
         tag.put("data", tags);
     }
 
+    public static PortalNet load(NetworkHolder holder, CompoundTag tag) {
+        PortalNet net = new PortalNet(tag.getUUID("uuid"));
+        net.read(holder, (ListTag) tag.get("data"));
+        return net;
+    }
+
     public void read(NetworkHolder holder, ListTag data) {
         for (Tag datum : data) {
             CompoundTag tg = (CompoundTag) datum;

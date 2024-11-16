@@ -1,4 +1,4 @@
-package tfc.dynamicportals.mixin.client.debug;
+package tfc.dynamicportals.mixin.client.render.debug;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -55,7 +55,7 @@ public class LevelRendererMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;checkPoseStack(Lcom/mojang/blaze3d/vertex/PoseStack;)V", ordinal = 0), method = "renderLevel")
     public void debugDraw(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
-        if (true) return;
+        if (!Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) return;
         
         MultiBufferSource.BufferSource source = minecraft.renderBuffers().bufferSource();
         VertexConsumer consumer = source.getBuffer(RenderType.LINES);

@@ -34,6 +34,7 @@ public class CreateNetworkPacket extends Packet {
 		if (checkClient(ctx)) {
 			net.read((NetworkHolder) Minecraft.getInstance(), (ListTag) tg.get("data"));
 			((NetworkHolder) Minecraft.getInstance()).getPortalNetworks().add(net);
+			ctx.setPacketHandled(true);
 		}
 	}
 }
