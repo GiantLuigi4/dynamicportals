@@ -4,12 +4,15 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.coordinates.WorldCoordinate;
+import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tfc.dynamicportals.api.registry.BasicPortalTypes;
 import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.cmd.exception.DypoException;
+import tfc.dynamicportals.cmd.nodes.ChoiceNode;
 import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.cmd.nodes.VanillaNode;
 import tfc.dynamicportals.cmd.util.ContextHelper;
@@ -122,6 +125,37 @@ public class CommandRegistry {
 
             return a;
         });
-        // TODO:
+
+        // fill create
+        {
+            ChoiceNode<T, CompoundTag, CompoundTag> repeat = new ChoiceNode<>(true);
+            {
+                DypoNode<T, CompoundTag, CompoundTag> positionRoot = VanillaNode.literal("position");
+                DypoNode<T, CompoundTag, CompoundTag> posArg = VanillaNode.positionArg("position");
+                posArg.setAction((ctx, nbt) -> {
+                    Vec3 position = ctx.getArgument("position", WorldCoordinates.class).getPosition(
+                            (CommandSourceStack) ctx.getSource()
+                    );
+
+                    nbt.putLongArray(
+                            "coords",
+                            new long[]{
+                                    Double.doubleToLongBits(position.x),
+                                    Double.doubleToLongBits(position.y),
+                                    Double.doubleToLongBits(position.z)
+                            }
+                    );
+
+                    return nbt;
+                });
+                positionRoot.addArg(posArg);
+                posArg.addArg(repeat);
+                repeat.addArg(positionRoot);
+            }
+            create.addArg(repeat);
+            modify.addArg(repeat);
+        }
+
+        // TODO: modify
     }
 }

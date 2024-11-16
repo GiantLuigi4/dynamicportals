@@ -10,25 +10,33 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
+import net.minecraft.commands.arguments.coordinates.Vec3Argument;
+import net.minecraft.nbt.CompoundTag;
 import tfc.dynamicportals.cmd.CommandNodeAccessor;
 import tfc.dynamicportals.cmd.DypoContextBuilder;
 
 import java.util.concurrent.CompletableFuture;
 
-public class VanillaNode<T, A> extends DypoNode<T, A, A> {
+public class VanillaNode<T, A, B> extends DypoNode<T, A, B> {
     CommandNode<T> vanilla;
 
     public VanillaNode(CommandNode<T> vanilla) {
         this.vanilla = vanilla;
     }
 
-    public static <Q, D> VanillaNode<Q, D> literal(String text) {
-        return (VanillaNode<Q, D>) new VanillaNode<>(LiteralArgumentBuilder.literal(text).build());
+    public static <Q, D, C> VanillaNode<Q, D, C> literal(String text) {
+        return (VanillaNode<Q, D, C>) new VanillaNode<>(LiteralArgumentBuilder.literal(text).build());
     }
 
-    public static <Q, D> VanillaNode<Q, D> stringArg(String argName) {
-        return (VanillaNode<Q, D>) new VanillaNode<>(
+    public static <Q, D, C> VanillaNode<Q, D, C> stringArg(String argName) {
+        return (VanillaNode<Q, D, C>) new VanillaNode<>(
                 RequiredArgumentBuilder.argument(argName, StringArgumentType.word()).build()
+        );
+    }
+
+    public static <Q, D, C> VanillaNode<Q, D, C> positionArg(String argName) {
+        return (VanillaNode<Q, D, C>) new VanillaNode<>(
+                RequiredArgumentBuilder.argument(argName, Vec3Argument.vec3()).build()
         );
     }
 

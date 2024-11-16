@@ -14,7 +14,13 @@ import tfc.dynamicportals.cmd.exception.DypoExceptionType;
 import java.util.concurrent.CompletableFuture;
 
 public class ChoiceNode<T, A, B> extends DypoNode<T, A, B> {
+    boolean denyRepeat = false;
+
     public ChoiceNode() {
+    }
+
+    public ChoiceNode(boolean denyRepeat) {
+        this.denyRepeat = denyRepeat;
     }
 
     @Override
