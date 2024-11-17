@@ -173,9 +173,9 @@ public class CommandRegistry {
         }, create, modify);
 
         {
-            DypoNode<T, CompoundTag, CompoundTag> positionRoot = VanillaNode.literal("size");
-            DypoNode<T, CompoundTag, CompoundTag> posArg = VanillaNode.positionArg("size");
-            posArg.setAction((ctx, nbt) -> {
+            DypoNode<T, CompoundTag, CompoundTag> sizeRoot = VanillaNode.literal("size");
+            DypoNode<T, CompoundTag, CompoundTag> sizeArg = VanillaNode.vec2Arg("size");
+            sizeArg.setAction((ctx, nbt) -> {
                 Vec2 position = ctx.getArgument("size", Coordinates.class).getRotation(
                         (CommandSourceStack) ctx.getSource()
                 );
@@ -190,9 +190,9 @@ public class CommandRegistry {
 
                 return nbt;
             });
-            positionRoot.addArg(posArg);
-            posArg.addArg(repeat);
-            repeat.requireArg(positionRoot);
+            sizeRoot.addArg(sizeArg);
+            sizeArg.addArg(repeat);
+            repeat.requireArg(sizeRoot);
         }
     }
 }
