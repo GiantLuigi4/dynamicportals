@@ -8,7 +8,6 @@ import tfc.dynamicportals.cmd.CommandRegistry;
 import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 
-import javax.json.JsonObject;
 import java.util.function.BiFunction;
 
 public class PortalType<T extends BasicPortal> {
@@ -31,6 +30,6 @@ public class PortalType<T extends BasicPortal> {
 			DypoNode<T, CompoundTag, CompoundTag> create,
 			DypoNode<T, CompoundTag, CompoundTag> modify
 	) {
-		CommandRegistry.fillDefault(this, create, modify);
+		CommandRegistry.fillBasic(this, create, modify);
 	}
 }

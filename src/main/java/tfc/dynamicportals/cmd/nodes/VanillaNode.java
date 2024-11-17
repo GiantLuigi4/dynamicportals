@@ -10,6 +10,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
+import net.minecraft.commands.arguments.coordinates.Vec2Argument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.nbt.CompoundTag;
 import tfc.dynamicportals.cmd.CommandNodeAccessor;
@@ -37,6 +38,12 @@ public class VanillaNode<T, A, B> extends DypoNode<T, A, B> {
     public static <Q, D, C> VanillaNode<Q, D, C> positionArg(String argName) {
         return (VanillaNode<Q, D, C>) new VanillaNode<>(
                 RequiredArgumentBuilder.argument(argName, Vec3Argument.vec3()).build()
+        );
+    }
+
+    public static <Q, D, C> VanillaNode<Q, D, C> vec2(String argName) {
+        return (VanillaNode<Q, D, C>) new VanillaNode<>(
+                RequiredArgumentBuilder.argument(argName, Vec2Argument.vec2()).build()
         );
     }
 

@@ -4,9 +4,10 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.coordinates.WorldCoordinate;
+import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tfc.dynamicportals.api.registry.BasicPortalTypes;
@@ -16,6 +17,8 @@ import tfc.dynamicportals.cmd.nodes.ChoiceNode;
 import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.cmd.nodes.VanillaNode;
 import tfc.dynamicportals.cmd.util.ContextHelper;
+
+import java.util.function.BiConsumer;
 
 public class CommandRegistry {
     // java generics are so spaghetti, that this isn't able to be put into the DypoCommand class because it makes java think that Event isn't convertable to RegisterCommandsEvent when trying to compile the code to register the event listener, even though RegisterCommandsEvent should be being converted to Event
@@ -101,8 +104,9 @@ public class CommandRegistry {
         );
     }
 
-    public static <T extends CommandContext<V>, V> void fillDefault(
+    public static <T extends CommandContext<V>, V> ChoiceNode<T, CompoundTag, CompoundTag> fillBase(
             PortalType<?> type,
+            BiConsumer<T, CompoundTag> defaults,
             DypoNode<T, CompoundTag, CompoundTag> create,
             DypoNode<T, CompoundTag, CompoundTag> modify
     ) {
@@ -113,7 +117,6 @@ public class CommandRegistry {
             Vec3 position = src.getPosition();
 
             a.put("level", ContextHelper.getLevelTag(t));
-
             a.putLongArray(
                     "coords",
                     new long[]{
@@ -122,6 +125,8 @@ public class CommandRegistry {
                             Double.doubleToLongBits(position.z)
                     }
             );
+
+            defaults.accept(t, a);
 
             return a;
         });
@@ -154,8 +159,40 @@ public class CommandRegistry {
             }
             create.addArg(repeat);
             modify.addArg(repeat);
-        }
 
-        // TODO: modify
+            return repeat;
+        }
+    }
+
+    public static <T extends CommandContext<V>, V> void fillBasic(
+            PortalType<?> type,
+            DypoNode<T, CompoundTag, CompoundTag> create,
+            DypoNode<T, CompoundTag, CompoundTag> modify
+    ) {
+        ChoiceNode<T, CompoundTag, CompoundTag> repeat = fillBase(type, (ctx, nbt) -> {
+        }, create, modify);
+
+        {
+            DypoNode<T, CompoundTag, CompoundTag> positionRoot = VanillaNode.literal("size");
+            DypoNode<T, CompoundTag, CompoundTag> posArg = VanillaNode.positionArg("size");
+            posArg.setAction((ctx, nbt) -> {
+                Vec2 position = ctx.getArgument("size", Coordinates.class).getRotation(
+                        (CommandSourceStack) ctx.getSource()
+                );
+
+                nbt.putLongArray(
+                        "size",
+                        new long[]{
+                                Double.doubleToLongBits(position.x),
+                                Double.doubleToLongBits(position.y),
+                        }
+                );
+
+                return nbt;
+            });
+            positionRoot.addArg(posArg);
+            posArg.addArg(repeat);
+            repeat.requireArg(positionRoot);
+        }
     }
 }

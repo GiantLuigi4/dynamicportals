@@ -1,5 +1,6 @@
 package tfc.dynamicportals.api;
 
+import com.mojang.math.Quaternion;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +21,7 @@ public abstract class AbstractPortal {
     // highly double it's possible to have a portal implementation which doesn't need to do stuff upon moving
     // thus, this field is encapsulated
     protected Vec3 position;
+    protected Quaternion orientation;
     public final PortalType<?> type;
 
     PortalNet connectedNetwork;
@@ -79,6 +81,15 @@ public abstract class AbstractPortal {
 
     public void setPosition(double x, double y, double z) {
         this.position = new Vec3(x, y, z);
+    }
+
+    public Quaternion getOrientation() {
+        return orientation;
+    }
+
+    public AbstractPortal setOrientation(Quaternion orientation) {
+        this.orientation = orientation;
+        return this;
     }
 
     // TODO: portal renderer class

@@ -49,4 +49,9 @@ public class ChoiceNode<T, A, B> extends DypoNode<T, A, B> {
     public CompletableFuture<Suggestions> mySuggestions(CommandContext<T> context, SuggestionsBuilder builder, DypoContextBuilder ctx) {
         return fillSuggestions(context, builder, ctx);
     }
+
+    public ChoiceNode<T, A, B> requireArg(DypoNode<T, B, B> arg) {
+        addArg(arg);
+        return this;
+    }
 }

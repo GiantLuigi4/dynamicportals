@@ -6,8 +6,10 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.PacketDistributor;
 import tfc.dynamicportals.api.PortalNet;
+import tfc.dynamicportals.client.api.RendererRegistry;
 import tfc.dynamicportals.cmd.CommandRegistry;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.DypoNetworkRegistry;
@@ -25,6 +27,10 @@ public class DynamicPortals {
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::onPlayerJoined);
 		MinecraftForge.EVENT_BUS.addListener(CommandRegistry::register);
 		DypoShaders.init();
+
+		if (FMLEnvironment.dist.isClient()) {
+			RendererRegistry.init();
+		}
 	}
 	
 	public static void onPlayerJoined(PlayerEvent.PlayerLoggedInEvent event) {
