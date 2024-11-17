@@ -5,7 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.cmd.CommandRegistry;
-import tfc.dynamicportals.cmd.nodes.DypoNode;
+import tfc.dynamicportals.cmd.cmdr.nodes.CmdRNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 import java.util.function.BiFunction;
@@ -27,8 +27,8 @@ public class PortalType<T extends BasicPortal> {
 	}
 
 	public <T extends CommandContext<V>, V> void fillCommand(
-			DypoNode<T, CompoundTag, CompoundTag> create,
-			DypoNode<T, CompoundTag, CompoundTag> modify
+			CmdRNode<T, CompoundTag, CompoundTag> create,
+			CmdRNode<T, CompoundTag, CompoundTag> modify
 	) {
 		CommandRegistry.fillBasic(this, create, modify);
 	}

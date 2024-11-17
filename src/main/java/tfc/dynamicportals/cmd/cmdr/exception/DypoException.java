@@ -1,7 +1,6 @@
-package tfc.dynamicportals.cmd.exception;
+package tfc.dynamicportals.cmd.cmdr.exception;
 
 import com.mojang.brigadier.LiteralMessage;
-import com.mojang.brigadier.Message;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -25,6 +24,17 @@ public class DypoException extends CommandSyntaxException {
         super(
                 DypoExceptionType.INSTANCE, new LiteralMessage(message),
                 reader.getString(), reader.getCursor()
+        );
+    }
+
+    public DypoException(
+            String message,
+            StringReader reader,
+            int cursor
+    ) {
+        super(
+                DypoExceptionType.INSTANCE, new LiteralMessage(message),
+                reader.getString(), cursor
         );
     }
 

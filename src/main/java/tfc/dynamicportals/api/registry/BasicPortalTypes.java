@@ -4,11 +4,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import tfc.dynamicportals.api.implementation.BasicPortal;
-import tfc.dynamicportals.cmd.CommandRegistry;
-import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 
-import javax.json.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;

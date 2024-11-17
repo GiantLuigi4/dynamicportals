@@ -1,4 +1,4 @@
-package tfc.dynamicportals.cmd;
+package tfc.dynamicportals.cmd.cmdr;
 
 import com.mojang.brigadier.*;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -10,30 +10,42 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import tfc.dynamicportals.cmd.nodes.DypoNode;
+import tfc.dynamicportals.cmd.cmdr.nodes.CmdRNode;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
-public class DypoCmdNode<T, A, B> extends LiteralCommandNode<T> {
+public class CmdRBridgeNode<T, A, B> extends LiteralCommandNode<T> {
     String name;
-    DypoNode<T, A, B> node;
+    CmdRNode<T, A, B> node;
     CommandDispatcher<T> dispatcher;
 
-    public DypoCmdNode(
+    public CmdRBridgeNode(
             CommandDispatcher<T> dispatcher,
             String name,
-            DypoNode<T, A, B> node,
-            Command<T> command,
+            CmdRNode<T, A, B> node,
             Predicate<T> requirement,
             CommandNode<T> redirect,
             RedirectModifier<T> modifier,
             boolean forks
     ) {
 //        super(command, requirement, redirect, modifier, forks);
-        super(name, command, requirement, redirect, modifier, forks);
+        super(name, (context) -> {
+            DataHolderNode<T> dhn = CommandNodeAccessor.getCmdRCtxNode(context);
+            Object data = null;
+            BiFunction<Object, Object, Integer> postAction = null;
+            CmdRContext dctx = dhn.dctx;
+            for (CmdRNode dypoNode : dhn.dctx.nodes) {
+                data = dypoNode.execute(context, data);
+                if (dypoNode.getPostAction() != null) postAction = dypoNode.getPostAction();
+                dctx.progress();
+            }
+            if (postAction != null) return postAction.apply(context, data);
+            return 0;
+        }, requirement, redirect, modifier, forks);
         this.node = node;
         this.name = name;
 
@@ -59,7 +71,7 @@ public class DypoCmdNode<T, A, B> extends LiteralCommandNode<T> {
 
     @Override
     public void parse(StringReader reader, CommandContextBuilder<T> contextBuilder) throws CommandSyntaxException {
-        DypoContextBuilder contextBuilder1 = new DypoContextBuilder(node);
+        CmdRContext contextBuilder1 = new CmdRContext(node);
 
         CommandSyntaxException err;
         if ((err = node.parse(reader, contextBuilder, contextBuilder1)) == null) {
@@ -112,7 +124,7 @@ public class DypoCmdNode<T, A, B> extends LiteralCommandNode<T> {
 
             int cursor = 0;
 
-            DypoContextBuilder ctx = null;
+            CmdRContext ctx = null;
             for (ParsedCommandNode<T> contextNode : context.getNodes()) {
                 if (
                         contextNode.getNode().getName().startsWith("__dypo_holder_node__") &&
@@ -132,7 +144,7 @@ public class DypoCmdNode<T, A, B> extends LiteralCommandNode<T> {
             }
 
             if (ctx == null || cursor <= getName().length() + 1) {
-                ctx = new DypoContextBuilder(node);
+                ctx = new CmdRContext(node);
                 cursor = 1;
                 ctx.suggestionOffset = cursor;
                 builder = builder.createOffset(cursor);
@@ -152,7 +164,7 @@ public class DypoCmdNode<T, A, B> extends LiteralCommandNode<T> {
     @Override
     public LiteralArgumentBuilder<T> createBuilder() {
         // dummy builder that redirects to this object's methods
-        return new DypoBuilder<>(this);
+        return new CmdRBuilder<>(this);
     }
 
     @Override

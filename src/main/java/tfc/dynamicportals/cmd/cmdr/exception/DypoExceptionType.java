@@ -1,4 +1,4 @@
-package tfc.dynamicportals.cmd.exception;
+package tfc.dynamicportals.cmd.cmdr.exception;
 
 import com.mojang.brigadier.exceptions.CommandExceptionType;
 

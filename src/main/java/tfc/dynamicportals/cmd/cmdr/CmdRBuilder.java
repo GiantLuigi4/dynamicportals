@@ -1,4 +1,4 @@
-package tfc.dynamicportals.cmd;
+package tfc.dynamicportals.cmd.cmdr;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.RedirectModifier;
@@ -12,16 +12,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Predicate;
 
-public class DypoBuilder<S> extends LiteralArgumentBuilder<S> {
-    DypoCmdNode<S, ?, ?> node;
+public class CmdRBuilder<S> extends LiteralArgumentBuilder<S> {
+    CmdRBridgeNode<S, ?, ?> node;
 
-    public DypoBuilder(DypoCmdNode<S, ?, ?> node) {
+    public CmdRBuilder(CmdRBridgeNode<S, ?, ?> node) {
         super(node.getName());
         this.node = node;
     }
 
     @Override
-    protected DypoBuilder<S> getThis() {
+    protected CmdRBuilder<S> getThis() {
         return this;
     }
 
@@ -31,12 +31,12 @@ public class DypoBuilder<S> extends LiteralArgumentBuilder<S> {
     }
 
     @Override
-    public DypoBuilder<S> then(ArgumentBuilder<S, ?> argument) {
+    public CmdRBuilder<S> then(ArgumentBuilder<S, ?> argument) {
         return this;
     }
 
     @Override
-    public DypoBuilder<S> then(CommandNode<S> argument) {
+    public CmdRBuilder<S> then(CommandNode<S> argument) {
         return this;
     }
 
@@ -46,7 +46,7 @@ public class DypoBuilder<S> extends LiteralArgumentBuilder<S> {
     }
 
     @Override
-    public DypoBuilder<S> executes(Command<S> command) {
+    public CmdRBuilder<S> executes(Command<S> command) {
         return this;
     }
 
@@ -56,7 +56,7 @@ public class DypoBuilder<S> extends LiteralArgumentBuilder<S> {
     }
 
     @Override
-    public DypoBuilder<S> requires(Predicate<S> requirement) {
+    public CmdRBuilder<S> requires(Predicate<S> requirement) {
         return this;
     }
 
@@ -66,22 +66,22 @@ public class DypoBuilder<S> extends LiteralArgumentBuilder<S> {
     }
 
     @Override
-    public DypoBuilder<S> redirect(CommandNode<S> target) {
+    public CmdRBuilder<S> redirect(CommandNode<S> target) {
         return this;
     }
 
     @Override
-    public DypoBuilder<S> redirect(CommandNode<S> target, SingleRedirectModifier<S> modifier) {
+    public CmdRBuilder<S> redirect(CommandNode<S> target, SingleRedirectModifier<S> modifier) {
         return this;
     }
 
     @Override
-    public DypoBuilder<S> fork(CommandNode<S> target, RedirectModifier<S> modifier) {
+    public CmdRBuilder<S> fork(CommandNode<S> target, RedirectModifier<S> modifier) {
         return this;
     }
 
     @Override
-    public DypoBuilder<S> forward(CommandNode<S> target, RedirectModifier<S> modifier, boolean fork) {
+    public CmdRBuilder<S> forward(CommandNode<S> target, RedirectModifier<S> modifier, boolean fork) {
         return this;
     }
 

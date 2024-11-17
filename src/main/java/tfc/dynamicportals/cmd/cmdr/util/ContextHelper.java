@@ -1,4 +1,4 @@
-package tfc.dynamicportals.cmd.util;
+package tfc.dynamicportals.cmd.cmdr.util;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;

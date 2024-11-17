@@ -1,4 +1,4 @@
-package tfc.dynamicportals.cmd;
+package tfc.dynamicportals.cmd.cmdr;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.RedirectModifier;
@@ -11,14 +11,14 @@ import java.util.function.Predicate;
 
 public class DataHolderNode<T> extends LiteralCommandNode<T> {
     protected int len;
-    protected DypoContextBuilder dctx;
-    DypoCmdNode parent;
+    protected CmdRContext dctx;
+    CmdRBridgeNode parent;
 
     public DataHolderNode(
             String literal, Command<T> command,
             Predicate<T> requirement, CommandNode<T> redirect,
             RedirectModifier<T> modifier, boolean forks,
-            DypoCmdNode parent
+            CmdRBridgeNode parent
     ) {
         super(literal, command, requirement, redirect, modifier, forks);
         this.parent = parent;

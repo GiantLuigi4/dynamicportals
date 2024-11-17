@@ -1,4 +1,4 @@
-package tfc.dynamicportals.cmd;
+package tfc.dynamicportals.cmd.cmdr;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
@@ -8,7 +8,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import sun.misc.Unsafe;
-import tfc.dynamicportals.cmd.exception.DypoException;
+import tfc.dynamicportals.cmd.cmdr.exception.DypoException;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -83,7 +83,12 @@ public class CommandNodeAccessor {
         contextBuilder.withSource(builder.getSource());
     }
 
-    static <T> DataHolderNode getDpCtx(CommandContext<T> context) {
+    public static <T> CmdRContext getCmdRCtx(CommandContext<T> context) {
+        DataHolderNode<T> nd = getCmdRCtxNode(context);
+        return nd.dctx;
+    }
+
+    static <T> DataHolderNode getCmdRCtxNode(CommandContext<T> context) {
         for (int i = context.getNodes().size() - 1; i >= 0; i--) {
             ParsedCommandNode<T> node = context.getNodes().get(i);
             if (node.getNode().getName().startsWith("__dypo_holder_node__")) {

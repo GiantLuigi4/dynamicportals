@@ -1,19 +1,17 @@
-package tfc.dynamicportals.cmd.nodes;
+package tfc.dynamicportals.cmd.cmdr.nodes;
 
-import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import tfc.dynamicportals.cmd.DypoContextBuilder;
-import tfc.dynamicportals.cmd.exception.DypoException;
-import tfc.dynamicportals.cmd.exception.DypoExceptionType;
+import tfc.dynamicportals.cmd.cmdr.CmdRContext;
+import tfc.dynamicportals.cmd.cmdr.exception.DypoException;
 
 import java.util.concurrent.CompletableFuture;
 
-public class ChoiceNode<T, A, B> extends DypoNode<T, A, B> {
+public class ChoiceNode<T, A, B> extends CmdRNode<T, A, B> {
     boolean denyRepeat = false;
 
     public ChoiceNode() {
@@ -24,10 +22,10 @@ public class ChoiceNode<T, A, B> extends DypoNode<T, A, B> {
     }
 
     @Override
-    public CommandSyntaxException parse(StringReader reader, CommandContextBuilder<T> builder, DypoContextBuilder dpbuilder) {
-        for (DypoNode<T, B, ?> child : children) {
+    public CommandSyntaxException parse(StringReader reader, CommandContextBuilder<T> builder, CmdRContext dpbuilder) {
+        for (CmdRNode<T, B, ?> child : children) {
             int cursor = reader.getCursor();
-            CommandSyntaxException ex = child.parse(reader, builder.copy(), new DypoContextBuilder(child, dpbuilder));
+            CommandSyntaxException ex = child.parse(reader, builder.copy(), new CmdRContext(child, dpbuilder));
             if (ex == null) {
                 reader.setCursor(cursor);
                 return null;
@@ -46,11 +44,11 @@ public class ChoiceNode<T, A, B> extends DypoNode<T, A, B> {
     }
 
     @Override
-    public CompletableFuture<Suggestions> mySuggestions(CommandContext<T> context, SuggestionsBuilder builder, DypoContextBuilder ctx) {
+    public CompletableFuture<Suggestions> mySuggestions(CommandContext<T> context, SuggestionsBuilder builder, CmdRContext ctx) {
         return fillSuggestions(context, builder, ctx);
     }
 
-    public ChoiceNode<T, A, B> requireArg(DypoNode<T, B, B> arg) {
+    public ChoiceNode<T, A, B> requireArg(CmdRNode<T, B, B> arg) {
         addArg(arg);
         return this;
     }

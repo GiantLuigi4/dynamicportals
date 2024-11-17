@@ -1,4 +1,4 @@
-package tfc.dynamicportals.cmd.nodes;
+package tfc.dynamicportals.cmd.cmdr.nodes;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
@@ -7,18 +7,17 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import tfc.dynamicportals.cmd.CommandNodeAccessor;
-import tfc.dynamicportals.cmd.DypoContextBuilder;
+import tfc.dynamicportals.cmd.cmdr.CommandNodeAccessor;
+import tfc.dynamicportals.cmd.cmdr.CmdRContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class DypoNode<T, A, B> {
-    List<DypoNode<T, B, ?>> children = new ArrayList<>();
+public abstract class CmdRNode<T, A, B> {
+    List<CmdRNode<T, B, ?>> children = new ArrayList<>();
     @SuppressWarnings("unchecked")
     BiFunction<T, A, B> action = (t, a) -> (B) a;
     BiFunction<T, ?, Integer> postAction = null;
@@ -26,22 +25,22 @@ public abstract class DypoNode<T, A, B> {
     public abstract CommandSyntaxException parse(
             StringReader reader,
             CommandContextBuilder<T> builder,
-            DypoContextBuilder dpbuilder
+            CmdRContext dpbuilder
     );
 
     public CommandSyntaxException parseChildren(
             StringReader reader,
             CommandContextBuilder<T> builder,
-            DypoContextBuilder dpbuilder
+            CmdRContext dpbuilder
     ) {
         if (!children.isEmpty() && reader.canRead()) {
             int c0 = reader.getCursor();
             reader.skipWhitespace();
-            for (DypoNode<T, B, ?> child : children) {
+            for (CmdRNode<T, B, ?> child : children) {
                 int cursor = reader.getCursor();
 
                 CommandContextBuilder<T> cpy = builder.copy();
-                DypoContextBuilder dctx = new DypoContextBuilder(child, dpbuilder);
+                CmdRContext dctx = new CmdRContext(child, dpbuilder);
                 CommandSyntaxException ex = child.parse(reader, cpy, dctx);
                 if (ex == null)
                     ex = child.parseChildren(reader, cpy, dctx);
@@ -64,17 +63,17 @@ public abstract class DypoNode<T, A, B> {
         return isValidInput(input.getRemaining());
     }
 
-    public DypoNode<T, A, B> addArg(DypoNode<T, B, ?> test) {
+    public CmdRNode<T, A, B> addArg(CmdRNode<T, B, ?> test) {
         children.add(test);
         return this;
     }
 
-    public abstract CompletableFuture<Suggestions> mySuggestions(CommandContext<T> context, SuggestionsBuilder builder, DypoContextBuilder ctx);
+    public abstract CompletableFuture<Suggestions> mySuggestions(CommandContext<T> context, SuggestionsBuilder builder, CmdRContext ctx);
 
-    public CompletableFuture<Suggestions> fillSuggestions(CommandContext<T> context, SuggestionsBuilder builder, DypoContextBuilder ctx) {
+    public CompletableFuture<Suggestions> fillSuggestions(CommandContext<T> context, SuggestionsBuilder builder, CmdRContext ctx) {
         try {
             List<Suggestions> childSuggestions = new ArrayList<>();
-            for (DypoNode<T, B, ?> child : children) {
+            for (CmdRNode<T, B, ?> child : children) {
                 SuggestionsBuilder builder1 = new SuggestionsBuilder(
                         builder.getInput(),
                         ctx.getSuggestionOffset()
@@ -105,17 +104,17 @@ public abstract class DypoNode<T, A, B> {
         return action.apply(t, obj);
     }
 
-    public DypoNode<T, A, B> setAction(BiFunction<T, A, B> action) {
+    public CmdRNode<T, A, B> setAction(BiFunction<T, A, B> action) {
         this.action = action;
         return this;
     }
 
-    public DypoNode<T, A, B> setAction(Function<A, B> action) {
+    public CmdRNode<T, A, B> setAction(Function<A, B> action) {
         this.action = (t, a) -> action.apply(a);
         return this;
     }
 
-    public DypoNode<T, A, B> postAction(BiFunction<T, ?, Integer> action) {
+    public CmdRNode<T, A, B> postAction(BiFunction<T, ?, Integer> action) {
         postAction = action;
         return this;
     }

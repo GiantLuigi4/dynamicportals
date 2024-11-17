@@ -2,6 +2,7 @@ package tfc.dynamicportals.api.implementation;
 
 import com.mojang.math.Quaternion;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
@@ -9,7 +10,6 @@ import net.minecraft.world.phys.Vec3;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.registry.BasicPortalTypes;
 import tfc.dynamicportals.api.registry.PortalType;
-import tfc.dynamicportals.cmd.nodes.DypoNode;
 import tfc.dynamicportals.itf.NetworkHolder;
 
 public class BasicPortal extends AbstractPortal {
@@ -69,13 +69,15 @@ public class BasicPortal extends AbstractPortal {
         );
 
         try {
-            int[] orient = tag.getIntArray("orientation");
-            orientation = new Quaternion(
-                    Float.intBitsToFloat(orient[0]),
-                    Float.intBitsToFloat(orient[1]),
-                    Float.intBitsToFloat(orient[2]),
-                    Float.intBitsToFloat(orient[3])
-            );
+            if (tag.contains("orientation", Tag.TAG_INT_ARRAY)) {
+                int[] orient = tag.getIntArray("orientation");
+                orientation = new Quaternion(
+                        Float.intBitsToFloat(orient[0]),
+                        Float.intBitsToFloat(orient[1]),
+                        Float.intBitsToFloat(orient[2]),
+                        Float.intBitsToFloat(orient[3])
+                );
+            }
         } catch (Throwable err) {
             orientation = new Quaternion(0, 0, 0, 1f);
         }
