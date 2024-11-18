@@ -199,15 +199,15 @@ public class CommandRegistry {
             CmdRNode<T, CompoundTag, CompoundTag> sizeRoot = BrigadierNode.literal("size");
             CmdRNode<T, CompoundTag, CompoundTag> sizeArg = BrigadierNode.vec2Arg("size");
             sizeArg.setAction((ctx, nbt) -> {
-                Vec2 position = ctx.getArgument("size", Coordinates.class).getRotation(
+                Vec3 position = ctx.getArgument("size", Coordinates.class).getPosition(
                         (CommandSourceStack) ctx.getSource()
                 );
 
                 nbt.putIntArray(
                         "size",
                         new int[]{
-                                Float.floatToIntBits(position.x),
-                                Float.floatToIntBits(position.y),
+                                Float.floatToIntBits((float) position.x()),
+                                Float.floatToIntBits((float) position.z()),
                         }
                 );
 

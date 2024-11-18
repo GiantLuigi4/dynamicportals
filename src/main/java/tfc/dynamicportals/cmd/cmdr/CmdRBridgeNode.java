@@ -14,6 +14,7 @@ import tfc.dynamicportals.cmd.cmdr.nodes.CmdRNode;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -32,16 +33,20 @@ public class CmdRBridgeNode<T, A, B> extends LiteralCommandNode<T> {
             RedirectModifier<T> modifier,
             boolean forks
     ) {
-//        super(command, requirement, redirect, modifier, forks);
         super(name, (context) -> {
             DataHolderNode<T> dhn = CommandNodeAccessor.getCmdRCtxNode(context);
             Object data = null;
             BiFunction<Object, Object, Integer> postAction = null;
             CmdRContext dctx = dhn.dctx;
+            Stack<Object> dats = new Stack<>();
             for (CmdRNode dypoNode : dhn.dctx.nodes) {
                 data = dypoNode.execute(context, data);
                 if (dypoNode.getPostAction() != null) postAction = dypoNode.getPostAction();
+                dats.push(dctx.getExecData());
                 dctx.progress();
+            }
+            while (!dats.isEmpty()) {
+                dctx.dataPoints.push(dats.pop());
             }
             if (postAction != null) return postAction.apply(context, data);
             return 0;

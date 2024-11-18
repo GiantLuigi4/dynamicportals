@@ -106,8 +106,8 @@ public class OrientationArgument<T, A, B> extends CmdRNode<T, A, B> {
             );
 
             dpbuilder.setExecData(switch (mode) {
-                case 'p' -> throw new DypoException("NYI");
-                case 'e' -> throw new DypoException("NYI");
+                case 'p' -> new OrientationData.PitchYawData(arg0, arg1);
+                case 'e' -> new OrientationData.EulerData(arg0, arg1, arg2);
                 case 'q' -> new OrientationData.QuatData(arg0, arg1, arg2, arg3);
                 default -> throw new DypoException("what.", reader);
             });

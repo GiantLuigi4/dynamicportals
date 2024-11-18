@@ -42,7 +42,7 @@ public class BrigadierNode<T, A, B> extends CmdRNode<T, A, B> {
 
     public static <Q, D, C> BrigadierNode<Q, D, C> vec2Arg(String argName) {
         return (BrigadierNode<Q, D, C>) new BrigadierNode<>(
-                RequiredArgumentBuilder.argument(argName, Vec2Argument.vec2()).build()
+                RequiredArgumentBuilder.argument(argName, Vec2Argument.vec2(false)).build()
         );
     }
 
