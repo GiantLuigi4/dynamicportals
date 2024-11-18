@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL40;
+import org.lwjgl.opengl.GL32;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.mixin.client.data.access.CameraAccessor;
 import tfc.dynamicportals.mixin.client.data.access.LevelRendererAccessor;
@@ -60,7 +60,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             RenderSystem.enableCull();
 
             RenderSystem.disableBlend();
-            GL40.glEnable(GL40.GL_DEPTH_CLAMP);
+            GL32.glEnable(GL32.GL_DEPTH_CLAMP);
 
             GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_INCR);
             GL11.glStencilFunc(GL11.GL_EQUAL, layer, 0xFF); // all fragments should pass the stencil test
@@ -113,7 +113,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
                 RenderSystem.depthFunc(GL11.GL_LEQUAL);
                 RenderType.waterMask().clearRenderState();
 
-                GL11.glDisable(GL40.GL_DEPTH_CLAMP);
+                GL11.glDisable(GL32.GL_DEPTH_CLAMP);
 
                 // draw world
                 RenderSystem.setShader(GameRenderer::getPositionShader);
@@ -149,7 +149,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             }
             pPoseStack.popPose();
 
-            GL11.glEnable(GL40.GL_DEPTH_CLAMP);
+            GL11.glEnable(GL32.GL_DEPTH_CLAMP);
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(GL11.GL_ALWAYS);
 
@@ -168,7 +168,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
             GL11.glStencilFunc(GL11.GL_EQUAL, layer, 0xFF);
             GL11.glStencilMask(0x00);
 
-            GL11.glDisable(GL40.GL_DEPTH_CLAMP);
+            GL11.glDisable(GL32.GL_DEPTH_CLAMP);
 
             RenderType.waterMask().clearRenderState();
             RenderSystem.enableCull();

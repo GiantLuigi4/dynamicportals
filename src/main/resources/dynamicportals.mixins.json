@@ -21,7 +21,8 @@
     "client.data.PortalTypeMixin",
     "client.render.debug.MixinDebugRendering",
     "client.render.GlStateManagerMixin",
-    "client.render.LevelRendererMixin"
+    "client.render.LevelRendererMixin",
+    "client.render.debug.RenderDocker"
   ],
   "injectors": {
     "defaultRequire": 1

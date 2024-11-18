@@ -57,28 +57,36 @@ public abstract class AbstractPortalRenderDispatcher {
     }
 
     public static void drawStencil(PoseStack pPoseStack, Vec3 pCamera, AbstractPortal portal, Tesselator tesselator) {
+        pPoseStack.pushPose();
+        pPoseStack.translate(
+                portal.getPosition().x - pCamera.x,
+                portal.getPosition().y - pCamera.y,
+                portal.getPosition().z - pCamera.z
+        );
+        pPoseStack.mulPose(portal.getOrientation());
         BufferBuilder builder = tesselator.getBuilder();
         builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
         builder.vertex(
-                pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.x),
-                (float) (portal.getPosition().y - pCamera.y - 1),
-                (float) (portal.getPosition().z - pCamera.z - 1)
+                pPoseStack.last().pose(), 0,
+                (float) (-1),
+                (float) (-1)
         ).endVertex();
         builder.vertex(
-                pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.x),
-                (float) (portal.getPosition().y - pCamera.y + 1),
-                (float) (portal.getPosition().z - pCamera.z - 1)
+                pPoseStack.last().pose(), 0,
+                (float) (1),
+                (float) (-1)
         ).endVertex();
         builder.vertex(
-                pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.x),
-                (float) (portal.getPosition().y - pCamera.y + 1),
-                (float) (portal.getPosition().z - pCamera.z + 1)
+                pPoseStack.last().pose(), 0,
+                (float) (1),
+                (float) (1)
         ).endVertex();
         builder.vertex(
-                pPoseStack.last().pose(), (float) (portal.getPosition().x - pCamera.x),
-                (float) (portal.getPosition().y - pCamera.y - 1),
-                (float) (portal.getPosition().z - pCamera.z + 1)
+                pPoseStack.last().pose(), 0,
+                (float) (-1),
+                (float) (1)
         ).endVertex();
         tesselator.end();
+        pPoseStack.popPose();
     }
 }
