@@ -18,6 +18,9 @@ public class RelAbsParser {
     }
 
     public static RelAbsData parse(StringReader reader) throws CommandSyntaxException {
+        if (!reader.canRead())
+            throw new DypoException("Incorrect argument for command", reader, reader.getCursor());
+
         char first = reader.peek();
         boolean isRel = first == '~';
         if (isRel) reader.skip();

@@ -203,11 +203,11 @@ public class CommandRegistry {
                         (CommandSourceStack) ctx.getSource()
                 );
 
-                nbt.putLongArray(
+                nbt.putIntArray(
                         "size",
-                        new long[]{
-                                Double.doubleToLongBits(position.x),
-                                Double.doubleToLongBits(position.y),
+                        new int[]{
+                                Float.floatToIntBits(position.x),
+                                Float.floatToIntBits(position.y),
                         }
                 );
 

@@ -1,11 +1,15 @@
 package tfc.dynamicportals.cmd.cmdr.nodes.args;
 
+import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
+import com.mojang.brigadier.context.ParsedArgument;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import tfc.dynamicportals.cmd.cmdr.CmdRContext;
 import tfc.dynamicportals.cmd.cmdr.exception.DypoException;
 import tfc.dynamicportals.cmd.cmdr.nodes.CmdRNode;
@@ -48,6 +52,9 @@ public class OrientationArgument<T, A, B> extends CmdRNode<T, A, B> {
             throw new RuntimeException("Some developer unset all valid selection modes.");
         }
 
+        if (!reader.canRead()) {
+            throw new DypoException("Expecting rotation mode", reader, reader.getCursor());
+        }
         char chr = reader.read();
         switch (chr) {
             case 'q' -> {
@@ -69,8 +76,15 @@ public class OrientationArgument<T, A, B> extends CmdRNode<T, A, B> {
     @Override
     public CommandSyntaxException parse(StringReader reader, CommandContextBuilder<T> builder, CmdRContext dpbuilder) {
         try {
+            int cursor = reader.getCursor();
             char mode = acceptMode(reader);
+            builder.withArgument(
+                    "__placeholder_argument__" + builder.getArguments().size(),
+                    new ParsedArgument<>(cursor, reader.getCursor(), null)
+            );
             reader.skipWhitespace();
+
+            cursor = reader.getCursor();
 
             RelAbsParser.RelAbsData arg0 = RelAbsParser.parse(reader);
             reader.skipWhitespace();
@@ -85,6 +99,11 @@ public class OrientationArgument<T, A, B> extends CmdRNode<T, A, B> {
                 reader.skipWhitespace();
                 arg3 = RelAbsParser.parse(reader);
             }
+
+            builder.withArgument(
+                    "__placeholder_argument__" + builder.getArguments().size(),
+                    new ParsedArgument<>(cursor, reader.getCursor(), null)
+            );
 
             dpbuilder.setExecData(switch (mode) {
                 case 'p' -> throw new DypoException("NYI");
@@ -105,6 +124,49 @@ public class OrientationArgument<T, A, B> extends CmdRNode<T, A, B> {
 
     @Override
     public CompletableFuture<Suggestions> mySuggestions(CommandContext<T> context, SuggestionsBuilder builder, CmdRContext ctx) {
+        StringReader reader = new StringReader(builder.getRemaining());
+        char mode = acceptQuaternion ? 'q' : (acceptEuler ? 'e' : 'p');
+        boolean chessBattleAdvanced = false;
+        if (multiAccept &&
+                Character.isWhitespace(
+                        builder.getInput().charAt(builder.getStart() - 1)
+                ) &&
+                builder.getRemaining().isEmpty()
+        ) {
+            if (acceptQuaternion) builder.suggest("q", new LiteralMessage("quaternion"));
+            if (acceptEuler) builder.suggest("e", new LiteralMessage("euler"));
+            if (acceptPitchYaw) builder.suggest("p", new LiteralMessage("pitch/yaw"));
+        } else if (multiAccept) {
+            mode = reader.read();
+            int ocur = reader.getCursor();
+            reader.skipWhitespace();
+            chessBattleAdvanced = reader.getCursor() != ocur;
+        } else chessBattleAdvanced = true;
+
+        int argC = switch (mode) {
+            case 'q' -> 4;
+            case 'e' -> 3;
+            case 'p' -> 2;
+            default -> 0;
+        };
+
+        if (chessBattleAdvanced) {
+            String existent = "";
+            for (int i = 0; i < argC; i++) {
+                if (!reader.canRead()) {
+                    builder.suggest(existent + "~");
+                    existent += "~";
+                }
+                while (reader.canRead()) {
+                    char c = reader.read();
+                    if (!Character.isWhitespace(c)) {
+                        existent += c;
+                    } else break;
+                }
+                existent += " ";
+            }
+        }
+
         return CompletableFuture.completedFuture(builder.build());
     }
 }
