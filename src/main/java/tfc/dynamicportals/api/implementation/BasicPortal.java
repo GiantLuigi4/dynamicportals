@@ -21,7 +21,6 @@ public class BasicPortal extends AbstractPortal {
         super(level, type);
     }
     
-    protected Quaterniond orientation;
     protected Vector2d size;
     protected boolean doubleSided = true;
     
@@ -86,19 +85,11 @@ public class BasicPortal extends AbstractPortal {
         );
         this.doubleSided = tag.getBoolean("double_sided");
     }
-	
-	public Quaterniond getOrientation() {
-        return orientation;
-	}
-	
+
 	public Vector2d getSize() {
         return size;
 	}
-    
-    public void setOrientation(Quaterniond orientation) {
-        this.orientation = orientation;
-    }
-    
+
     public void setSize(Vector2d size) {
         this.size = size;
     }

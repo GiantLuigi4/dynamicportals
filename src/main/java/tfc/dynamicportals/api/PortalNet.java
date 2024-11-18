@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class PortalNet {
+    int latestPortalId = 0;
+
     ArrayList<AbstractPortal> portals = new ArrayList<>();
     ReadOnlyList<AbstractPortal> readOnly = new ReadOnlyList<>(portals);
 
@@ -22,13 +24,23 @@ public class PortalNet {
     }
 
     UUID uuid;
-    
-    public UUID getUUID() {
+    String commandIdentifier = null;
+
+    public String getCommandIdentifier() {
+        return commandIdentifier;
+    }
+
+    public UUID getUuid() {
         return uuid;
     }
-    
+
     public PortalNet(UUID uuid) {
         this.uuid = uuid;
+    }
+
+    public PortalNet(UUID uuid, String cmdIdentifier) {
+        this.uuid = uuid;
+        this.commandIdentifier = cmdIdentifier;
     }
 
     public void link(AbstractPortal portal) {
@@ -66,6 +78,16 @@ public class PortalNet {
         }
         tag.putUUID("uuid", uuid);
         tag.put("data", tags);
+        if (commandIdentifier != null)
+            tag.putString("cmd_name", commandIdentifier);
+    }
+
+    public static PortalNet load(NetworkHolder holder, CompoundTag tag) {
+        PortalNet net = new PortalNet(tag.getUUID("uuid"));
+        net.read(holder, (ListTag) tag.get("data"));
+        if (tag.contains("cmd_name", Tag.TAG_STRING))
+            net.commandIdentifier = tag.getString("cmd_name");
+        return net;
     }
 
     public void read(NetworkHolder holder, ListTag data) {

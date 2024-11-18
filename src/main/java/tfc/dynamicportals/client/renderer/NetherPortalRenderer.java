@@ -7,14 +7,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Quaterniond;
-import org.joml.Quaternionf;
-import org.joml.Vector2d;
-import org.lwjgl.opengl.GL11;
 import tfc.dynamicportals.api.implementation.BasicPortal;
 import tfc.dynamicportals.api.registry.PortalType;
-import tfc.dynamicportals.util.render.BlendFunctions;
+import tfc.dynamicportals.client.util.render.BlendFunctions;
 
 public class NetherPortalRenderer extends BasicPortalRenderer {
 	public NetherPortalRenderer(PortalType<BasicPortal> type) {

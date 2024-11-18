@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaterniond;
 import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.client.AbstractPortalRenderDispatcher;
 import tfc.dynamicportals.itf.NetworkHolder;
@@ -17,6 +18,7 @@ public abstract class AbstractPortal {
     // highly doubt it's possible to have a portal implementation which doesn't need to do stuff upon moving
     // thus, this field is encapsulated
     protected Vec3 position;
+    protected Quaterniond orientation;
     public final PortalType<?> type;
 
     PortalNet connectedNetwork;
@@ -73,7 +75,15 @@ public abstract class AbstractPortal {
     public void setPosition(Vec3 vec) {
         this.position = vec;
     }
-    
+
+    public Quaterniond getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(Quaterniond orientation) {
+        this.orientation = orientation;
+    }
+
     public PortalNet getConnectedNetwork() {
         return connectedNetwork;
     }

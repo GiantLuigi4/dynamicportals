@@ -1,4 +1,4 @@
-package tfc.dynamicportals.util.render;
+package tfc.dynamicportals.client.util.render;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;

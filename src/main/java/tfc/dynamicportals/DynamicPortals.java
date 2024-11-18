@@ -1,34 +1,25 @@
 package tfc.dynamicportals;
 
-import net.minecraft.commands.synchronization.ArgumentTypeInfo;
-import net.minecraft.commands.synchronization.ArgumentTypeInfos;
-import net.minecraft.commands.synchronization.SingletonArgumentInfo;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.registries.DeferredRegister;
 import tfc.dynamicportals.api.PortalNet;
-import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.api.registry.PortalTypes;
 import tfc.dynamicportals.client.renderer.BasicPortalRenderer;
 import tfc.dynamicportals.client.renderer.NetherPortalRenderer;
-import tfc.dynamicportals.command.DynamicPortalsCommand;
-import tfc.dynamicportals.command.arg.PortalSelectorArgument;
-import tfc.dynamicportals.command.arg.OrientationArgument;
+import tfc.dynamicportals.cmd.DypoCommandRegistry;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.DypoNetworkRegistry;
 import tfc.dynamicportals.network.sync.CreateNetworkPacket;
 import tfc.dynamicportals.network.util.PortalPacketSender;
-import tfc.dynamicportals.util.DypoShaders;
+import tfc.dynamicportals.client.util.render.DypoShaders;
 
 @Mod("dynamicportals")
 public class DynamicPortals {
@@ -39,24 +30,16 @@ public class DynamicPortals {
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		
 		DypoNetworkRegistry.init(bus);
-		
-		DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, "dynamicportals");
-		COMMAND_ARGUMENT_TYPES.register("portal_selector", () -> ArgumentTypeInfos.registerByClass(PortalSelectorArgument.class, SingletonArgumentInfo.contextFree(PortalSelectorArgument::create)));
-		COMMAND_ARGUMENT_TYPES.register("orientation", () -> ArgumentTypeInfos.registerByClass(OrientationArgument.class, SingletonArgumentInfo.contextFree(OrientationArgument::vec3)));
-		COMMAND_ARGUMENT_TYPES.register(bus);
-		
+
 		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::onPlayerJoined);
-		MinecraftForge.EVENT_BUS.addListener(DynamicPortals::registerCommands);
+		MinecraftForge.EVENT_BUS.addListener(DypoCommandRegistry::registerC);
 		DypoShaders.init(bus);
 		
 		if (FMLEnvironment.dist.isClient()) {
+			MinecraftForge.EVENT_BUS.addListener(DypoCommandRegistry::registerS);
 			new BasicPortalRenderer(PortalTypes.BASIC);
 			new NetherPortalRenderer(PortalTypes.NETHER);
 		}
-	}
-	
-	public static void registerCommands(RegisterCommandsEvent event) {
-		event.getDispatcher().register(DynamicPortalsCommand.build());
 	}
 	
 	public static void onPlayerJoined(PlayerEvent.PlayerLoggedInEvent event) {

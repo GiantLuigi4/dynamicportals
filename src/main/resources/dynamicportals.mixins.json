@@ -11,8 +11,7 @@
     "core.data.LevelMixin",
     "core.data.PlayerListMixin",
     "core.data.ServerLevelMixin",
-    "core.data.ServerMixin",
-    "core.debug.ServerMixin"
+    "core.data.ServerMixin"
   ],
   "client": [
     "client.access.ClientLevelAccessor",
@@ -24,7 +23,8 @@
     "client.debug.LevelRendererMixin",
     "client.render.LevelRendererMixin",
     "client.render.gl.RenderSystemMixin",
-    "client.ClientPortalTypeAttachments"
+    "client.ClientPortalTypeAttachments",
+    "client.DirectCommandRegistrationMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL40;
 import tfc.dynamicportals.api.AbstractPortal;
@@ -19,8 +18,8 @@ import tfc.dynamicportals.itf.ClientPortalType;
 import tfc.dynamicportals.itf.access.ClientLevelAccess;
 import tfc.dynamicportals.itf.access.LevelRendererAccessor;
 import tfc.dynamicportals.itf.access.MinecraftAccess;
-import tfc.dynamicportals.util.DypoShaders;
-import tfc.dynamicportals.util.render.RenderUtil;
+import tfc.dynamicportals.client.util.render.DypoShaders;
+import tfc.dynamicportals.client.util.render.RenderUtil;
 
 public class FastRenderer extends AbstractPortalRenderDispatcher {
 	int layer = 0;

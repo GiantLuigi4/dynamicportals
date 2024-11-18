@@ -13,7 +13,7 @@ import tfc.dynamicportals.api.AbstractPortal;
 /**
  * A base class for portal renderers
  * I plan to have multiple different renderers in the future, so this is here for when and if that happens
- *
+ * <p>
  * Particularly, I plan for
  * - geometry shader based one
  * - stencil based one
@@ -36,7 +36,8 @@ public abstract class AbstractPortalRenderDispatcher {
             Frustum frustum, Camera pCamera,
             AbstractPortal portal,
             GameRenderer pGameRenderer,
-            float pPartialTick);
-	
-	public abstract boolean supportsRecurse();
+            float pPartialTick
+    );
+
+    public abstract boolean supportsRecurse();
 }

@@ -9,6 +9,7 @@ import tfc.dynamicportals.itf.NetworkHolder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 // TODO: convert to deferred register?
 public class PortalTypes {
@@ -25,7 +26,7 @@ public class PortalTypes {
 
     static {
         BASIC = register(
-                new ResourceLocation("dynamicportals:basic"), new PortalType<>((holder, tag) -> {
+                new ResourceLocation("dynamicportals:basic"), new BasicPortalType<>((holder, tag) -> {
                     CompoundTag key = tag.getCompound("level");
                     BasicPortal bp = new BasicPortal(
                             holder.getLoader().get(
@@ -42,7 +43,7 @@ public class PortalTypes {
         {
             PortalType<BasicPortal>[] lambdasAreStupid = new PortalType[1];
             NETHER = register(
-                    new ResourceLocation("dynamicportals:nether"), new PortalType<>((holder, tag) -> {
+                    new ResourceLocation("dynamicportals:nether"), new BasicPortalType<>((holder, tag) -> {
                         CompoundTag key = tag.getCompound("level");
                         BasicPortal bp = new BasicPortal(
                                 holder.getLoader().get(
@@ -63,5 +64,9 @@ public class PortalTypes {
 
     public static AbstractPortal createPortal(ResourceLocation type, NetworkHolder holder, CompoundTag tag) {
         return TYPES.get(type).fromNbt.apply(holder, tag);
+    }
+
+    public static void forEach(BiConsumer<ResourceLocation, PortalType<?>> consumer) {
+        TYPES.forEach(consumer);
     }
 }

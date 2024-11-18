@@ -1,4 +1,4 @@
-package tfc.dynamicportals.util.render;
+package tfc.dynamicportals.client.util.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;

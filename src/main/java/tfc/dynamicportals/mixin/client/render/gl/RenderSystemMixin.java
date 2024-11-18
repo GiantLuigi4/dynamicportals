@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tfc.dynamicportals.util.render.RenderUtil;
+import tfc.dynamicportals.client.util.render.RenderUtil;
 
 @Mixin(RenderSystem.class)
 public class RenderSystemMixin {

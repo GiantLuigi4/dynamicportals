@@ -1,4 +1,4 @@
-package tfc.dynamicportals.util;
+package tfc.dynamicportals.client.util.render;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.renderer.ShaderInstance;
