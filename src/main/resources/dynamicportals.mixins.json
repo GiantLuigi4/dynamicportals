@@ -25,7 +25,8 @@
     "client.render.gl.RenderSystemMixin",
     "client.ClientPortalTypeAttachments",
     "client.DirectCommandRegistrationMixin",
-    "client.debug.RenderDocker"
+    "client.debug.RenderDocker",
+    "client.access.FrustumAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

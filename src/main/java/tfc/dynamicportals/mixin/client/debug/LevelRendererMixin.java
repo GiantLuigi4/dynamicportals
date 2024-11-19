@@ -6,6 +6,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.api.PortalNet;
+import tfc.dynamicportals.client.debug.FrustumDrawer;
 import tfc.dynamicportals.client.debug.NetworkDrawer;
 import tfc.dynamicportals.itf.NetworkHolder;
 
@@ -35,6 +37,14 @@ public abstract class LevelRendererMixin {
     @Nullable
     private ClientLevel level;
 
+    @Shadow private Frustum cullingFrustum;
+
+    @Shadow @Nullable private Frustum capturedFrustum;
+
+    @Shadow public abstract void captureFrustum();
+
+    @Shadow private boolean captureFrustum;
+
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;checkPoseStack(Lcom/mojang/blaze3d/vertex/PoseStack;)V", ordinal = 0), method = "renderLevel")
     public void debugDraw(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
         NetworkDrawer.debugDraw(
@@ -44,6 +54,13 @@ public abstract class LevelRendererMixin {
                 pCamera, pGameRenderer,
                 pLightTexture, pProjectionMatrix,
                 ci
+        );
+        FrustumDrawer.draw(
+                pPoseStack, pPartialTick,
+                pFinishNanoTime, pRenderBlockOutline,
+                pCamera, pGameRenderer,
+                pLightTexture, pProjectionMatrix,
+                captureFrustum ? capturedFrustum : cullingFrustum
         );
     }
 }
