@@ -24,7 +24,8 @@
     "client.render.LevelRendererMixin",
     "client.render.gl.RenderSystemMixin",
     "client.ClientPortalTypeAttachments",
-    "client.DirectCommandRegistrationMixin"
+    "client.DirectCommandRegistrationMixin",
+    "client.debug.RenderDocker"
   ],
   "injectors": {
     "defaultRequire": 1

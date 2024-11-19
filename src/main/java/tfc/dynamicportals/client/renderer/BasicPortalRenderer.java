@@ -65,7 +65,6 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
         Quaterniond quaternion = new Quaterniond(portal.getOrientation());
         if (portal.getConnectedNetwork().getPortals().size() == 1)
             quaternion.mul(new Quaterniond(0, 0, 0, 1).rotateAxis((float) Math.toRadians(-90), 0, 1, 0));
-        quaternion.conjugate();
         stack.mulPose(new Quaternionf(
                 quaternion.x,
                 quaternion.y,
@@ -105,6 +104,7 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
         }
 
         Quaterniond quaternion = new Quaterniond(portal.getOrientation());
+        quaternion.rotateAxis((float) Math.toRadians(180), 0, 1, 0);
         stack.mulPose(new Quaternionf(
                 quaternion.x,
                 quaternion.y,
