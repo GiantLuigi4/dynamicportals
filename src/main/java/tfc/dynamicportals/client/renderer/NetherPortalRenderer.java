@@ -81,6 +81,38 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		float mU = delta + (1 / 32f);
 
 		float alpha = 1f;
+
+		// TODO: decide if this should be used or not
+//		BlendFunctions.exposeBlend();
+//		alpha = 0.9f;
+//		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+//		builder.vertex(
+//				pPoseStack.last().pose(),
+//				(float) (-xSize),
+//				(float) (-ySize),
+//				(float) (0)
+//		).color(1, 1, 1, alpha).uv(0, delta).endVertex();
+//		builder.vertex(
+//				pPoseStack.last().pose(),
+//				(float) (-xSize),
+//				(float) (ySize),
+//				(float) (0)
+//		).color(1, 1, 1, alpha).uv(0, mU).endVertex();
+//		builder.vertex(
+//				pPoseStack.last().pose(),
+//				(float) (xSize),
+//				(float) (ySize),
+//				(float) (0)
+//		).color(1, 1, 1, alpha).uv(1, mU).endVertex();
+//		builder.vertex(
+//				pPoseStack.last().pose(),
+//				(float) (xSize),
+//				(float) (-ySize),
+//				(float) (0)
+//		).color(1, 1, 1, alpha).uv(1, delta).endVertex();
+//		tesselator.end();
+
+		alpha = 1.0f;
 		
 		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
 		
@@ -224,36 +256,6 @@ public class NetherPortalRenderer extends BasicPortalRenderer {
 		}
 		
 		tesselator.end();
-		
-		// TODO: decide if this should be used or not
-//		BlendFunctions.exposeBlend();
-//		alpha = 0.75f;
-//		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
-//		builder.vertex(
-//				pPoseStack.last().pose(),
-//				(float) (-xSize),
-//				(float) (-ySize),
-//				(float) (0)
-//		).color(1, 1, 1, alpha).uv(0, delta).endVertex();
-//		builder.vertex(
-//				pPoseStack.last().pose(),
-//				(float) (-xSize),
-//				(float) (ySize),
-//				(float) (0)
-//		).color(1, 1, 1, alpha).uv(0, mU).endVertex();
-//		builder.vertex(
-//				pPoseStack.last().pose(),
-//				(float) (xSize),
-//				(float) (ySize),
-//				(float) (0)
-//		).color(1, 1, 1, alpha).uv(1, mU).endVertex();
-//		builder.vertex(
-//				pPoseStack.last().pose(),
-//				(float) (xSize),
-//				(float) (-ySize),
-//				(float) (0)
-//		).color(1, 1, 1, alpha).uv(1, delta).endVertex();
-//		tesselator.end();
 		
 		BlendFunctions.alphaBlend();
 		RenderSystem.disableBlend();
