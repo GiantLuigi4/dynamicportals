@@ -40,37 +40,50 @@ public class NetworkDrawer {
                 .endVertex();
     }
 
+    private static long seed(AbstractPortal portal, HashMap<AbstractPortal, Long> seeds, Random rng) {
+        Long lng = seeds.get(portal);
+        if (lng == null) seeds.put(portal, lng = rng.nextLong());
+        return lng;
+    }
+
     public static void debugDraw(Minecraft minecraft, Level level, PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
         if (!Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes()) return;
 
         MultiBufferSource.BufferSource source = minecraft.renderBuffers().bufferSource();
         VertexConsumer consumer = source.getBuffer(RenderType.LINES);
 
+        pPoseStack.pushPose();
+        pPoseStack.translate(
+                -pCamera.getPosition().x,
+                -pCamera.getPosition().y,
+                -pCamera.getPosition().z
+        );
         Random rng = new Random(98432);
+        // first pass: runs through all but the last portal
         for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
             List<AbstractPortal> portals = portalNetwork.getPortals();
             HashMap<AbstractPortal, Long> seeds = new HashMap<>();
             for (int i = 0; i < portals.size() - 1; i++) {
                 AbstractPortal thisPortal = portals.get(i);
                 AbstractPortal nextPortal = portals.get(i + 1);
-                Random colGen = new Random(seeds.computeIfAbsent(thisPortal, (p) -> rng.nextLong()));
+                Random colGen = new Random(seed(thisPortal, seeds, rng));
                 consumer
                         .vertex(
                                 pPoseStack.last().pose(),
-                                (float) (thisPortal.getPosition().x - pCamera.getPosition().x),
-                                (float) (thisPortal.getPosition().y - pCamera.getPosition().y),
-                                (float) (thisPortal.getPosition().z - pCamera.getPosition().z)
+                                (float) (thisPortal.getPosition().x),
+                                (float) (thisPortal.getPosition().y),
+                                (float) (thisPortal.getPosition().z)
                         )
                         .color(colGen.nextInt(), colGen.nextInt(), colGen.nextInt(), 255)
                         .normal(pPoseStack.last().normal(), (float) (thisPortal.getPosition().x - nextPortal.getPosition().x), (float) (thisPortal.getPosition().y - nextPortal.getPosition().y), (float) (thisPortal.getPosition().z - nextPortal.getPosition().z))
                         .endVertex();
-                colGen = new Random(seeds.computeIfAbsent(nextPortal, (p) -> rng.nextLong()));
+                colGen = new Random(seed(nextPortal, seeds, rng));
                 consumer
                         .vertex(
                                 pPoseStack.last().pose(),
-                                (float) (nextPortal.getPosition().x - pCamera.getPosition().x),
-                                (float) (nextPortal.getPosition().y - pCamera.getPosition().y),
-                                (float) (nextPortal.getPosition().z - pCamera.getPosition().z)
+                                (float) (nextPortal.getPosition().x),
+                                (float) (nextPortal.getPosition().y),
+                                (float) (nextPortal.getPosition().z)
                         )
                         .color(colGen.nextInt(), colGen.nextInt(), colGen.nextInt(), 255)
                         .normal(pPoseStack.last().normal(), (float) (thisPortal.getPosition().x - nextPortal.getPosition().x), (float) (thisPortal.getPosition().y - nextPortal.getPosition().y), (float) (thisPortal.getPosition().z - nextPortal.getPosition().z))
@@ -78,8 +91,7 @@ public class NetworkDrawer {
             }
         }
 
-        source.endBatch();
-        consumer = source.getBuffer(RenderType.LINES);
+        // new pass: runs the full length
         for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
             for (AbstractPortal portal : portalNetwork.getPortals()) {
                 if (portal.myLevel != level) {
@@ -88,14 +100,14 @@ public class NetworkDrawer {
 
                     drawLine(
                             consumer, pPoseStack,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y, portal.getPosition().z - pCamera.getPosition().z,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 0.1, portal.getPosition().z - pCamera.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y, portal.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 0.1, portal.getPosition().z,
                             r, 0, g
                     );
                     drawLine(
                             consumer, pPoseStack,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 0.3, portal.getPosition().z - pCamera.getPosition().z,
-                            portal.getPosition().x - pCamera.getPosition().x, portal.getPosition().y - pCamera.getPosition().y + 1, portal.getPosition().z - pCamera.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 0.3, portal.getPosition().z,
+                            portal.getPosition().x, portal.getPosition().y + 1, portal.getPosition().z,
                             r, 0, g
                     );
                 } else {
@@ -106,14 +118,8 @@ public class NetworkDrawer {
             }
         }
 
-        source.endBatch();
-
-        pPoseStack.pushPose();
-        pPoseStack.translate(
-                -pCamera.getPosition().x,
-                -pCamera.getPosition().y,
-                -pCamera.getPosition().z
-        );
+        // to make sure everything above stays in one batch, this is going down here
+        // why? because this has access to the buffer source, so it can start a new batch
         for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
             for (AbstractPortal portal : portalNetwork.getPortals()) {
                 if (portal.myLevel == level) {
@@ -126,8 +132,9 @@ public class NetworkDrawer {
                 }
             }
         }
-        pPoseStack.popPose();
 
         source.endBatch();
+
+        pPoseStack.popPose();
     }
 }

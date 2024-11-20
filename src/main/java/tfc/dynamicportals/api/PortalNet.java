@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.UUID;
 
 public class PortalNet {
-    int latestPortalId = 0;
-
     ArrayList<AbstractPortal> portals = new ArrayList<>();
     ReadOnlyList<AbstractPortal> readOnly = new ReadOnlyList<>(portals);
 

@@ -196,11 +196,6 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
     @Override
     public void drawAntenna(BasicPortal portal, VertexConsumer consumer, PoseStack pPoseStack, Camera pCamera) {
         pPoseStack.pushPose();
-        pPoseStack.translate(
-                portal.getPosition().x - pCamera.getPosition().x,
-                portal.getPosition().y - pCamera.getPosition().y,
-                portal.getPosition().z - pCamera.getPosition().z
-        );
         pPoseStack.mulPose(new Quaternionf(
                 portal.getOrientation().x,
                 portal.getOrientation().y,

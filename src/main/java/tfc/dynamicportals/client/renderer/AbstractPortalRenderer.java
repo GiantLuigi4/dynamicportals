@@ -23,29 +23,28 @@ public abstract class AbstractPortalRenderer<T extends AbstractPortal> {
                 pPoseStack.last().pose(),
                 (float) (-xSize),
                 (float) (-ySize),
-                (float) (0)
+                (float) 0
         ).color(255, 0, 0, 255).endVertex();
         builder.vertex(
                 pPoseStack.last().pose(),
                 (float) (-xSize),
                 (float) (ySize),
-                (float) (0)
+                (float) 0
         ).color(255, 0, 0, 255).endVertex();
         builder.vertex(
                 pPoseStack.last().pose(),
                 (float) (xSize),
                 (float) (ySize),
-                (float) (0)
+                (float) 0
         ).color(255, 0, 0, 255).endVertex();
         builder.vertex(
                 pPoseStack.last().pose(),
                 (float) (xSize),
                 (float) (-ySize),
-                (float) (0)
+                (float) 0
         ).color(255, 0, 0, 255).endVertex();
         tesselator.end();
     }
-
 
     public abstract void setupMatrix(T portal, PoseStack stack);
 
