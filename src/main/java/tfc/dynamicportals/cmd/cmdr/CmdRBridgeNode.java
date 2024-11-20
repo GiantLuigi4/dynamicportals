@@ -141,11 +141,6 @@ public class CmdRBridgeNode<T, A, B> extends LiteralCommandNode<T> {
     }
 
     @Override
-    public Collection<? extends CommandNode<T>> getRelevantNodes(StringReader input) {
-        return Collections.singleton(this);
-    }
-
-    @Override
     public CompletableFuture<Suggestions> listSuggestions(CommandContext<T> context, SuggestionsBuilder builder) {
         try {
             if (context.getNodes().isEmpty()) {

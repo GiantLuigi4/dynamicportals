@@ -151,7 +151,7 @@ public class OrientationArgument<T, A, B> extends CmdRNode<T, A, B> {
         };
 
         if (chessBattleAdvanced) {
-            String existent = "";
+            String existent = mode + " ";
             for (int i = 0; i < argC; i++) {
                 if (!reader.canRead()) {
                     builder.suggest(existent + "~");
