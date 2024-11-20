@@ -34,7 +34,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 		this.layer = layer;
 	}
 	
-	protected void draw(AbstractPortalRenderer renderer, AbstractPortal portal, Minecraft mc, Matrix4f pProjectionMatrix, float pPartialTick, Camera pCamera, GameRenderer pGameRenderer, PoseStack pPoseStack) {
+	protected void draw(boolean pRenderBlockOutline, AbstractPortalRenderer renderer, AbstractPortal portal, Minecraft mc, Matrix4f pProjectionMatrix, float pPartialTick, Camera pCamera, GameRenderer pGameRenderer, PoseStack pPoseStack) {
 		// actually draw the world
 		Frustum frust = mc.levelRenderer.getFrustum();
 		
@@ -84,7 +84,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 		mc.levelRenderer.renderLevel(
 				poseCopy, pPartialTick,
 				System.nanoTime(), // idk
-				true, // TODO: take this from the arguments of the render level method
+				pRenderBlockOutline,
 				pCamera, pGameRenderer,
 				mc.gameRenderer.lightTexture(),
 				portalProj
@@ -124,7 +124,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 	}
 	
 	@Override
-	public void draw(Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick) {
+	public void draw(boolean pRenderBlockOutline, Tesselator tesselator, Minecraft mc, MultiBufferSource.BufferSource source, PoseStack pPoseStack, Matrix4f pProjectionMatrix, Frustum frustum, Camera pCamera, AbstractPortal portal, GameRenderer pGameRenderer, float pPartialTick) {
 		int layer = this.layer;
 		
 		if (frustum.isVisible(portal.getContainingBox())) {
@@ -205,7 +205,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 				//       elsewise, draw world
 //				if (RenderUtil.activeLayer != 3) {
 				if (RenderUtil.activeLayer == 0) {
-					draw(renderer, portal, mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
+					draw(pRenderBlockOutline, renderer, portal, mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
 				} else {
 					drawSkybox(renderer, portal, mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
 				}

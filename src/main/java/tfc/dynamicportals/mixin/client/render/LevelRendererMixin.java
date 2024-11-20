@@ -86,7 +86,7 @@ public class LevelRendererMixin {
                                         portal.preferredDispatcher()
                                 ;
                         allowRecurse = dispatcher.supportsRecurse();
-                        dispatcher.draw(tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick);
+                        dispatcher.draw(pRenderBlockOutline, tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick);
                         allowRecurse = true;
                         
                         renderer.pop(recurse - 1);

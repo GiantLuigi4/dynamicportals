@@ -30,6 +30,7 @@ public abstract class AbstractPortalRenderDispatcher {
     public abstract void pop(int layer);
 
     public abstract void draw(
+            boolean pRenderBlockOutline,
             Tesselator tesselator,
             Minecraft mc, MultiBufferSource.BufferSource source,
             PoseStack pPoseStack, Matrix4f pProjectionMatrix,
