@@ -14,6 +14,7 @@ import net.minecraftforge.event.level.LevelEvent;
 import tfc.dynamicportals.network.sync.SyncLevelsPacket;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ClientLevelLoader extends LevelLoader {
     Minecraft mc;
@@ -29,23 +30,23 @@ public class ClientLevelLoader extends LevelLoader {
     > levels = new HashMap<>();
     //@formatter:on
 
+    private Map<ResourceLocation, Level> getMap(ResourceLocation key) {
+        HashMap<ResourceLocation, Level> mp = levels.get(key);
+        if (mp == null) levels.put(key, mp = new HashMap());
+        return mp;
+    }
+
     @Override
     public Level get(ResourceKey<Level> world) {
         Level mcLvl = mc.level;
         if (mcLvl != null && world.equals(mcLvl.dimension())) {
-            return levels.computeIfAbsent(
-                    world.registry(),
-                    (k) -> new HashMap<>()
-            ).putIfAbsent(
+            return getMap(world.registry()).putIfAbsent(
                     world.location(),
                     mcLvl
             );
         }
 
-        return levels.computeIfAbsent(
-                world.registry(),
-                (k) -> new HashMap<>()
-        ).putIfAbsent(
+        return getMap(world.registry()).putIfAbsent(
                 world.location(),
                 null // TODO: custom world loaders
         );
@@ -66,10 +67,7 @@ public class ClientLevelLoader extends LevelLoader {
 
         Level mcLvl = mc.level;
         if (mcLvl != null && world.equals(mcLvl.dimension())) {
-            levels.computeIfAbsent(
-                    world.registry(),
-                    (k) -> new HashMap<>()
-            ).putIfAbsent(
+            getMap(world.registry()).putIfAbsent(
                     world.location(),
                     mcLvl
             );
@@ -80,10 +78,7 @@ public class ClientLevelLoader extends LevelLoader {
 //            System.out.println("Present " + entry.type.unwrap().right().get());
 //        }
         //noinspection resource
-        levels.computeIfAbsent(
-                world.registry(),
-                (k) -> new HashMap<>()
-        ).computeIfAbsent(
+        getMap(world.registry()).computeIfAbsent(
                 world.location(),
                 (k) -> {
                     // ClientPacketListener pConnection
@@ -115,18 +110,12 @@ public class ClientLevelLoader extends LevelLoader {
     }
 
     public void update(ClientLevel level) {
-        Level old = levels.computeIfAbsent(
-                level.dimension().registry(),
-                (k) -> new HashMap<>()
-        ).get(
+        Level old = getMap(level.dimension().registry()).get(
                 level.dimension().location()
         );
         if (old != null)
             MinecraftForge.EVENT_BUS.post(new LevelEvent.Unload(old));
-        levels.computeIfAbsent(
-                level.dimension().registry(),
-                (k) -> new HashMap<>()
-        ).put(
+        getMap(level.dimension().registry()).put(
                 level.dimension().location(),
                 level
         );
