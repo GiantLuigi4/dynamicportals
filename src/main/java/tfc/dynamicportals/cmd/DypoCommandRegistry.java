@@ -1,6 +1,7 @@
 package tfc.dynamicportals.cmd;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
@@ -9,6 +10,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -58,6 +60,18 @@ public class DypoCommandRegistry {
 
     public static void register(CommandDispatcher<SharedSuggestionProvider> dispatcher, boolean client) {
         CmdRNode root = BrigadierNode.literal("dynamic_portals");
+
+        root.postAction((contex, nil) -> {
+            CommandContext<CommandSourceStack> ctx = (CommandContext<CommandSourceStack>) contex;
+            ctx.getSource().sendSuccess(
+                    () -> Component.translatable(
+                            "dynamicportals.command.bread.help"
+                    ),
+                    true
+            );
+            return 1;
+        });
+
         {
             CmdRNode network = BrigadierNode.literal("network");
 
@@ -253,6 +267,18 @@ public class DypoCommandRegistry {
             sizeRoot.addArg(sizeArg);
             sizeArg.addArg(repeat);
             repeat.requireArg(sizeRoot);
+        }
+        {
+            CmdRNode<T, CompoundTag, CompoundTag> doubleSidedRoot = BrigadierNode.literal("frontonly");
+            CmdRNode<T, CompoundTag, CompoundTag> dbsArg = BrigadierNode.booleanArg("frontonly");
+            dbsArg.setAction((ctx, nbt) -> {
+                Boolean valuer = ctx.getArgument("frontonly", Boolean.class);
+                nbt.putBoolean("double_sided", valuer);
+                return nbt;
+            });
+            doubleSidedRoot.addArg(dbsArg);
+            dbsArg.addArg(repeat);
+            repeat.requireArg(doubleSidedRoot);
         }
     }
 }

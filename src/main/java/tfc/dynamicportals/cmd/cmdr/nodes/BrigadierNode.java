@@ -1,6 +1,7 @@
 package tfc.dynamicportals.cmd.cmdr.nodes;
 
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -31,6 +32,12 @@ public class BrigadierNode<T, A, B> extends CmdRNode<T, A, B> {
     public static <Q, D, C> BrigadierNode<Q, D, C> stringArg(String argName) {
         return (BrigadierNode<Q, D, C>) new BrigadierNode<>(
                 RequiredArgumentBuilder.argument(argName, StringArgumentType.word()).build()
+        );
+    }
+
+    public static <Q, D, C> BrigadierNode<Q, D, C> booleanArg(String argName) {
+        return (BrigadierNode<Q, D, C>) new BrigadierNode<>(
+                RequiredArgumentBuilder.argument(argName, BoolArgumentType.bool()).build()
         );
     }
 
