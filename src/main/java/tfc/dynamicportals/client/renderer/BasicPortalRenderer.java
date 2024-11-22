@@ -19,6 +19,8 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
         super(type);
     }
 
+    private static final Quaternionf n90Y = new Quaternionf(0, 0, 0, 1).rotateAxis((float) Math.toRadians(-90), 0, 1, 0);
+
     protected void setupRender(PoseStack pPoseStack, BasicPortal portal) {
         if (portal.isDoubleSided()) {
             GL11.glDisable(GL11.GL_CULL_FACE);
@@ -27,14 +29,11 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
         }
 
         pPoseStack.pushPose();
-        pPoseStack.translate(portal.getPosition().x, portal.getPosition().y, portal.getPosition().z);
-        pPoseStack.mulPose(new Quaternionf(
-                portal.getOrientation().x,
-                portal.getOrientation().y,
-                portal.getOrientation().z,
-                portal.getOrientation().w
-        ).normalize());
-        pPoseStack.mulPose(new Quaternionf(0, 0, 0, 1).rotateAxis((float) Math.toRadians(-90), 0, 1, 0));
+        Vec3 pos = portal.getPosition();
+        pPoseStack.translate(pos.x, pos.y, pos.z);
+        Quaterniond qd = portal.getOrientation();
+        pPoseStack.mulPose(new Quaternionf(qd.x, qd.y, qd.z, qd.w).normalize());
+        pPoseStack.mulPose(n90Y);
     }
 
     protected void finishRender(PoseStack pPoseStack, BasicPortal portal) {

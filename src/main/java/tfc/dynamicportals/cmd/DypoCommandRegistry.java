@@ -74,6 +74,16 @@ public class DypoCommandRegistry {
 
         {
             CmdRNode network = BrigadierNode.literal("network");
+            network.postAction((contex, nil) -> {
+                CommandContext<CommandSourceStack> ctx = (CommandContext<CommandSourceStack>) contex;
+                ctx.getSource().sendSuccess(
+                        () -> Component.translatable(
+                                "dynamicportals.command.bread.help.network"
+                        ),
+                        true
+                );
+                return 1;
+            });
 
             CmdRNode create = BrigadierNode.literal("create").postAction((t, a) -> DypoCommand.createNetwork((CommandContext<?>) t));
             CmdRNode delete = BrigadierNode.literal("delete").setAction((a) -> {
@@ -89,6 +99,16 @@ public class DypoCommandRegistry {
         }
         {
             CmdRNode portal = BrigadierNode.literal("portal");
+            portal.postAction((contex, nil) -> {
+                CommandContext<CommandSourceStack> ctx = (CommandContext<CommandSourceStack>) contex;
+                ctx.getSource().sendSuccess(
+                        () -> Component.translatable(
+                                "dynamicportals.command.bread.help.portal"
+                        ),
+                        true
+                );
+                return 1;
+            });
 
             CmdRNode create = BrigadierNode.literal("create")
                     .setAction((a) -> new CompoundTag())

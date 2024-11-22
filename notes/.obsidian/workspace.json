@@ -1,0 +1,192 @@
+{
+  "main": {
+    "id": "a2507ece5667823a",
+    "type": "split",
+    "children": [
+      {
+        "id": "30516be238778e25",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a1a84017a117af5b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Logic/Networking/Networking.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Networking"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "bd209e689099f927",
+    "type": "split",
+    "children": [
+      {
+        "id": "b6de7149b5e5d4a1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "28701febc5e68891",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "52538f7178783576",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "4236b19d60e4e020",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "4fd92b3db3083248",
+    "type": "split",
+    "children": [
+      {
+        "id": "819cb00c046cd555",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6713c72b7e084f17",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Logic/Networking/Networking.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Networking"
+            }
+          },
+          {
+            "id": "3746138004f1fd6f",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Welcome.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Welcome"
+            }
+          },
+          {
+            "id": "8bf7f70569ae2ebf",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "9015ccd75ff4f4b6",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Welcome.md"
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Welcome"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "a1a84017a117af5b",
+  "lastOpenFiles": [
+    "Logic/Logic.md",
+    "Logic/Networking/Networking.md",
+    "Logic/Networking",
+    "Untitled.md",
+    "Logic/Teleportation/Teleportation.md",
+    "Logic/Teleportation",
+    "Dynamic Portals roadmap or whatever.md",
+    "API/API.md",
+    "Rendering/Rendering.md",
+    "Rendering/End Portal.md",
+    "Rendering/SubSpaces.md",
+    "Rendering/Culling.md",
+    "2024-11-20_16-00-30.mp4",
+    "Logic",
+    "Untitled.canvas",
+    "Untitled 2.canvas",
+    "Untitled 1.canvas",
+    "Pasted image 20241121221820.png",
+    "Pasted image 20241121221758.png",
+    "Rendering",
+    "New folder",
+    "API",
+    "api",
+    "2024-11-21.md",
+    "create a link.md"
+  ]
+}

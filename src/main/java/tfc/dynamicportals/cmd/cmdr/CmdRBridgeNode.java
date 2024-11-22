@@ -214,7 +214,8 @@ public class CmdRBridgeNode<T, A, B> extends LiteralCommandNode<T> {
     @Override
     public Collection<String> getExamples() {
 //        return node.getExamples();
-        return Collections.singleton(getName());
+//        return Collections.singleton(getName());
+        return Collections.emptyList();
     }
 
     @Override

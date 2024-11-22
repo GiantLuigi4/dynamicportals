@@ -26,7 +26,10 @@
     "client.ClientPortalTypeAttachments",
     "client.DirectCommandRegistrationMixin",
     "client.debug.RenderDocker",
-    "client.access.FrustumAccessor"
+    "client.access.FrustumAccessor",
+    "client.render.optim.MakeThisAHashSet",
+    "client.render.optim.RenderTypeMixin",
+    "client.render.optim.QuickUniforms"
   ],
   "injectors": {
     "defaultRequire": 1
