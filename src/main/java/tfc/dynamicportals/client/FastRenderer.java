@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL40;
+import org.lwjgl.opengl.GL32;
 import tfc.dynamicportals.api.AbstractPortal;
 import tfc.dynamicportals.client.renderer.AbstractPortalRenderer;
 import tfc.dynamicportals.itf.ClientPortalType;
@@ -142,7 +142,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			source.endBatch();
 			
 			RenderType.waterMask().setupRenderState();
-			GL40.glEnable(GL40.GL_DEPTH_CLAMP);
+			GL11.glEnable(GL32.GL_DEPTH_CLAMP);
 			
 			GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_INCR);
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer, 0xFF); // all fragments should pass the stencil test
@@ -198,13 +198,13 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 					RenderSystem.setShaderColor(1, 1, 1, 1);
 				}
 				
-				GL40.glDisable(GL40.GL_DEPTH_CLAMP);
+				GL11.glDisable(GL32.GL_DEPTH_CLAMP);
 				pPoseStack.popPose();
 				
 				// TODO: draw skybox on final iteration
 				//       elsewise, draw world
-				if (RenderUtil.activeLayer != 3) {
-//				if (RenderUtil.activeLayer == 0) {
+//				if (RenderUtil.activeLayer != 3) {
+				if (RenderUtil.activeLayer == 0) {
 					draw(pRenderBlockOutline, renderer, portal, mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
 				} else {
 					drawSkybox(renderer, portal, mc, pProjectionMatrix, pPartialTick, pCamera, pGameRenderer, pPoseStack);
@@ -222,7 +222,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 					-pCamera.getPosition().z
 			);
 			
-			GL11.glEnable(GL40.GL_DEPTH_CLAMP);
+			GL11.glEnable(GL32.GL_DEPTH_CLAMP);
 			
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer + 1, 0xFF);
 			RenderSystem.disableDepthTest();
@@ -247,7 +247,7 @@ public class FastRenderer extends AbstractPortalRenderDispatcher {
 			GameRenderer.getRendertypeWaterMaskShader().clear();
 			RenderSystem.depthFunc(GL11.GL_LEQUAL);
 			
-			GL11.glDisable(GL40.GL_DEPTH_CLAMP);
+			GL11.glDisable(GL32.GL_DEPTH_CLAMP);
 			
 			GL11.glStencilFunc(GL11.GL_EQUAL, layer, 0xFF);
 			GL11.glStencilMask(0x00);
