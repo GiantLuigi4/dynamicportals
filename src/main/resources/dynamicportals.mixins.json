@@ -30,7 +30,7 @@
     "client.access.FrustumAccessor",
     "client.render.optim.MakeThisAHashSet",
     "client.render.optim.RenderTypeMixin",
-    "client.render.optim.QuickUniforms"
+    "client.render.optim.QuickUniformLookup"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -2,24 +2,22 @@ package tfc.dynamicportals.mixin.client.render.optim;
 
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
 @Mixin(ShaderInstance.class)
-public class QuickUniforms {
+public class QuickUniformLookup {
     @Mutable
     @Shadow
     @Final
@@ -30,10 +28,25 @@ public class QuickUniforms {
     @Final
     private Map<String, Uniform> uniformMap;
 
+    @Unique
+    private Object2IntMap<String> dynamicportals$locationMap;
+
     // these maps shouldn't be modified much, so use a data structure meant for infrequent modifications
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/server/packs/resources/ResourceProvider;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/VertexFormat;)V")
     public void postInit(ResourceProvider pResourceProvider, ResourceLocation shaderLocation, VertexFormat pVertexFormat, CallbackInfo ci) {
         samplerMap = new Object2ObjectAVLTreeMap<>();
         uniformMap = new Object2ObjectAVLTreeMap<>();
+        dynamicportals$locationMap = new Object2IntAVLTreeMap<>();
+    }
+
+    @Redirect(require = 0, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/shaders/Uniform;glGetUniformLocation(ILjava/lang/CharSequence;)I"), method = "apply")
+    public int cacheLocations(int pProgram, CharSequence pName) {
+        Integer i = dynamicportals$locationMap.get(pName.toString());
+        if (i == null) {
+            int loc = Uniform.glGetUniformLocation(pProgram, pName);
+            dynamicportals$locationMap.put(pName.toString(), loc);
+            return loc;
+        }
+        return i;
     }
 }

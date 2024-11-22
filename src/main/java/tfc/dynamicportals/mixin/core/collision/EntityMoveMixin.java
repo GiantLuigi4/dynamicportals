@@ -1,5 +1,6 @@
 package tfc.dynamicportals.mixin.core.collision;
 
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
@@ -25,6 +26,8 @@ public abstract class EntityMoveMixin {
 
     @Inject(at = @At("HEAD"), method = "move")
     public void preMove(MoverType pType, Vec3 pPos, CallbackInfo ci) {
+        ProfilerFiller profilerFiller = level.getProfiler();
+        profilerFiller.push("teleportation_check");
         AABB box = getBoundingBox();
         Vector3d temp = new Vector3d();
         double bestDist = pPos.length();
@@ -46,5 +49,7 @@ public abstract class EntityMoveMixin {
         if (bestPortal != null) {
             System.out.println(bestDist);
         }
+
+        profilerFiller.pop();
     }
 }
