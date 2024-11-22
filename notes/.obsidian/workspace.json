@@ -11,10 +11,14 @@
             "id": "a1a84017a117af5b",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "Logic/Teleportation/Collision Clipping.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Collision Clipping"
             }
           }
         ]
@@ -154,8 +158,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "28701febc5e68891",
+  "active": "a1a84017a117af5b",
   "lastOpenFiles": [
+    "Assets/Pasted image 20241122164549.png",
+    "Logic/Teleportation/Teleportation.md",
+    "Logic/Teleportation/Collision Clipping.md",
     "Assets",
     "Rendering/Culling.md",
     "Rendering/End Portal.md",
@@ -163,7 +170,6 @@
     "Logic/Networking/Networking.md",
     "Logic/Networking",
     "Untitled.md",
-    "Logic/Teleportation/Teleportation.md",
     "Logic/Teleportation",
     "Dynamic Portals roadmap or whatever.md",
     "API/API.md",

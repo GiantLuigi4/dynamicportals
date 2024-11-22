@@ -82,6 +82,10 @@ public interface TraceMixin {
 
             for (PortalNet portalNetwork : ((NetworkHolder) this).getPortalNetworks()) {
                 for (AbstractPortal portal : portalNetwork.getPortals()) {
+                    //noinspection RedundantSuppression
+                    //noinspection EqualsBetweenInconvertibleTypes
+                    if (portal.myLevel != this) continue;
+
                     double dist = portal.trace(from, to, temp, length);
                     if (dist < bestDist && dist > 0) {
                         bestDist = dist;

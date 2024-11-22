@@ -3,7 +3,6 @@ package tfc.dynamicportals.api.implementation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniond;
 import org.joml.Vector2d;
@@ -105,16 +104,6 @@ public class BasicPortal extends AbstractPortal {
 
     @Override
     public double trace(Vec3 start, Vec3 end, Vector3d temp, double length) {
-        //double d0 = (pMinSide - pStartSide) / pDistanceSide;
-        //double d1 = pStartOtherA + d0 * pDistanceOtherA;
-        //double d2 = pStartOtherB + d0 * pDistanceOtherB;
-        //if (0.0D < d0 && d0 < pMinDistance[0] && pMinOtherA - 1.0E-7D < d1 && d1 < pMaxOtherA + 1.0E-7D && pMinOtherB - 1.0E-7D < d2 && d2 < pMaxOtherB + 1.0E-7D) {
-        //   pMinDistance[0] = d0;
-        //   return pHitSide;
-        //} else {
-        //   return pPrevDirection;
-        //}
-
         temp.set(1, 0, 0);
         orientation.transform(temp);
 
@@ -124,7 +113,7 @@ public class BasicPortal extends AbstractPortal {
         double dotLength = dotEnd - dotStart;
 
         double delta = (dotPos - dotStart) / dotLength;
-        if (delta > 0 && delta <= 1) {
+        if (delta > 0 && delta <= length) {
             Vec3 deltaVec = end.subtract(start);
             Vec3 transformed = start.add(deltaVec.scale(delta));
 
@@ -171,5 +160,69 @@ public class BasicPortal extends AbstractPortal {
             temp.add(position.x, position.y, position.z);
             return new Vec3(temp.x, temp.y, temp.z);
         }
+    }
+
+    // TODO: further testing
+    @Override
+    public boolean wasCrossed(AABB bounds, Vec3 motion, Vector3d temp) {
+        Vec3 center = bounds.getCenter();
+        temp.set(1, 0, 0);
+        orientation.transform(temp);
+        double dotCenter = temp.dot(center.x, center.y, center.z);
+        double dotPos = temp.dot(position.x, position.y, position.z);
+        double dotMot = temp.dot(motion.x, motion.y, motion.z);
+        double dist0 = dotCenter - dotPos;
+        double dist1 = (dotCenter + dotMot) - dotPos;
+        if (Math.signum(dist0) != Math.signum(dist1)) {
+            double maxPad =
+                    // pretty sure this is sufficient computation
+                    // TODO: test!
+                    Math.max(1, bounds.getXsize()) *
+                            Math.max(1, bounds.getYsize()) *
+                            Math.max(1, bounds.getZsize()) + 1;
+
+            // right/left
+            temp.set(0, 0, 1);
+            orientation.transform(temp);
+            dotCenter = temp.dot(center.x, center.y, center.z);
+            dotPos = temp.dot(position.x, position.y, position.z);
+            dotMot = temp.dot(motion.x, motion.y, motion.z);
+            double diff = (dotCenter + dotMot) - dotPos;
+            if (Math.abs(diff) > maxPad) return false;
+            if (Math.abs(diff) > size.x * 0.5) diff = size.x * 0.5 * Math.signum(diff);
+            temp.mul(diff).add(position.x, position.y, position.z);
+
+            // up/down
+            Vector3d temp2 = new Vector3d(0, 1, 0);
+            orientation.transform(temp2);
+            dotCenter = temp2.dot(center.x, center.y, center.z);
+            dotPos = temp2.dot(position.x, position.y, position.z);
+            dotMot = temp2.dot(motion.x, motion.y, motion.z);
+            diff = (dotCenter + dotMot) - dotPos;
+            if (Math.abs(diff) > maxPad) return false;
+            if (Math.abs(diff) > size.y * 0.5) diff = size.y * 0.5 * Math.signum(diff);
+            temp.add(temp2.mul(diff));
+
+            return bounds.contains(temp.x, temp.y, temp.z);
+        }
+        return false;
+    }
+
+    @Override
+    public double distanceAlong(AABB box, Vec3 motion, Vector3d temp) {
+        temp.set(1, 0, 0);
+        orientation.transform(temp);
+
+        Vec3 start = box.getCenter();
+        Vec3 end = start.add(motion);
+
+        double dotPos = temp.dot(position.x, position.y, position.z);
+        double dotStart = temp.dot(start.x, start.y, start.z);
+        double dotEnd = temp.dot(end.x, end.y, end.z);
+        double dotLength = dotEnd - dotStart;
+
+        double delta = (dotPos - dotStart) / dotLength;
+        temp.set(motion.x * delta, motion.y * delta, motion.z * delta);
+        return temp.length();
     }
 }

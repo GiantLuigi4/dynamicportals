@@ -12,7 +12,8 @@
     "core.data.PlayerListMixin",
     "core.data.ServerLevelMixin",
     "core.data.ServerMixin",
-    "core.TraceMixin"
+    "core.TraceMixin",
+    "core.collision.EntityMoveMixin"
   ],
   "client": [
     "client.access.ClientLevelAccessor",

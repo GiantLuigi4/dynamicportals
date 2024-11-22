@@ -96,9 +96,9 @@ public abstract class AbstractPortal {
     /**
      * Gets the interpolation delta to the portal, should return -1 if the ray does not intersect
      *
-     * @param start the start vector (i.e. the player's camera)
-     * @param end the end vector (either the coordinate of the end of the reach vector, or the coordinate of a block hit result)
-     * @param temp a temporary vector3d to use for math calculations
+     * @param start  the start vector (i.e. the player's camera)
+     * @param end    the end vector (either the coordinate of the end of the reach vector, or the coordinate of a block hit result)
+     * @param temp   a temporary vector3d to use for math calculations
      * @param length the distance between start and end
      * @return the interpolation delta, or -1 for no hit
      */
@@ -110,4 +110,8 @@ public abstract class AbstractPortal {
     }
 
     public abstract Vec3 transformVec(Vec3 from, Vector3d temp, boolean isTarget);
+
+    public abstract boolean wasCrossed(AABB bounds, Vec3 motion, Vector3d temp);
+
+    public abstract double distanceAlong(AABB box, Vec3 motion, Vector3d temp);
 }
