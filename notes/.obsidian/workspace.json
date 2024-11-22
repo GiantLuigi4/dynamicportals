@@ -11,14 +11,10 @@
             "id": "a1a84017a117af5b",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Logic/Networking/Networking.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Networking"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           }
         ]
@@ -93,7 +89,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Logic/Networking/Networking.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +98,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Networking"
+              "title": "Backlinks"
             }
           },
           {
@@ -112,12 +107,11 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Welcome.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Welcome"
+              "title": "Outgoing links"
             }
           },
           {
@@ -138,14 +132,13 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {
-                "file": "Welcome.md"
-              },
+              "state": {},
               "icon": "lucide-list",
-              "title": "Outline of Welcome"
+              "title": "Outline"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -161,8 +154,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "a1a84017a117af5b",
+  "active": "28701febc5e68891",
   "lastOpenFiles": [
+    "Assets",
+    "Rendering/Culling.md",
+    "Rendering/End Portal.md",
     "Logic/Logic.md",
     "Logic/Networking/Networking.md",
     "Logic/Networking",
@@ -172,16 +168,14 @@
     "Dynamic Portals roadmap or whatever.md",
     "API/API.md",
     "Rendering/Rendering.md",
-    "Rendering/End Portal.md",
     "Rendering/SubSpaces.md",
-    "Rendering/Culling.md",
-    "2024-11-20_16-00-30.mp4",
+    "Assets/2024-11-20_16-00-30.mp4",
     "Logic",
     "Untitled.canvas",
     "Untitled 2.canvas",
     "Untitled 1.canvas",
-    "Pasted image 20241121221820.png",
-    "Pasted image 20241121221758.png",
+    "Assets/Pasted image 20241121221820.png",
+    "Assets/Pasted image 20241121221758.png",
     "Rendering",
     "New folder",
     "API",
