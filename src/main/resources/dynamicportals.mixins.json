@@ -11,7 +11,8 @@
     "core.data.LevelMixin",
     "core.data.PlayerListMixin",
     "core.data.ServerLevelMixin",
-    "core.data.ServerMixin"
+    "core.data.ServerMixin",
+    "core.TraceMixin"
   ],
   "client": [
     "client.access.ClientLevelAccessor",
@@ -25,7 +26,6 @@
     "client.render.gl.RenderSystemMixin",
     "client.ClientPortalTypeAttachments",
     "client.DirectCommandRegistrationMixin",
-    "client.debug.RenderDocker",
     "client.access.FrustumAccessor",
     "client.render.optim.MakeThisAHashSet",
     "client.render.optim.RenderTypeMixin",

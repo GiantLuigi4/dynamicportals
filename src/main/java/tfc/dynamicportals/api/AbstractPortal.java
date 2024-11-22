@@ -6,6 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniond;
+import org.joml.Vector3d;
 import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.client.AbstractPortalRenderDispatcher;
 import tfc.dynamicportals.itf.NetworkHolder;
@@ -92,9 +93,21 @@ public abstract class AbstractPortal {
         this.position = new Vec3(x, y, z);
     }
 
+    /**
+     * Gets the interpolation delta to the portal, should return -1 if the ray does not intersect
+     *
+     * @param start the start vector (i.e. the player's camera)
+     * @param end the end vector (either the coordinate of the end of the reach vector, or the coordinate of a block hit result)
+     * @param temp a temporary vector3d to use for math calculations
+     * @param length the distance between start and end
+     * @return the interpolation delta, or -1 for no hit
+     */
+    public abstract double trace(Vec3 start, Vec3 end, Vector3d temp, double length);
+
     /* DISCOURAGED */
     public AbstractPortalRenderDispatcher preferredDispatcher() {
         return null;
     }
 
+    public abstract Vec3 transformVec(Vec3 from, Vector3d temp, boolean isTarget);
 }

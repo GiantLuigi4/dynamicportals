@@ -189,6 +189,30 @@ public class BasicPortalRenderer extends AbstractPortalRenderer<BasicPortal> {
         // I would also have a green up vector, but that would conflict with another renderer
         // so white is up
 
+        // trace debug
+        Vector3d temp = new Vector3d();
+        Vec3 forward = new Vec3(
+                pCamera.getLookVector().x,
+                pCamera.getLookVector().y,
+                pCamera.getLookVector().z
+        ).scale(10);
+        double length = forward.lengthSqr();
+        forward = forward.add(pCamera.getPosition());
+        double delta = portal.trace(
+                pCamera.getPosition(),
+                forward,
+                temp, length
+        );
+        if (delta != -1) {
+            line(
+                    consumer,
+                    pos, nor,
+                    new Vector3f(0, -1, -1),
+                    new Vector3f(0, 1, 1),
+                    0, 1, 0, 1
+            );
+        }
+
         pPoseStack.popPose();
     }
 
