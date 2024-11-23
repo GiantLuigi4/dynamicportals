@@ -28,9 +28,12 @@
     "client.ClientPortalTypeAttachments",
     "client.DirectCommandRegistrationMixin",
     "client.access.FrustumAccessor",
-    "client.render.optim.MakeThisAHashSet",
-    "client.render.optim.RenderTypeMixin",
-    "client.render.optim.QuickUniformLookup"
+    "client.render.optim.lookup.UseABetterSetType",
+    "client.render.optim.lookup.ModifyRenderTypeHashCode",
+    "client.render.optim.lookup.QuickUniformLookup",
+    "client.render.optim.lookup.AVLBufferCache",
+    "client.render.optim.lookup.FastBiomeLookup",
+    "client.render.optim.validation.DisableThreadAssertations"
   ],
   "injectors": {
     "defaultRequire": 1

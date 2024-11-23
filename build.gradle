@@ -37,13 +37,6 @@ java {
 //    implementation.extendsFrom modImpl
 //}
 
-dependencies {
-//    compileOnly "curse.maven:spark-361579:4950608"
-    implementation fg.deobf("com.tracky:tracky:3.0") {
-        transitive(false)
-    }
-}
-
 minecraft {
     mappings channel: 'parchment', version: "${mcMap}-${mapVer}-${minecraft_version}"
 
@@ -106,8 +99,16 @@ repositories {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.20-46.0.14'
+
+    implementation fg.deobf("com.tracky:tracky:3.0") {
+        transitive(false)
+    }
+
     implementation fg.deobf("curse.maven:spark-361579:4738952")
-//    implementation fg.deobf("curse.maven:immediatelyfast-686911:5894645")
+    implementation fg.deobf("curse.maven:immediatelyfast-686911:5894645")
+//    implementation fg.deobf("curse.maven:redirector-877289:5067394")
+    implementation fg.deobf("curse.maven:ferritecore-429235:4810975")
+//    implementation fg.deobf("curse.maven:rubidium-574856:4573226")
 
 //    jarJar("tracky:tracky:[3.0,)") {
 //        transitive(false)

@@ -51,7 +51,13 @@ public class LevelRendererMixin {
 
     @Unique
     private static final int MAX_RECURSE = 4;
-    
+
+    @Inject(at = @At("HEAD"), method = "compileSections", cancellable = true)
+    public void preCompile(Camera p_194371_, CallbackInfo ci) {
+        if (recurse > 1)
+            ci.cancel();
+    }
+
     @Inject(at = @At("HEAD"), method = "renderLevel")
     public void preDrawLevel(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
         recurse++;
@@ -68,45 +74,44 @@ public class LevelRendererMixin {
     public void drawPortals(PoseStack pPoseStack, float pPartialTick, long pFinishNanoTime, boolean pRenderBlockOutline, Camera pCamera, GameRenderer pGameRenderer, LightTexture pLightTexture, Matrix4f pProjectionMatrix, CallbackInfo ci) {
         if (recurse <= MAX_RECURSE && allowRecurse) {
             GL11.glEnable(GL11.GL_STENCIL_TEST);
-            
+
             AbstractPortalRenderDispatcher renderer = AbstractPortalRenderDispatcher.getSelected();
             renderer.push(recurse - 1);
             Tesselator tessel = Tesselator.getInstance();
             for (PortalNet portalNetwork : ((NetworkHolder) minecraft).getPortalNetworks()) {
                 for (AbstractPortal portal : portalNetwork.getPortals()) {
                     if (portal.exitOnly()) continue;
-                    
+
                     if (RenderUtil.rendering == portal)
                         continue;
-                    
+
                     if (portal.myLevel == level) {
                         AbstractPortalRenderDispatcher dispatcher =
                                 portal.preferredDispatcher() == null ?
                                         renderer :
-                                        portal.preferredDispatcher()
-                                ;
+                                        portal.preferredDispatcher();
                         allowRecurse = dispatcher.supportsRecurse();
                         dispatcher.draw(pRenderBlockOutline, tessel, minecraft, minecraft.renderBuffers().bufferSource(), pPoseStack, pProjectionMatrix, captureFrustum ? capturedFrustum : cullingFrustum, pCamera, portal, pGameRenderer, pPartialTick);
                         allowRecurse = true;
-                        
+
                         renderer.pop(recurse - 1);
                     }
                 }
             }
             minecraft.renderBuffers().bufferSource().endBatch();
-            
+
             RenderUtil.activeLayer = recurse - 1;
-            
+
             if (recurse == 1) {
                 GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
-                
+
                 GL11.glStencilMask(0xFF);
                 GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
                 GL11.glStencilMask(0x00);
-                
+
                 GL11.glDisable(GL11.GL_STENCIL_TEST);
             }
-            
+
             // reset fog
             {
                 float renderDist = pGameRenderer.getRenderDistance();
@@ -115,11 +120,11 @@ public class LevelRendererMixin {
                 FogRenderer.setupFog(pCamera, FogRenderer.FogMode.FOG_TERRAIN, Math.max(renderDist, 32.0F), foggy, pPartialTick);
                 FogRenderer.setupColor(pCamera, pPartialTick, mc.level, mc.options.getEffectiveRenderDistance(), pGameRenderer.getDarkenWorldAmount(pPartialTick));
                 FogRenderer.levelFogColor();
-                
+
                 RenderSystem.setShaderColor(1, 1, 1, 1);
             }
         }
-        
+
         GL11.glEnable(GL11.GL_CULL_FACE);
     }
 }

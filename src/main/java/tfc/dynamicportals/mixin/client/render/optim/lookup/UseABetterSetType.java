@@ -1,4 +1,4 @@
-package tfc.dynamicportals.mixin.client.render.optim;
+package tfc.dynamicportals.mixin.client.render.optim.lookup;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
@@ -9,21 +9,24 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import tfc.dynamicportals.network.util.optim.IndexedArraySet;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Mixin(ChunkRenderDispatcher.CompiledChunk.class)
-public class MakeThisAHashSet {
+public class UseABetterSetType {
     @Mutable
     @Shadow @Final
     Set<RenderType> f_112749_;
 
     @Inject(at = @At("TAIL"), method = "<init>")
-    public void postInit(CallbackInfo ci) {
+    public final void postInit(CallbackInfo ci) {
         // for some reason, mojang uses an array set for this
         // considering mojang does a lot of contains checking and not much adding/removing, a hashset seems more suited
         // probably wanna look more into this later on
-        this.f_112749_ = new HashSet<>(12);
+        int maxHash = 0;
+        for (RenderType type : RenderType.chunkBufferLayers())
+            maxHash = Math.max(type.hashCode(), maxHash);
+        this.f_112749_ = new IndexedArraySet<>(maxHash + 1);
     }
 }
