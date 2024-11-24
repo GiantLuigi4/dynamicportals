@@ -47,7 +47,7 @@ public abstract class EntityMoveMixin {
         }
 
         if (bestPortal != null) {
-            System.out.println(bestDist);
+            bestPortal.teleport((Entity) (Object) this);
         }
 
         profilerFiller.pop();

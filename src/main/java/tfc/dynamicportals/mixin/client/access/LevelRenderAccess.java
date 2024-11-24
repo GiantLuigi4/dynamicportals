@@ -11,20 +11,39 @@ import javax.annotation.Nullable;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRenderAccess implements LevelRendererAccessor {
-	@Shadow private Frustum cullingFrustum;
-	
-	@Shadow @Nullable private Frustum capturedFrustum;
-	
-	@Shadow public abstract void captureFrustum();
-	
-	@Shadow protected abstract void captureFrustum(Matrix4f pViewMatrix, Matrix4f pProjectionMatrix, double pCamX, double pCamY, double pCamZ, Frustum pCapturedFrustrum);
-	
-	@Shadow private boolean captureFrustum;
-	
-	@Override
-	public void dynamic_portals$setFrustum(Frustum frustum) {
-		// TODO: proper?
-		this.cullingFrustum = frustum;
-		captureFrustum = false;
-	}
+    @Shadow
+    private Frustum cullingFrustum;
+
+    @Shadow
+    @Nullable
+    private Frustum capturedFrustum;
+
+    @Shadow
+    public abstract void captureFrustum();
+
+    @Shadow
+    protected abstract void captureFrustum(Matrix4f pViewMatrix, Matrix4f pProjectionMatrix, double pCamX, double pCamY, double pCamZ, Frustum pCapturedFrustrum);
+
+    @Shadow
+    private boolean captureFrustum;
+
+//    @Mutable
+//    @Shadow
+//    @Final
+//    private ObjectArrayList<LevelRenderer.RenderChunkInfo> f_194297_;
+
+    @Override
+    public void dynamic_portals$setFrustum(Frustum frustum) {
+        // TODO: proper?
+        this.cullingFrustum = frustum;
+        captureFrustum = false;
+    }
+
+//    public ObjectArrayList<LevelRenderer.RenderChunkInfo> getChunksInFrustum() {
+//        return f_194297_;
+//    }
+//
+//    public void setChunksInFrustum(ObjectArrayList<LevelRenderer.RenderChunkInfo> f_194297_) {
+//        this.f_194297_ = f_194297_;
+//    }
 }

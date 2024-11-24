@@ -1,6 +1,7 @@
 package tfc.dynamicportals.api.implementation;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -224,5 +225,14 @@ public class BasicPortal extends AbstractPortal {
         double delta = (dotPos - dotStart) / dotLength;
         temp.set(motion.x * delta, motion.y * delta, motion.z * delta);
         return temp.length();
+    }
+
+    public void teleport(Entity entity) {
+        Vector3d temp = new Vector3d();
+        Vec3 tmp = transformVec(entity.position(), temp, false);
+        tmp = getConnectedNetwork().transformTarget(this, tmp, temp);
+        entity.moveTo(tmp);
+        // TODO: rotate entity
+        // TODO: funky camera logic for players
     }
 }

@@ -4,6 +4,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3d;
+import tfc.dynamicportals.Debug;
 import tfc.dynamicportals.api.registry.PortalTypes;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.util.PortalPacketSender;
@@ -105,5 +108,17 @@ public class PortalNet {
         write(tg);
         portals.clear();
         read(holder, tg.getList("data", Tag.TAG_COMPOUND));
+    }
+
+    public Vec3 transformTarget(AbstractPortal from, Vec3 vec, Vector3d temp) {
+        if (portals.size() == 1) return from.transformVec(vec, temp, true);
+        if (portals.size() == 2) {
+            AbstractPortal portal = portals.get(0);
+            if (portal == from)
+                return portals.get(1).transformVec(vec, temp, true);
+            return portal.transformVec(vec, temp, true);
+        }
+        Debug.TheUnimplemented("PortalNet#transformTarget called for a portal that has more than 2 portals in its network.");
+        return from.transformVec(vec, temp, true);
     }
 }

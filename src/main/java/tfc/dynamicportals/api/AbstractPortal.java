@@ -1,6 +1,7 @@
 package tfc.dynamicportals.api;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -11,8 +12,6 @@ import tfc.dynamicportals.api.registry.PortalType;
 import tfc.dynamicportals.client.AbstractPortalRenderDispatcher;
 import tfc.dynamicportals.itf.NetworkHolder;
 import tfc.dynamicportals.network.util.PortalPacketSender;
-
-import java.util.UUID;
 
 public abstract class AbstractPortal {
     public final Level myLevel;
@@ -114,4 +113,6 @@ public abstract class AbstractPortal {
     public abstract boolean wasCrossed(AABB bounds, Vec3 motion, Vector3d temp);
 
     public abstract double distanceAlong(AABB box, Vec3 motion, Vector3d temp);
+
+    public abstract void teleport(Entity entity);
 }
